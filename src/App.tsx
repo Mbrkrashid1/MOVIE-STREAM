@@ -9,6 +9,8 @@ import MovieDetail from "./pages/MovieDetail";
 import Downloads from "./pages/Downloads";
 import Library from "./pages/Library";
 import Profile from "./pages/Profile";
+import Shorts from "./pages/Shorts";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,7 +27,9 @@ const App = () => (
           <Route path="/series/:id" element={<MovieDetail />} />
           <Route path="/downloads" element={<Downloads />} />
           <Route path="/library" element={<Library />} />
+          <Route path="/shorts" element={<Shorts />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
