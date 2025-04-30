@@ -9,7 +9,222 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      ad_impressions: {
+        Row: {
+          ad_id: string
+          completed: boolean | null
+          content_id: string | null
+          created_at: string | null
+          id: string
+          placement_type: string
+          user_id: string | null
+          watched_seconds: number | null
+        }
+        Insert: {
+          ad_id: string
+          completed?: boolean | null
+          content_id?: string | null
+          created_at?: string | null
+          id?: string
+          placement_type: string
+          user_id?: string | null
+          watched_seconds?: number | null
+        }
+        Update: {
+          ad_id?: string
+          completed?: boolean | null
+          content_id?: string | null
+          created_at?: string | null
+          id?: string
+          placement_type?: string
+          user_id?: string | null
+          watched_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_impressions_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "ads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ad_placements: {
+        Row: {
+          ad_id: string
+          content_id: string
+          created_at: string | null
+          id: string
+          placement_type: string
+          time_offset: number | null
+        }
+        Insert: {
+          ad_id: string
+          content_id: string
+          created_at?: string | null
+          id?: string
+          placement_type: string
+          time_offset?: number | null
+        }
+        Update: {
+          ad_id?: string
+          content_id?: string
+          created_at?: string | null
+          id?: string
+          placement_type?: string
+          time_offset?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_placements_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "ads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ads: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          duration: number | null
+          id: string
+          is_skippable: boolean | null
+          skip_after_seconds: number | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string | null
+          video_url: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          duration?: number | null
+          id?: string
+          is_skippable?: boolean | null
+          skip_after_seconds?: number | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string | null
+          video_url: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          duration?: number | null
+          id?: string
+          is_skippable?: boolean | null
+          skip_after_seconds?: number | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string | null
+          video_url?: string
+        }
+        Relationships: []
+      }
+      content: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          duration: number | null
+          id: string
+          is_featured: boolean | null
+          language: string | null
+          release_year: number | null
+          thumbnail_url: string | null
+          title: string
+          type: string
+          updated_at: string | null
+          video_url: string
+          views: number | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          duration?: number | null
+          id?: string
+          is_featured?: boolean | null
+          language?: string | null
+          release_year?: number | null
+          thumbnail_url?: string | null
+          title: string
+          type: string
+          updated_at?: string | null
+          video_url: string
+          views?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          duration?: number | null
+          id?: string
+          is_featured?: boolean | null
+          language?: string | null
+          release_year?: number | null
+          thumbnail_url?: string | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+          video_url?: string
+          views?: number | null
+        }
+        Relationships: []
+      }
+      episodes: {
+        Row: {
+          created_at: string | null
+          duration: number | null
+          episode_number: number
+          id: string
+          season_number: number
+          series_id: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string | null
+          video_url: string
+          views: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          duration?: number | null
+          episode_number: number
+          id?: string
+          season_number?: number
+          series_id: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string | null
+          video_url: string
+          views?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          duration?: number | null
+          episode_number?: number
+          id?: string
+          season_number?: number
+          series_id?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string | null
+          video_url?: string
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "episodes_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
