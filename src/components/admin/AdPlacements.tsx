@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -38,19 +37,44 @@ export function AdPlacements() {
   const { data: adPlacements, isLoading: loadingPlacements } = useQuery({
     queryKey: ['adPlacements'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First, fetch the ad placements
+      const { data: placementsData, error: placementsError } = await supabase
         .from('ad_placements')
-        .select(`
-          id,
-          placement_type,
-          time_offset,
-          content:content_id (id, title, type),
-          ad:ad_id (id, title)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
         
-      if (error) throw error;
-      return data || [];
+      if (placementsError) throw placementsError;
+      
+      // If we have placements, fetch the content and ad details
+      if (placementsData && placementsData.length > 0) {
+        const enhancedPlacements = await Promise.all(
+          placementsData.map(async (placement) => {
+            // Fetch content details
+            const { data: contentData } = await supabase
+              .from('content')
+              .select('id, title, type')
+              .eq('id', placement.content_id)
+              .single();
+            
+            // Fetch ad details
+            const { data: adData } = await supabase
+              .from('ads')
+              .select('id, title')
+              .eq('id', placement.ad_id)
+              .single();
+              
+            return {
+              ...placement,
+              content: contentData || { title: 'Unknown', type: 'Unknown' },
+              ad: adData || { title: 'Unknown' }
+            };
+          })
+        );
+        
+        return enhancedPlacements;
+      }
+      
+      return [];
     }
   });
 
