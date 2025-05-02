@@ -107,6 +107,6 @@ const VideoAdBanner = ({ ad }: VideoAdBannerProps) => {
       </div>
     </div>
   );
-};
+}
 
 export default VideoAdBanner;

@@ -7,7 +7,7 @@ interface FeaturedItem {
   id: string;
   title: string;
   backgroundImage: string;
-  type: 'movie' | 'series';
+  type: string; // Changed from 'movie' | 'series' to string to be more flexible
 }
 
 interface FeaturedSliderProps {
