@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, Clock } from "lucide-react";
+import { Play } from "lucide-react";
 
 interface FeaturedItem {
   id: string;
@@ -22,31 +22,22 @@ const FeaturedSlider = ({ items }: FeaturedSliderProps) => {
   const currentItem = items[activeIndex];
 
   return (
-    <div className="relative h-[50vh] min-h-[400px] w-full">
+    <div className="relative h-[200px] w-full">
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${currentItem.backgroundImage})` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-t from-kannyflix-background via-transparent to-transparent"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-kannyflix-background/90 via-transparent to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
       </div>
       
-      <div className="absolute bottom-0 left-0 w-full p-6 text-white z-10">
-        <h1 className="text-4xl font-bold mb-2">{currentItem.title}</h1>
-        <div className="flex items-center space-x-6 mt-6">
-          <Link 
-            to={`/${currentItem.type}/${currentItem.id}`}
-            className="flex items-center justify-center px-6 py-2 bg-kannyflix-green rounded-md text-white font-medium"
-          >
-            Watch Now
-          </Link>
-          <Link 
-            to={`/${currentItem.type}/${currentItem.id}`}
-            className="flex items-center justify-center px-6 py-2 bg-gray-800/80 rounded-md text-white"
-          >
-            + My List
-          </Link>
-        </div>
+      <div className="absolute bottom-0 left-0 w-full p-4 text-white z-10">
+        <h1 className="text-xl font-semibold mb-2">{currentItem.title}</h1>
+        <Link 
+          to={`/${currentItem.type}/${currentItem.id}`}
+          className="flex items-center justify-center w-10 h-10 bg-white rounded-full text-black"
+        >
+          <Play size={20} fill="black" />
+        </Link>
       </div>
 
       {/* Pagination dots */}

@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Category {
   id: string;
@@ -20,23 +21,23 @@ const CategoryFilter = ({ categories, onSelectCategory }: CategoryFilterProps) =
   };
 
   return (
-    <div className="overflow-x-auto pb-2 scrollbar-none">
-      <div className="flex space-x-4 px-4">
+    <ScrollArea className="w-full" orientation="horizontal">
+      <div className="flex space-x-2 px-4 py-2 whitespace-nowrap">
         {categories.map((category) => (
           <button
             key={category.id}
             onClick={() => handleCategoryClick(category.id)}
-            className={`whitespace-nowrap py-2 px-1 text-sm ${
+            className={`py-1 px-3 rounded-full text-sm ${
               activeCategory === category.id
-                ? "category-active"
-                : "text-gray-400"
+                ? "bg-white text-black"
+                : "bg-gray-800 text-gray-300"
             }`}
           >
             {category.name}
           </button>
         ))}
       </div>
-    </div>
+    </ScrollArea>
   );
 };
 

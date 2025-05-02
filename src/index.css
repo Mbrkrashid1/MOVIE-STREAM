@@ -49,35 +49,31 @@
 }
 
 @layer components {
-  .category-active {
-    @apply text-kannyflix-green border-b-2 border-kannyflix-green;
-  }
-
-  .progress-bar {
-    @apply h-1 bg-gray-700 relative overflow-hidden;
-  }
-
-  .progress-bar-fill {
-    @apply absolute left-0 top-0 h-full bg-kannyflix-gold;
-  }
-  
   .nav-item {
     @apply flex flex-col items-center justify-center text-xs text-gray-400;
   }
   
   .nav-item.active {
-    @apply text-kannyflix-green;
+    @apply text-white;
   }
   
-  .movie-card {
-    @apply relative rounded-lg overflow-hidden;
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
   
-  .movie-card-overlay {
-    @apply absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent px-3 py-2;
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
   
-  .badge {
-    @apply px-2 py-1 text-xs rounded-sm font-medium;
+  .aspect-video {
+    aspect-ratio: 16 / 9;
+  }
+  
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }
