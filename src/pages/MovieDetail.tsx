@@ -1,19 +1,21 @@
 
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Download, Play, Share } from "lucide-react";
+import { ArrowLeft, Download, Play, Share, MessageSquare } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import BottomNavigation from "@/components/layout/BottomNavigation";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import VideoPlayer from "@/components/VideoPlayer";
+import CommentSection from "@/components/CommentSection";
 
 const MovieDetail = () => {
   const { id } = useParams();
   const { toast } = useToast();
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showComments, setShowComments] = useState(false);
 
   // Fetch movie data from Supabase
   const { data: movie, isLoading, error } = useQuery({
@@ -27,15 +29,29 @@ const MovieDetail = () => {
         
       if (error) throw error;
       
-      // Record view count
-      await supabase
-        .from('content')
-        .update({ views: (data.views || 0) + 1 })
-        .eq('id', id);
-        
+      // Wait to record view count to avoid refetching causing multiple increments
       return data;
     }
   });
+
+  // Use a separate mutation to increment view count
+  const incrementViewMutation = useMutation({
+    mutationFn: async (contentId: string) => {
+      const { error } = await supabase
+        .from('content')
+        .update({ views: (movie?.views || 0) + 1 })
+        .eq('id', contentId);
+        
+      if (error) throw error;
+    }
+  });
+
+  // Run the view increment once when the movie data is loaded
+  useEffect(() => {
+    if (movie?.id) {
+      incrementViewMutation.mutate(movie.id);
+    }
+  }, [movie?.id]);
 
   // Fetch similar content
   const { data: similarContent } = useQuery({
@@ -48,6 +64,7 @@ const MovieDetail = () => {
         .select('*')
         .eq('category', movie.category)
         .neq('id', id)
+        .filter('is_sample', 'eq', false) // Only show real content
         .limit(5);
         
       if (error) throw error;
@@ -174,6 +191,25 @@ const MovieDetail = () => {
                 {movie.description || "No description available."}
               </p>
             </div>
+            
+            {/* Comments toggle button */}
+            <div className="px-6 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => setShowComments(!showComments)}
+                className="w-full flex items-center justify-center"
+              >
+                <MessageSquare size={18} className="mr-2" />
+                {showComments ? "Hide Comments" : "Show Comments"}
+              </Button>
+            </div>
+            
+            {/* Comments section */}
+            {showComments && (
+              <div className="px-6">
+                <CommentSection contentId={movie.id} />
+              </div>
+            )}
             
             {/* Recommended */}
             {similarContent && similarContent.length > 0 && (

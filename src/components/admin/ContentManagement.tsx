@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { Plus, Pencil, Trash2, Play } from "lucide-react";
+import { useState, useRef, ChangeEvent } from "react";
+import { Plus, Pencil, Trash2, Play, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,16 @@ import {
   TableHeader,
   TableRow 
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +38,13 @@ export function ContentManagement() {
   const queryClient = useQueryClient();
   const [isCreating, setIsCreating] = useState(false);
   const [editingContent, setEditingContent] = useState<any>(null);
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [contentToDelete, setContentToDelete] = useState<any>(null);
+  const fileInputRefThumbnail = useRef<HTMLInputElement>(null);
+  const fileInputRefVideo = useRef<HTMLInputElement>(null);
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -38,7 +55,8 @@ export function ContentManagement() {
     duration: '',
     release_year: new Date().getFullYear().toString(),
     language: 'Hausa',
-    is_featured: false
+    is_featured: false,
+    is_sample: false
   });
 
   // Fetch content from Supabase
@@ -125,12 +143,14 @@ export function ContentManagement() {
       if (error) throw error;
       return id;
     },
-    onSuccess: (id) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['content'] });
       toast({
         title: "Content deleted",
         description: "The content has been deleted successfully."
       });
+      setDeleteDialogOpen(false);
+      setContentToDelete(null);
     },
     onError: (error) => {
       console.error("Error deleting content:", error);
@@ -139,8 +159,104 @@ export function ContentManagement() {
         description: "Failed to delete content. Please try again.",
         variant: "destructive"
       });
+      setDeleteDialogOpen(false);
     }
   });
+
+  const handleUploadThumbnail = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setUploadingThumbnail(true);
+    try {
+      // Generate a unique filename with timestamp and original extension
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-thumbnail.${fileExt}`;
+      const filePath = `thumbnails/${fileName}`;
+      
+      // Upload to Supabase Storage
+      const { error: uploadError, data } = await supabase.storage
+        .from('content')
+        .upload(filePath, file);
+      
+      if (uploadError) throw uploadError;
+      
+      // Get the public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('content')
+        .getPublicUrl(filePath);
+      
+      // Update form data
+      setFormData(prev => ({
+        ...prev,
+        thumbnail_url: publicUrlData.publicUrl
+      }));
+      
+      toast({
+        title: "Thumbnail uploaded",
+        description: "Thumbnail has been uploaded successfully."
+      });
+    } catch (error: any) {
+      console.error("Error uploading thumbnail:", error);
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to upload thumbnail.",
+        variant: "destructive"
+      });
+    } finally {
+      setUploadingThumbnail(false);
+      if (fileInputRefThumbnail.current) fileInputRefThumbnail.current.value = "";
+    }
+  };
+  
+  const handleUploadVideo = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setUploadingVideo(true);
+    try {
+      // Generate a unique filename with timestamp and original extension
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-video.${fileExt}`;
+      const filePath = `videos/${fileName}`;
+      
+      // Upload to Supabase Storage
+      const { error: uploadError, data } = await supabase.storage
+        .from('content')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (uploadError) throw uploadError;
+      
+      // Get the public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('content')
+        .getPublicUrl(filePath);
+      
+      // Update form data
+      setFormData(prev => ({
+        ...prev,
+        video_url: publicUrlData.publicUrl
+      }));
+      
+      toast({
+        title: "Video uploaded",
+        description: "Video has been uploaded successfully."
+      });
+    } catch (error: any) {
+      console.error("Error uploading video:", error);
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to upload video.",
+        variant: "destructive"
+      });
+    } finally {
+      setUploadingVideo(false);
+      if (fileInputRefVideo.current) fileInputRefVideo.current.value = "";
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,7 +264,8 @@ export function ContentManagement() {
     const payload = {
       ...formData,
       duration: parseInt(formData.duration) || null,
-      release_year: parseInt(formData.release_year) || null
+      release_year: parseInt(formData.release_year) || null,
+      is_sample: false // Ensure new content is not marked as sample
     };
 
     if (editingContent) {
@@ -185,9 +302,15 @@ export function ContentManagement() {
       duration: item.duration?.toString() || '',
       release_year: item.release_year?.toString() || new Date().getFullYear().toString(),
       language: item.language || 'Hausa',
-      is_featured: item.is_featured || false
+      is_featured: item.is_featured || false,
+      is_sample: item.is_sample || false
     });
     setIsCreating(true);
+  };
+
+  const confirmDelete = (item: any) => {
+    setContentToDelete(item);
+    setDeleteDialogOpen(true);
   };
 
   const resetForm = () => {
@@ -201,7 +324,8 @@ export function ContentManagement() {
       duration: '',
       release_year: new Date().getFullYear().toString(),
       language: 'Hausa',
-      is_featured: false
+      is_featured: false,
+      is_sample: false
     });
     setEditingContent(null);
     setIsCreating(false);
@@ -213,6 +337,9 @@ export function ContentManagement() {
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
+
+  // Filter out sample content unless in editing mode
+  const filteredContent = content?.filter(item => !item.is_sample) || [];
 
   return (
     <div className="space-y-6">
@@ -293,29 +420,69 @@ export function ContentManagement() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Video Upload */}
               <div className="space-y-2">
-                <Label htmlFor="video_url">Video URL</Label>
-                <Input 
-                  id="video_url" 
-                  name="video_url" 
-                  value={formData.video_url} 
-                  onChange={handleInputChange}
-                  placeholder="https://example.com/video.mp4"
-                  required
-                  className="bg-zinc-800 border-gray-700"
-                />
+                <Label htmlFor="video_url">Video</Label>
+                <div className="flex items-center gap-2">
+                  <Input 
+                    id="video_url" 
+                    name="video_url" 
+                    value={formData.video_url} 
+                    onChange={handleInputChange}
+                    placeholder="https://example.com/video.mp4"
+                    className="bg-zinc-800 border-gray-700"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRefVideo.current?.click()}
+                    disabled={uploadingVideo}
+                    className="whitespace-nowrap"
+                  >
+                    {uploadingVideo ? 'Uploading...' : <><Upload size={16} className="mr-2" /> Upload</>}
+                  </Button>
+                  <input
+                    type="file"
+                    ref={fileInputRefVideo}
+                    onChange={handleUploadVideo}
+                    accept="video/*"
+                    className="hidden"
+                  />
+                </div>
               </div>
+
+              {/* Thumbnail Upload */}
               <div className="space-y-2">
-                <Label htmlFor="thumbnail_url">Thumbnail URL</Label>
-                <Input 
-                  id="thumbnail_url" 
-                  name="thumbnail_url" 
-                  value={formData.thumbnail_url} 
-                  onChange={handleInputChange}
-                  placeholder="https://example.com/thumbnail.jpg"
-                  className="bg-zinc-800 border-gray-700"
-                />
+                <Label htmlFor="thumbnail_url">Thumbnail</Label>
+                <div className="flex items-center gap-2">
+                  <Input 
+                    id="thumbnail_url" 
+                    name="thumbnail_url" 
+                    value={formData.thumbnail_url} 
+                    onChange={handleInputChange}
+                    placeholder="https://example.com/thumbnail.jpg"
+                    className="bg-zinc-800 border-gray-700"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRefThumbnail.current?.click()}
+                    disabled={uploadingThumbnail}
+                    className="whitespace-nowrap"
+                  >
+                    {uploadingThumbnail ? 'Uploading...' : <><Upload size={16} className="mr-2" /> Upload</>}
+                  </Button>
+                  <input
+                    type="file"
+                    ref={fileInputRefThumbnail}
+                    onChange={handleUploadThumbnail}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                </div>
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="duration">Duration (seconds)</Label>
                 <Input 
@@ -392,8 +559,8 @@ export function ContentManagement() {
                   Loading content...
                 </TableCell>
               </TableRow>
-            ) : content && content.length > 0 ? (
-              content.map((item) => (
+            ) : filteredContent.length > 0 ? (
+              filteredContent.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-3">
@@ -432,11 +599,7 @@ export function ContentManagement() {
                       <Button 
                         size="sm" 
                         variant="ghost" 
-                        onClick={() => {
-                          if (window.confirm(`Are you sure you want to delete "${item.title}"?`)) {
-                            deleteContentMutation.mutate(item.id);
-                          }
-                        }}
+                        onClick={() => confirmDelete(item)}
                         className="text-red-500 hover:text-red-600"
                       >
                         <Trash2 size={16} />
@@ -455,6 +618,27 @@ export function ContentManagement() {
           </TableBody>
         </Table>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the content
+              "{contentToDelete?.title}" and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => deleteContentMutation.mutate(contentToDelete?.id)}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

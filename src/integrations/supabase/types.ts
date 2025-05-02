@@ -124,6 +124,41 @@ export type Database = {
         }
         Relationships: []
       }
+      comments: {
+        Row: {
+          comment: string
+          content_id: string
+          created_at: string
+          id: string
+          user_id: string | null
+          username: string
+        }
+        Insert: {
+          comment: string
+          content_id: string
+          created_at?: string
+          id?: string
+          user_id?: string | null
+          username: string
+        }
+        Update: {
+          comment?: string
+          content_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string | null
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content: {
         Row: {
           category: string
@@ -132,6 +167,7 @@ export type Database = {
           duration: number | null
           id: string
           is_featured: boolean | null
+          is_sample: boolean | null
           language: string | null
           release_year: number | null
           thumbnail_url: string | null
@@ -148,6 +184,7 @@ export type Database = {
           duration?: number | null
           id?: string
           is_featured?: boolean | null
+          is_sample?: boolean | null
           language?: string | null
           release_year?: number | null
           thumbnail_url?: string | null
@@ -164,6 +201,7 @@ export type Database = {
           duration?: number | null
           id?: string
           is_featured?: boolean | null
+          is_sample?: boolean | null
           language?: string | null
           release_year?: number | null
           thumbnail_url?: string | null
