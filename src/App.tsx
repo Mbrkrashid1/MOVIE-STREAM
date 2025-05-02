@@ -24,26 +24,28 @@ const queryClient = new QueryClient({
   }
 });
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/movie/:id" element={<MovieDetail />} />
-          <Route path="/series/:id" element={<MovieDetail />} />
-          <Route path="/downloads" element={<Downloads />} />
-          <Route path="/library" element={<Library />} />
-          <Route path="/shorts" element={<Shorts />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/movie/:id" element={<MovieDetail />} />
+            <Route path="/series/:id" element={<MovieDetail />} />
+            <Route path="/downloads" element={<Downloads />} />
+            <Route path="/library" element={<Library />} />
+            <Route path="/shorts" element={<Shorts />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </TooltipProvider>
       </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+    </QueryClientProvider>
+  );
+};
 
 export default App;
