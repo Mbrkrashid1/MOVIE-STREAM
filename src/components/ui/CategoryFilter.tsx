@@ -21,7 +21,7 @@ const CategoryFilter = ({ categories, onSelectCategory }: CategoryFilterProps) =
   };
 
   return (
-    <ScrollArea className="w-full" orientation="horizontal">
+    <ScrollArea className="w-full">
       <div className="flex space-x-2 px-4 py-2 whitespace-nowrap">
         {categories.map((category) => (
           <button

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -41,6 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { format } from "date-fns";
 
 const adFormSchema = z.object({
   title: z.string().min(2, {
@@ -214,8 +216,11 @@ const AdManagement = () => {
                         <FormControl>
                           <Input
                             type="date"
-                            {...field}
-                            onChange={(e) => field.onChange(new Date(e.target.value))}
+                            value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
+                            onChange={(e) => {
+                              const date = e.target.value ? new Date(e.target.value) : new Date();
+                              field.onChange(date);
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -231,8 +236,11 @@ const AdManagement = () => {
                         <FormControl>
                           <Input
                             type="date"
-                            {...field}
-                            onChange={(e) => field.onChange(new Date(e.target.value))}
+                            value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
+                            onChange={(e) => {
+                              const date = e.target.value ? new Date(e.target.value) : new Date();
+                              field.onChange(date);
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
