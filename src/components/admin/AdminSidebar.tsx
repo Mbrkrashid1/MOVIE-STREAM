@@ -1,12 +1,12 @@
 
-import { useState } from "react";
 import { 
   Film, 
   Upload, 
   BarChart3, 
   UserCog, 
   Settings, 
-  Tv
+  Tv,
+  LayoutDashboard
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -18,6 +18,13 @@ const AdminSidebar = ({ activeTab, setActiveTab }: AdminSidebarProps) => {
   return (
     <div className="w-64 bg-zinc-900 border-r border-gray-800">
       <div className="flex flex-col p-4">
+        <button 
+          className={`flex items-center px-3 py-2 rounded-md mb-1 ${activeTab === "dashboard" ? "bg-zinc-800 text-kannyflix-green" : "text-gray-400 hover:bg-zinc-800"}`}
+          onClick={() => setActiveTab("dashboard")}
+        >
+          <LayoutDashboard className="mr-3" size={18} />
+          <span>Dashboard</span>
+        </button>
         <button 
           className={`flex items-center px-3 py-2 rounded-md mb-1 ${activeTab === "movies" ? "bg-zinc-800 text-kannyflix-green" : "text-gray-400 hover:bg-zinc-800"}`}
           onClick={() => setActiveTab("movies")}

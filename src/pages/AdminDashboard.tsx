@@ -5,7 +5,9 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import ContentManagement from "@/components/admin/ContentManagement";
 import AdManagement from "@/components/admin/AdManagement";
 import AdPlacements from "@/components/admin/AdPlacements";
-import PlaceholderTab from "@/components/admin/PlaceholderTab";
+import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
+import UserManagement from "@/components/admin/UserManagement";
+import SettingsPanel from "@/components/admin/SettingsPanel";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("movies");
@@ -19,11 +21,11 @@ const AdminDashboard = () => {
       case "adPlacements":
         return <AdPlacements />;
       case "analytics":
-        return <PlaceholderTab title="Analytics Dashboard" />;
+        return <AnalyticsDashboard />;
       case "users":
-        return <PlaceholderTab title="User Management" />;
+        return <UserManagement />;
       case "settings":
-        return <PlaceholderTab title="Settings" />;
+        return <SettingsPanel />;
       default:
         return <ContentManagement />;
     }
