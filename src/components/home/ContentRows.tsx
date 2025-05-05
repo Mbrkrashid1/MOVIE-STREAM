@@ -1,6 +1,7 @@
 
 import MovieRow from "@/components/ui/MovieRow";
 import { ContentItem } from "@/hooks/useContentData";
+import VideoAdBanner from "@/components/ui/VideoAdBanner";
 
 interface ContentRowsProps {
   movieContent: ContentItem[];

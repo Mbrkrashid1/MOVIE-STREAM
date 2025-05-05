@@ -33,7 +33,7 @@ const RecommendedContent = ({ videosList, videoAds }: RecommendedContentProps) =
                   views={item.views}
                   timeAgo={item.timeAgo}
                   duration={item.duration}
-                  type={item.type}
+                  type={item.type as "movie" | "series"}
                 />
               )}
             />
