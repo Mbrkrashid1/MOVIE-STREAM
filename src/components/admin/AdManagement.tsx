@@ -52,6 +52,8 @@ const adFormSchema = z.object({
   skip_after_seconds: z.number().min(1).max(30).default(5),
 })
 
+type AdFormData = z.infer<typeof adFormSchema>;
+
 const AdManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -72,7 +74,7 @@ const AdManagement = () => {
     },
   });
 
-  const adForm = useForm<z.infer<typeof adFormSchema>>({
+  const adForm = useForm<AdFormData>({
     resolver: zodResolver(adFormSchema),
     defaultValues: {
       title: "",
@@ -87,10 +89,18 @@ const AdManagement = () => {
 
   // Create ad mutation
   const createAdMutation = useMutation({
-    mutationFn: async (values: z.infer<typeof adFormSchema>) => {
+    mutationFn: async (values: AdFormData) => {
       const { data, error } = await supabase
         .from("ads")
-        .insert(values)
+        .insert({
+          title: values.title,
+          description: values.description,
+          thumbnail_url: values.thumbnail_url,
+          video_url: values.video_url,
+          duration: values.duration,
+          is_skippable: values.is_skippable,
+          skip_after_seconds: values.skip_after_seconds,
+        })
         .select();
       
       if (error) throw error;
@@ -117,10 +127,18 @@ const AdManagement = () => {
 
   // Update ad mutation
   const updateAdMutation = useMutation({
-    mutationFn: async ({ id, values }: { id: string; values: z.infer<typeof adFormSchema> }) => {
+    mutationFn: async ({ id, values }: { id: string; values: AdFormData }) => {
       const { data, error } = await supabase
         .from("ads")
-        .update(values)
+        .update({
+          title: values.title,
+          description: values.description,
+          thumbnail_url: values.thumbnail_url,
+          video_url: values.video_url,
+          duration: values.duration,
+          is_skippable: values.is_skippable,
+          skip_after_seconds: values.skip_after_seconds,
+        })
         .eq("id", id)
         .select();
       
@@ -174,7 +192,7 @@ const AdManagement = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof adFormSchema>) => {
+  const onSubmit = (values: AdFormData) => {
     if (editingAd) {
       updateAdMutation.mutate({ id: editingAd.id, values });
     } else {
@@ -461,3 +479,5 @@ const AdManagement = () => {
 };
 
 export default AdManagement;
+
+</edits_to_apply>
