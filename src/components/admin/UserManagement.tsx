@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -165,7 +164,7 @@ const UserManagement = () => {
                   <TableCell>
                     <Badge 
                       variant={
-                        user.status === "active" ? "success" : 
+                        user.status === "active" ? "default" : 
                         user.status === "inactive" ? "secondary" :
                         "destructive"
                       }

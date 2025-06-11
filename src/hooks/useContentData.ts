@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTimeAgo, formatDuration } from "@/utils/formatters";
@@ -86,7 +85,7 @@ export const useContentData = () => {
         views: item.views ? `${item.views}` : "0",
         timeAgo: formatTimeAgo(item.created_at),
         duration: formatDuration(item.duration || 120),
-        type: (item.type === "movie" || item.type === "series") ? item.type : "movie", // Ensure type is either "movie" or "series"
+        type: (item.type === "movie" || item.type === "series") ? item.type as "movie" | "series" : "movie",
       }));
     }
   });
