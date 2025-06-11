@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -479,5 +480,3 @@ const AdManagement = () => {
 };
 
 export default AdManagement;
-
-</edits_to_apply>
