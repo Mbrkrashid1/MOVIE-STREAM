@@ -55,11 +55,10 @@ export function ContentManagement() {
     duration: '',
     release_year: new Date().getFullYear().toString(),
     language: 'Hausa',
-    is_featured: false,
-    is_sample: false
+    is_featured: false
   });
 
-  // Fetch content from Supabase (no sample filtering)
+  // Fetch content from Supabase
   const { data: content, isLoading } = useQuery({
     queryKey: ['content'],
     queryFn: async () => {
@@ -258,104 +257,13 @@ export function ContentManagement() {
     }
   };
 
-  // Add new content
-  const createContentMutation = useMutation({
-    mutationFn: async (newContent: any) => {
-      const { data, error } = await supabase
-        .from('content')
-        .insert(newContent)
-        .select();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['content'] });
-      resetForm();
-      toast({
-        title: "Content created",
-        description: "The content has been created successfully."
-      });
-    },
-    onError: (error) => {
-      console.error("Error creating content:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create content. Please try again.",
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Update content
-  const updateContentMutation = useMutation({
-    mutationFn: async (updatedContent: any) => {
-      const { data, error } = await supabase
-        .from('content')
-        .update(updatedContent)
-        .eq('id', editingContent.id)
-        .select();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['content'] });
-      resetForm();
-      toast({
-        title: "Content updated",
-        description: "The content has been updated successfully."
-      });
-    },
-    onError: (error) => {
-      console.error("Error updating content:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update content. Please try again.",
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Delete content
-  const deleteContentMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('content')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
-      return id;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['content'] });
-      toast({
-        title: "Content deleted",
-        description: "The content has been deleted successfully."
-      });
-      setDeleteDialogOpen(false);
-      setContentToDelete(null);
-    },
-    onError: (error) => {
-      console.error("Error deleting content:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete content. Please try again.",
-        variant: "destructive"
-      });
-      setDeleteDialogOpen(false);
-    }
-  });
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     const payload = {
       ...formData,
       duration: parseInt(formData.duration) || null,
-      release_year: parseInt(formData.release_year) || null,
-      is_sample: false // Ensure new content is not marked as sample
+      release_year: parseInt(formData.release_year) || null
     };
 
     if (editingContent) {
@@ -392,8 +300,7 @@ export function ContentManagement() {
       duration: item.duration?.toString() || '',
       release_year: item.release_year?.toString() || new Date().getFullYear().toString(),
       language: item.language || 'Hausa',
-      is_featured: item.is_featured || false,
-      is_sample: item.is_sample || false
+      is_featured: item.is_featured || false
     });
     setIsCreating(true);
   };
@@ -414,8 +321,7 @@ export function ContentManagement() {
       duration: '',
       release_year: new Date().getFullYear().toString(),
       language: 'Hausa',
-      is_featured: false,
-      is_sample: false
+      is_featured: false
     });
     setEditingContent(null);
     setIsCreating(false);
@@ -673,7 +579,7 @@ export function ContentManagement() {
                   <TableCell>{item.type === 'movie' ? 'Movie' : 'Series'}</TableCell>
                   <TableCell>{item.category}</TableCell>
                   <TableCell>{formatDuration(item.duration)}</TableCell>
-                  <TableCell>{item.views.toLocaleString()}</TableCell>
+                  <TableCell>{item.views?.toLocaleString() || '0'}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button 
