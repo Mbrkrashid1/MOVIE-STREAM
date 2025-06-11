@@ -22,8 +22,8 @@ const Index = () => {
   useEffect(() => {
     // Show welcome toast on initial load
     toast({
-      title: "Welcome to MovieBox!",
-      description: "Discover amazing movies and series.",
+      title: "Welcome to HausaBox!",
+      description: "Discover amazing Hausa movies and series offline & online.",
     });
   }, []);
 
@@ -45,7 +45,7 @@ const Index = () => {
         <div className="pt-16 h-[calc(100vh-120px)] flex items-center justify-center">
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading amazing content...</p>
+            <p className="text-muted-foreground">Loading amazing Hausa content...</p>
           </div>
         </div>
         <BottomNavigation />
@@ -59,8 +59,8 @@ const Index = () => {
     rating: 8.5 + Math.random() * 1.5,
     year: 2020 + Math.floor(Math.random() * 4),
     duration: "2h 15m",
-    genre: "Action",
-    description: "An epic adventure that will take you on a journey through time and space with stunning visuals and compelling characters."
+    genre: "Drama",
+    description: "An epic Hausa story that captures the essence of Northern Nigerian culture with compelling characters and beautiful cinematography."
   })) || [];
 
   const transformedMovies = movieContent.map(item => ({
@@ -71,7 +71,7 @@ const Index = () => {
     rating: 7.0 + Math.random() * 2.5,
     year: 2018 + Math.floor(Math.random() * 6),
     duration: item.duration,
-    genre: "Action",
+    genre: "Drama",
     isNew: Math.random() > 0.7
   }));
 
@@ -120,7 +120,7 @@ const Index = () => {
           {/* Trending Now */}
           {trending.length > 0 && (
             <MovieBoxRow 
-              title="🔥 Trending Now" 
+              title="🔥 Trending Hausa Content" 
               movies={trending}
               priority={true}
             />
@@ -129,7 +129,7 @@ const Index = () => {
           {/* Recently Added */}
           {recentlyAdded.length > 0 && (
             <MovieBoxRow 
-              title="✨ Recently Added" 
+              title="✨ Fresh Uploads" 
               movies={recentlyAdded}
             />
           )}
@@ -147,7 +147,7 @@ const Index = () => {
           {/* Popular Movies */}
           {transformedMovies.length > 0 && (
             <MovieBoxRow 
-              title="🎬 Popular Movies" 
+              title="🎬 Popular Hausa Movies" 
               movies={transformedMovies.slice(0, 12)}
               viewAllLink="/movies"
             />
@@ -156,7 +156,7 @@ const Index = () => {
           {/* Latest Series */}
           {transformedSeries.length > 0 && (
             <MovieBoxRow 
-              title="📺 Latest Series" 
+              title="📺 Kannywood Series" 
               movies={transformedSeries.slice(0, 12)}
               viewAllLink="/series"
             />

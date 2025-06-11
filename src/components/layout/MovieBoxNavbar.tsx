@@ -1,152 +1,77 @@
 
-import { useState, useEffect } from "react";
-import { Search, Menu, User, Bell, X } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Search, Bell, Menu } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useState } from "react";
 
 const MovieBoxNavbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const location = useLocation();
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const navigation = [
-    { name: 'Home', path: '/' },
-    { name: 'Movies', path: '/movies' },
-    { name: 'Series', path: '/series' },
-    { name: 'Shorts', path: '/shorts' },
-    { name: 'Library', path: '/library' },
-  ];
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled ? 'bg-background/95 backdrop-blur-md border-b border-border' : 'bg-transparent'
-    }`}>
-      <div className="container mx-auto px-6">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">M</span>
-            </div>
-            <span className="text-xl font-bold text-foreground">MovieBox</span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navigation.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  location.pathname === item.path 
-                    ? 'text-primary' 
-                    : 'text-muted-foreground'
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
+    <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+      <div className="flex items-center justify-between px-6 py-3">
+        {/* Logo */}
+        <Link to="/" className="flex items-center">
+          <div className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+            HausaBox
           </div>
+        </Link>
 
-          {/* Search and Actions */}
-          <div className="flex items-center space-x-4">
-            {/* Search */}
-            <div className="relative">
-              {isSearchOpen ? (
-                <div className="flex items-center space-x-2">
-                  <Input
-                    type="text"
-                    placeholder="Search movies, series..."
-                    className="w-64 bg-card border-border focus:border-primary"
-                    autoFocus
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setIsSearchOpen(false)}
-                  >
-                    <X size={20} />
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsSearchOpen(true)}
-                  className="text-muted-foreground hover:text-primary"
-                >
-                  <Search size={20} />
-                </Button>
-              )}
-            </div>
-
-            {/* Notifications */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground hover:text-primary relative"
-            >
-              <Bell size={20} />
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></div>
-            </Button>
-
-            {/* Profile */}
-            <Link to="/profile">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-primary"
-              >
-                <User size={20} />
-              </Button>
-            </Link>
-
-            {/* Mobile Menu Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden text-muted-foreground hover:text-primary"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-            </Button>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden absolute top-16 left-0 right-0 bg-card border border-border rounded-b-lg shadow-xl">
-            <div className="p-4 space-y-4">
-              {navigation.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`block text-sm font-medium transition-colors hover:text-primary ${
-                    location.pathname === item.path 
-                      ? 'text-primary' 
-                      : 'text-muted-foreground'
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              ))}
+        {/* Search Bar - Desktop */}
+        {!isSearchOpen && (
+          <div className="hidden md:flex items-center flex-1 max-w-md mx-6">
+            <div className="relative w-full">
+              <input
+                type="text"
+                placeholder="Search Hausa movies, series..."
+                className="w-full bg-muted rounded-full py-2 px-4 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
             </div>
           </div>
         )}
+
+        {/* Mobile Search Bar */}
+        {isSearchOpen && (
+          <div className="flex items-center flex-1 max-w-md mx-6 md:hidden">
+            <div className="relative w-full">
+              <input
+                type="text"
+                placeholder="Search content..."
+                className="w-full bg-muted rounded-full py-2 px-4 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                autoFocus
+              />
+              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+            </div>
+          </div>
+        )}
+
+        {/* Right Icons */}
+        <div className="flex items-center space-x-4">
+          {/* Mobile Search Toggle */}
+          <button 
+            className="md:hidden"
+            onClick={() => setIsSearchOpen(!isSearchOpen)}
+          >
+            <Search size={20} className="text-muted-foreground hover:text-primary transition-colors" />
+          </button>
+
+          {/* Notifications */}
+          <button className="relative">
+            <Bell size={20} className="text-muted-foreground hover:text-primary transition-colors" />
+            <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+              3
+            </span>
+          </button>
+
+          {/* Menu */}
+          <Link to="/profile">
+            <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center hover:bg-primary/30 transition-colors">
+              <Menu size={16} className="text-primary" />
+            </div>
+          </Link>
+        </div>
       </div>
-    </nav>
+    </div>
   );
 };
 

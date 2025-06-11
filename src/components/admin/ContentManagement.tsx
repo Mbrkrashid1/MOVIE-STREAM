@@ -59,7 +59,7 @@ export function ContentManagement() {
     is_sample: false
   });
 
-  // Fetch content from Supabase
+  // Fetch content from Supabase (no sample filtering)
   const { data: content, isLoading } = useQuery({
     queryKey: ['content'],
     queryFn: async () => {
@@ -258,6 +258,96 @@ export function ContentManagement() {
     }
   };
 
+  // Add new content
+  const createContentMutation = useMutation({
+    mutationFn: async (newContent: any) => {
+      const { data, error } = await supabase
+        .from('content')
+        .insert(newContent)
+        .select();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['content'] });
+      resetForm();
+      toast({
+        title: "Content created",
+        description: "The content has been created successfully."
+      });
+    },
+    onError: (error) => {
+      console.error("Error creating content:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create content. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Update content
+  const updateContentMutation = useMutation({
+    mutationFn: async (updatedContent: any) => {
+      const { data, error } = await supabase
+        .from('content')
+        .update(updatedContent)
+        .eq('id', editingContent.id)
+        .select();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['content'] });
+      resetForm();
+      toast({
+        title: "Content updated",
+        description: "The content has been updated successfully."
+      });
+    },
+    onError: (error) => {
+      console.error("Error updating content:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update content. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Delete content
+  const deleteContentMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('content')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['content'] });
+      toast({
+        title: "Content deleted",
+        description: "The content has been deleted successfully."
+      });
+      setDeleteDialogOpen(false);
+      setContentToDelete(null);
+    },
+    onError: (error) => {
+      console.error("Error deleting content:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete content. Please try again.",
+        variant: "destructive"
+      });
+      setDeleteDialogOpen(false);
+    }
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -338,23 +428,20 @@ export function ContentManagement() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  // Filter out sample content unless in editing mode
-  const filteredContent = content?.filter(item => !item.is_sample) || [];
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Content Management</h2>
         <Button 
           onClick={() => setIsCreating(!isCreating)} 
-          className={isCreating ? "bg-gray-600" : "bg-kannyflix-green"}
+          className={isCreating ? "bg-gray-600" : "bg-primary"}
         >
           {isCreating ? "Cancel" : <><Plus size={18} className="mr-2" /> Add New Content</>}
         </Button>
       </div>
 
       {isCreating && (
-        <div className="bg-zinc-900 p-6 rounded-lg border border-gray-800 mb-6">
+        <div className="bg-card p-6 rounded-lg border border-border mb-6">
           <h3 className="text-lg font-medium mb-4">{editingContent ? 'Edit Content' : 'Add New Content'}</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -367,7 +454,7 @@ export function ContentManagement() {
                   onChange={handleInputChange}
                   placeholder="Content Title"
                   required
-                  className="bg-zinc-800 border-gray-700"
+                  className="bg-input border-border"
                 />
               </div>
               <div className="space-y-2">
@@ -376,7 +463,7 @@ export function ContentManagement() {
                   value={formData.type} 
                   onValueChange={(value) => handleSelectChange('type', value)}
                 >
-                  <SelectTrigger className="bg-zinc-800 border-gray-700">
+                  <SelectTrigger className="bg-input border-border">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -391,7 +478,7 @@ export function ContentManagement() {
                   value={formData.category} 
                   onValueChange={(value) => handleSelectChange('category', value)}
                 >
-                  <SelectTrigger className="bg-zinc-800 border-gray-700">
+                  <SelectTrigger className="bg-input border-border">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -410,7 +497,7 @@ export function ContentManagement() {
                   value={formData.language} 
                   onValueChange={(value) => handleSelectChange('language', value)}
                 >
-                  <SelectTrigger className="bg-zinc-800 border-gray-700">
+                  <SelectTrigger className="bg-input border-border">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -431,7 +518,7 @@ export function ContentManagement() {
                     value={formData.video_url} 
                     onChange={handleInputChange}
                     placeholder="https://example.com/video.mp4"
-                    className="bg-zinc-800 border-gray-700"
+                    className="bg-input border-border"
                   />
                   <Button
                     type="button"
@@ -462,7 +549,7 @@ export function ContentManagement() {
                     value={formData.thumbnail_url} 
                     onChange={handleInputChange}
                     placeholder="https://example.com/thumbnail.jpg"
-                    className="bg-zinc-800 border-gray-700"
+                    className="bg-input border-border"
                   />
                   <Button
                     type="button"
@@ -492,7 +579,7 @@ export function ContentManagement() {
                   value={formData.duration} 
                   onChange={handleInputChange}
                   placeholder="Duration in seconds"
-                  className="bg-zinc-800 border-gray-700"
+                  className="bg-input border-border"
                 />
               </div>
               <div className="space-y-2">
@@ -504,7 +591,7 @@ export function ContentManagement() {
                   value={formData.release_year} 
                   onChange={handleInputChange}
                   placeholder="Release year"
-                  className="bg-zinc-800 border-gray-700"
+                  className="bg-input border-border"
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
@@ -515,7 +602,7 @@ export function ContentManagement() {
                   value={formData.description} 
                   onChange={handleInputChange}
                   placeholder="Content description"
-                  className="bg-zinc-800 border-gray-700"
+                  className="bg-input border-border"
                 />
               </div>
               <div className="space-y-2 flex items-center">
@@ -532,7 +619,7 @@ export function ContentManagement() {
             </div>
             <div className="flex justify-end gap-2 mt-4">
               <Button type="button" variant="outline" onClick={resetForm}>Cancel</Button>
-              <Button type="submit" className="bg-kannyflix-green">
+              <Button type="submit" className="bg-primary">
                 {editingContent ? 'Update Content' : 'Add Content'}
               </Button>
             </div>
@@ -540,7 +627,7 @@ export function ContentManagement() {
         </div>
       )}
 
-      <div className="bg-zinc-900 rounded-lg border border-gray-800 overflow-hidden">
+      <div className="bg-card rounded-lg border border-border overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -559,8 +646,8 @@ export function ContentManagement() {
                   Loading content...
                 </TableCell>
               </TableRow>
-            ) : filteredContent.length > 0 ? (
-              filteredContent.map((item) => (
+            ) : content && content.length > 0 ? (
+              content.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-3">
@@ -573,13 +660,13 @@ export function ContentManagement() {
                           />
                         </div>
                       ) : (
-                        <div className="w-12 h-8 bg-gray-700 rounded flex items-center justify-center">
+                        <div className="w-12 h-8 bg-muted rounded flex items-center justify-center">
                           <Play size={16} />
                         </div>
                       )}
                       <div>
                         <div className="font-medium">{item.title}</div>
-                        <div className="text-xs text-gray-400">{item.release_year}</div>
+                        <div className="text-xs text-muted-foreground">{item.release_year}</div>
                       </div>
                     </div>
                   </TableCell>
@@ -610,7 +697,7 @@ export function ContentManagement() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   No content found. Add your first movie or series to get started.
                 </TableCell>
               </TableRow>

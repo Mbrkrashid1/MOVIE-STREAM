@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTimeAgo, formatDuration } from "@/utils/formatters";
@@ -33,60 +34,36 @@ export const useContentData = () => {
 
       if (error) throw error;
       
-      if (!data || data.length === 0) {
-        // Fallback to mock data
-        return [
-          {
-            id: "weak-hero-class-2",
-            title: "Weak Hero Class 2",
-            backgroundImage: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81",
-            type: "series",
-          },
-          {
-            id: "all-the-queens-men",
-            title: "All The Queen's Men",
-            backgroundImage: "https://images.unsplash.com/photo-1500673922987-e212871fec22",
-            type: "series",
-          },
-        ];
-      }
-
-      return data.map(item => ({
+      return data?.map(item => ({
         id: item.id,
         title: item.title,
         backgroundImage: item.thumbnail_url || "https://images.unsplash.com/photo-1605810230434-7631ac76ec81",
         type: item.type,
-      }));
+      })) || [];
     }
   });
 
-  // Fetch video content
+  // Fetch video content (all content, no sample filtering)
   const { data: videosList, isLoading: videosLoading } = useQuery({
     queryKey: ["videos"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("content")
         .select("*")
-        .order("created_at", { ascending: false })
-        .limit(15);
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       
-      if (!data || data.length === 0) {
-        // Use mock data for now
-        return [];
-      }
-
-      return data.map(item => ({
+      return data?.map(item => ({
         id: item.id,
         title: item.title,
         thumbnail: item.thumbnail_url || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5",
-        channelName: "KannyFlix",
+        channelName: "HausaBox",
         views: item.views ? `${item.views}` : "0",
         timeAgo: formatTimeAgo(item.created_at),
         duration: formatDuration(item.duration || 120),
         type: (item.type === "movie" || item.type === "series") ? item.type as "movie" | "series" : "movie",
-      }));
+      })) || [];
     }
   });
 
