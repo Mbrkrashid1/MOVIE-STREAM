@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -91,7 +90,7 @@ const AdManagement = () => {
     mutationFn: async (values: z.infer<typeof adFormSchema>) => {
       const { data, error } = await supabase
         .from("ads")
-        .insert([values])
+        .insert(values)
         .select();
       
       if (error) throw error;
