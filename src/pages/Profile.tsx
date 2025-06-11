@@ -15,7 +15,7 @@ const ProfileItem = ({ icon, title, to, onClick, rightElement }: {
   rightElement?: React.ReactNode 
 }) => {
   const content = (
-    <div className="flex items-center py-4 border-b border-border">
+    <div className="flex items-center py-4 border-b border-border/20">
       <div className="mr-4 text-muted-foreground">
         {icon}
       </div>
@@ -61,25 +61,27 @@ const Profile = () => {
   };
 
   return (
-    <div className="pb-24 bg-background min-h-screen">
+    <div className="pb-24 bg-zinc-950 min-h-screen">
       <Navbar />
       
       <div className="mt-14 p-4">
-        {/* Profile header */}
-        <div className="flex items-center mb-8">
-          <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mr-4 border-2 border-primary/30">
-            <User size={24} className="text-primary" />
-          </div>
-          <div className="flex-1">
-            <h2 className="text-xl font-bold">HausaBox User</h2>
-            <span className="text-muted-foreground text-sm">Free Account</span>
+        {/* Profile header with transparent overlay */}
+        <div className="relative mb-8 p-6 rounded-xl bg-gradient-to-br from-primary/10 via-transparent to-background/5 backdrop-blur-sm border border-primary/20">
+          <div className="flex items-center">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center mr-4 border-2 border-primary/20 backdrop-blur-sm">
+              <User size={24} className="text-primary" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-white">HausaBox User</h2>
+              <span className="text-muted-foreground text-sm">Free Account</span>
+            </div>
           </div>
         </div>
 
         {/* Offline & Download Settings */}
         <div className="mb-8">
-          <h3 className="text-lg font-semibold mb-4">Download & Offline</h3>
-          <div className="bg-card rounded-lg border border-border">
+          <h3 className="text-lg font-semibold mb-4 text-white">Download & Offline</h3>
+          <div className="bg-card/80 backdrop-blur-sm rounded-lg border border-border/30">
             <ProfileItem 
               icon={offlineMode ? <WifiOff size={20} /> : <Wifi size={20} />} 
               title="Offline Mode" 
@@ -110,12 +112,12 @@ const Profile = () => {
         
         {/* Watch History */}
         <div className="mb-8">
-          <h3 className="text-lg font-semibold mb-4">Watch History</h3>
-          <div className="bg-card rounded-lg p-4 border border-border">
+          <h3 className="text-lg font-semibold mb-4 text-white">Watch History</h3>
+          <div className="bg-card/80 backdrop-blur-sm rounded-lg p-4 border border-border/30">
             <Link to="/history" className="flex items-center justify-between">
               <div className="flex items-center">
                 <Clock size={20} className="text-muted-foreground mr-3" />
-                <span>Continue Watching</span>
+                <span className="text-white">Continue Watching</span>
               </div>
               <span className="text-muted-foreground">›</span>
             </Link>
@@ -124,8 +126,8 @@ const Profile = () => {
         
         {/* Content section */}
         <div className="mb-8">
-          <h3 className="text-lg font-semibold mb-4">My Content</h3>
-          <div className="bg-card rounded-lg border border-border">
+          <h3 className="text-lg font-semibold mb-4 text-white">My Content</h3>
+          <div className="bg-card/80 backdrop-blur-sm rounded-lg border border-border/30">
             <ProfileItem 
               icon={<BookmarkCheck size={20} />} 
               title="My Watchlist" 
@@ -146,8 +148,8 @@ const Profile = () => {
         
         {/* Preferences section */}
         <div className="mb-8">
-          <h3 className="text-lg font-semibold mb-4">Settings & Support</h3>
-          <div className="bg-card rounded-lg border border-border">
+          <h3 className="text-lg font-semibold mb-4 text-white">Settings & Support</h3>
+          <div className="bg-card/80 backdrop-blur-sm rounded-lg border border-border/30">
             <ProfileItem 
               icon={<Settings size={20} />} 
               title="App Settings" 

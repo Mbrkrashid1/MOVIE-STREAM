@@ -1,6 +1,8 @@
 
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
   TableBody,
@@ -34,15 +36,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
-import { Checkbox } from "@/components/ui/checkbox"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { Play, Edit, Trash2, Upload, Eye, Clock } from "lucide-react";
 
 const adFormSchema = z.object({
   title: z.string().min(2, {
@@ -51,101 +46,198 @@ const adFormSchema = z.object({
   description: z.string().min(10, {
     message: "Description must be at least 10 characters.",
   }),
-  imageUrl: z.string().url({ message: "Invalid URL." }),
-  targetUrl: z.string().url({ message: "Invalid URL." }),
-  startDate: z.date(),
-  endDate: z.date(),
-  isActive: z.boolean().default(false),
-  adCategory: z.enum(['movie', 'series', 'kannywood', 'music']),
-  devices: z.array(z.string()).optional(),
+  thumbnail_url: z.string().url({ message: "Invalid URL." }),
+  video_url: z.string().url({ message: "Invalid URL." }),
+  duration: z.number().min(1, { message: "Duration must be at least 1 second." }),
+  is_skippable: z.boolean().default(true),
+  skip_after_seconds: z.number().min(1).max(30).default(5),
 })
 
 const AdManagement = () => {
   const { toast } = useToast();
-  const [ads, setAds] = useState([
-    {
-      id: "1",
-      title: "New Movie Ad",
-      description: "Check out our latest movie!",
-      imageUrl: "https://via.placeholder.com/150",
-      targetUrl: "https://example.com/movie",
-      startDate: new Date(),
-      endDate: new Date(),
-      isActive: true,
-      adCategory: 'movie',
-      devices: ['desktop', 'mobile'],
+  const queryClient = useQueryClient();
+  const [editingAd, setEditingAd] = useState<any>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Fetch ads from Supabase
+  const { data: ads, isLoading } = useQuery({
+    queryKey: ["ads"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ads")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
     },
-    {
-      id: "2",
-      title: "Series Promotion",
-      description: "Don't miss the new series episode.",
-      imageUrl: "https://via.placeholder.com/150",
-      targetUrl: "https://example.com/series",
-      startDate: new Date(),
-      endDate: new Date(),
-      isActive: false,
-      adCategory: 'series',
-      devices: ['mobile'],
-    },
-  ]);
+  });
 
   const adForm = useForm<z.infer<typeof adFormSchema>>({
     resolver: zodResolver(adFormSchema),
     defaultValues: {
       title: "",
       description: "",
-      imageUrl: "",
-      targetUrl: "",
-      startDate: new Date(),
-      endDate: new Date(),
-      isActive: false,
-      adCategory: 'movie',
-      devices: [],
+      thumbnail_url: "",
+      video_url: "",
+      duration: 30,
+      is_skippable: true,
+      skip_after_seconds: 5,
     },
   })
 
+  // Create ad mutation
+  const createAdMutation = useMutation({
+    mutationFn: async (values: z.infer<typeof adFormSchema>) => {
+      const { data, error } = await supabase
+        .from("ads")
+        .insert([values])
+        .select();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ads"] });
+      toast({
+        title: "Success!",
+        description: "Ad created successfully.",
+      });
+      setIsDialogOpen(false);
+      adForm.reset();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to create ad. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error creating ad:", error);
+    },
+  });
+
+  // Update ad mutation
+  const updateAdMutation = useMutation({
+    mutationFn: async ({ id, values }: { id: string; values: z.infer<typeof adFormSchema> }) => {
+      const { data, error } = await supabase
+        .from("ads")
+        .update(values)
+        .eq("id", id)
+        .select();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ads"] });
+      toast({
+        title: "Success!",
+        description: "Ad updated successfully.",
+      });
+      setIsDialogOpen(false);
+      setEditingAd(null);
+      adForm.reset();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update ad. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error updating ad:", error);
+    },
+  });
+
+  // Delete ad mutation
+  const deleteAdMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("ads")
+        .delete()
+        .eq("id", id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ads"] });
+      toast({
+        title: "Success!",
+        description: "Ad deleted successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete ad. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error deleting ad:", error);
+    },
+  });
+
   const onSubmit = (values: z.infer<typeof adFormSchema>) => {
-    // Here you would handle the actual submission of the form data
-    // For example, sending it to an API.
-    console.log(values)
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-        </pre>
-      ),
-    })
+    if (editingAd) {
+      updateAdMutation.mutate({ id: editingAd.id, values });
+    } else {
+      createAdMutation.mutate(values);
+    }
   }
 
-  const deviceOptions = [
-    { label: "Desktop", value: "desktop" },
-    { label: "Mobile", value: "mobile" },
-    { label: "Tablet", value: "tablet" },
-  ]
-
-  const handleDeleteAd = (adId: string) => {
-    // Delete the ad logic here
-    console.log("Deleting ad:", adId);
-    toast({
-      title: "Ad deleted",
-      description: "The ad has been successfully deleted.",
+  const handleEdit = (ad: any) => {
+    setEditingAd(ad);
+    adForm.reset({
+      title: ad.title,
+      description: ad.description,
+      thumbnail_url: ad.thumbnail_url,
+      video_url: ad.video_url,
+      duration: ad.duration,
+      is_skippable: ad.is_skippable,
+      skip_after_seconds: ad.skip_after_seconds,
     });
+    setIsDialogOpen(true);
   };
 
+  const handleDelete = (adId: string) => {
+    if (confirm("Are you sure you want to delete this ad?")) {
+      deleteAdMutation.mutate(adId);
+    }
+  };
+
+  const formatDuration = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <div className="mb-4 flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-white">Ad Management</h1>
-        <Dialog>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Ad Management</h1>
+          <p className="text-gray-400 mt-1">Create and manage your advertising campaigns</p>
+        </div>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline">Add Ad</Button>
+            <Button className="bg-primary hover:bg-primary/90">
+              <Upload className="mr-2" size={16} />
+              Upload Ad
+            </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[500px] bg-card border-border">
             <DialogHeader>
-              <DialogTitle>Add a new advertisement</DialogTitle>
+              <DialogTitle className="text-white">
+                {editingAd ? "Edit Advertisement" : "Upload New Advertisement"}
+              </DialogTitle>
               <DialogDescription>
-                Create a new ad to promote content on KannyFlix.
+                {editingAd ? "Update your advertisement details." : "Create a new ad for HausaBox platform."}
               </DialogDescription>
             </DialogHeader>
             <Form {...adForm}>
@@ -157,7 +249,7 @@ const AdManagement = () => {
                     <FormItem>
                       <FormLabel>Title</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ad Title" {...field} />
+                        <Input placeholder="Enter ad title" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -171,7 +263,7 @@ const AdManagement = () => {
                       <FormLabel>Description</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Ad Description"
+                          placeholder="Enter ad description"
                           className="resize-none"
                           {...field}
                         />
@@ -182,12 +274,12 @@ const AdManagement = () => {
                 />
                 <FormField
                   control={adForm.control}
-                  name="imageUrl"
+                  name="thumbnail_url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Image URL</FormLabel>
+                      <FormLabel>Thumbnail URL</FormLabel>
                       <FormControl>
-                        <Input placeholder="Image URL" {...field} />
+                        <Input placeholder="https://example.com/thumbnail.jpg" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -195,32 +287,30 @@ const AdManagement = () => {
                 />
                 <FormField
                   control={adForm.control}
-                  name="targetUrl"
+                  name="video_url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Target URL</FormLabel>
+                      <FormLabel>Video URL</FormLabel>
                       <FormControl>
-                        <Input placeholder="Target URL" {...field} />
+                        <Input placeholder="https://example.com/video.mp4" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <div className="flex space-x-2">
+                <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={adForm.control}
-                    name="startDate"
+                    name="duration"
                     render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <FormLabel>Start Date</FormLabel>
+                      <FormItem>
+                        <FormLabel>Duration (seconds)</FormLabel>
                         <FormControl>
-                          <Input
-                            type="date"
-                            value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
-                            onChange={(e) => {
-                              const date = e.target.value ? new Date(e.target.value) : new Date();
-                              field.onChange(date);
-                            }}
+                          <Input 
+                            type="number" 
+                            placeholder="30"
+                            {...field}
+                            onChange={(e) => field.onChange(parseInt(e.target.value))}
                           />
                         </FormControl>
                         <FormMessage />
@@ -229,18 +319,16 @@ const AdManagement = () => {
                   />
                   <FormField
                     control={adForm.control}
-                    name="endDate"
+                    name="skip_after_seconds"
                     render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <FormLabel>End Date</FormLabel>
+                      <FormItem>
+                        <FormLabel>Skip after (seconds)</FormLabel>
                         <FormControl>
-                          <Input
-                            type="date"
-                            value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
-                            onChange={(e) => {
-                              const date = e.target.value ? new Date(e.target.value) : new Date();
-                              field.onChange(date);
-                            }}
+                          <Input 
+                            type="number" 
+                            placeholder="5"
+                            {...field}
+                            onChange={(e) => field.onChange(parseInt(e.target.value))}
                           />
                         </FormControl>
                         <FormMessage />
@@ -250,13 +338,13 @@ const AdManagement = () => {
                 </div>
                 <FormField
                   control={adForm.control}
-                  name="isActive"
+                  name="is_skippable"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
-                        <FormLabel>Active</FormLabel>
+                        <FormLabel>Skippable Ad</FormLabel>
                         <FormDescription>
-                          Enable or disable the ad.
+                          Allow users to skip this ad after the specified time.
                         </FormDescription>
                       </div>
                       <FormControl>
@@ -268,96 +356,107 @@ const AdManagement = () => {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={adForm.control}
-                  name="adCategory"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Category</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a category" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="movie">Movie</SelectItem>
-                          <SelectItem value="series">Series</SelectItem>
-                          <SelectItem value="kannywood">Kannywood</SelectItem>
-                          <SelectItem value="music">Music</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={adForm.control}
-                  name="devices"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Devices</FormLabel>
-                      <div className="flex flex-col space-y-2">
-                        {deviceOptions.map((device) => (
-                          <div key={device.value} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={device.value}
-                              checked={field.value?.includes(device.value)}
-                              onCheckedChange={(checked) => {
-                                return checked ? field.onChange([...field.value || [], device.value]) : field.onChange(field.value?.filter((value) => value !== device.value))
-                              }}
-                            />
-                            <label
-                              htmlFor={device.value}
-                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                            >
-                              {device.label}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit">Submit</Button>
+                <div className="flex justify-end space-x-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsDialogOpen(false);
+                      setEditingAd(null);
+                      adForm.reset();
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="bg-primary hover:bg-primary/90">
+                    {editingAd ? "Update Ad" : "Upload Ad"}
+                  </Button>
+                </div>
               </form>
             </Form>
           </DialogContent>
         </Dialog>
       </div>
 
-      <Table>
-        <TableCaption>A list of your advertisements.</TableCaption>
-        <TableHead>
-          <TableRow>
-            <TableHead className="w-[100px]">Image</TableHead>
-            <TableHead>Title</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {ads.map((ad) => (
-            <TableRow key={ad.id}>
-              <TableCell>
-                <img src={ad.imageUrl} alt={ad.title} className="w-24 h-16 object-cover rounded" />
-              </TableCell>
-              <TableCell className="font-medium">{ad.title}</TableCell>
-              <TableCell>{ad.description}</TableCell>
-              <TableCell>{ad.adCategory}</TableCell>
-              <TableCell>{ad.isActive ? "Active" : "Inactive"}</TableCell>
-              <TableCell className="text-right">
-                <Button variant="ghost" size="sm">View</Button>
-                <Button variant="ghost" size="sm">Edit</Button>
-                <Button variant="destructive" size="sm" onClick={() => handleDeleteAd(ad.id)}>Delete</Button>
-              </TableCell>
+      <div className="bg-card rounded-lg border border-border">
+        <Table>
+          <TableCaption>
+            {ads?.length === 0 ? "No advertisements found. Upload your first ad to get started!" : `Managing ${ads?.length} advertisements`}
+          </TableCaption>
+          <TableHead>
+            <TableRow className="border-border">
+              <TableHead className="w-[120px]">Preview</TableHead>
+              <TableHead>Title</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Duration</TableHead>
+              <TableHead>Skippable</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHead>
+          <TableBody>
+            {ads?.map((ad) => (
+              <TableRow key={ad.id} className="border-border hover:bg-muted/50">
+                <TableCell>
+                  <div className="relative w-20 h-12 rounded overflow-hidden bg-muted">
+                    {ad.thumbnail_url ? (
+                      <img 
+                        src={ad.thumbnail_url} 
+                        alt={ad.title} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Play size={16} className="text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell className="font-medium text-white">{ad.title}</TableCell>
+                <TableCell className="max-w-xs truncate text-muted-foreground">
+                  {ad.description}
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center text-muted-foreground">
+                    <Clock size={14} className="mr-1" />
+                    {formatDuration(ad.duration)}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={ad.is_skippable ? "secondary" : "destructive"}>
+                    {ad.is_skippable ? `Skip after ${ad.skip_after_seconds}s` : "Non-skippable"}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end space-x-2">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => window.open(ad.video_url, '_blank')}
+                    >
+                      <Eye size={14} />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleEdit(ad)}
+                    >
+                      <Edit size={14} />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleDelete(ad.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };
