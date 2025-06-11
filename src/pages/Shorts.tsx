@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/layout/Navbar";
 import BottomNavigation from "@/components/layout/BottomNavigation";
@@ -56,7 +55,7 @@ const Shorts = () => {
         id: item.id,
         title: item.title,
         description: item.description,
-        creator: item.genre || "HausaBox User",
+        creator: item.category || "HausaBox User",
         views: `${(item.views || 0).toLocaleString()}`,
         thumbnail: item.thumbnail_url || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5",
         videoUrl: item.video_url,
