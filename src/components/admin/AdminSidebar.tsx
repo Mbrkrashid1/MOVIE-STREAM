@@ -6,7 +6,8 @@ import {
   UserCog, 
   Settings, 
   Tv,
-  LayoutDashboard
+  LayoutDashboard,
+  Megaphone
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -33,11 +34,18 @@ const AdminSidebar = ({ activeTab, setActiveTab }: AdminSidebarProps) => {
           <span>Content Library</span>
         </button>
         <button 
+          className={`flex items-center px-3 py-2 rounded-md mb-1 ${activeTab === "adStudio" ? "bg-zinc-800 text-kannyflix-green" : "text-gray-400 hover:bg-zinc-800"}`}
+          onClick={() => setActiveTab("adStudio")}
+        >
+          <Megaphone className="mr-3" size={18} />
+          <span>Ad Studio</span>
+        </button>
+        <button 
           className={`flex items-center px-3 py-2 rounded-md mb-1 ${activeTab === "ads" ? "bg-zinc-800 text-kannyflix-green" : "text-gray-400 hover:bg-zinc-800"}`}
           onClick={() => setActiveTab("ads")}
         >
           <Tv className="mr-3" size={18} />
-          <span>Ads Management</span>
+          <span>Ad Management</span>
         </button>
         <button 
           className={`flex items-center px-3 py-2 rounded-md mb-1 ${activeTab === "adPlacements" ? "bg-zinc-800 text-kannyflix-green" : "text-gray-400 hover:bg-zinc-800"}`}

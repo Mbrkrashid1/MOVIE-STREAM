@@ -1,10 +1,9 @@
 
-import { Settings, List, Download, Clock, BookmarkCheck, HelpCircle, Mail, Wifi, WifiOff, User, CreditCard } from "lucide-react";
+import { Settings, List, Download, Clock, BookmarkCheck, HelpCircle, Mail, Wifi, WifiOff, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import BottomNavigation from "@/components/layout/BottomNavigation";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 
@@ -40,7 +39,6 @@ const Profile = () => {
   const { toast } = useToast();
   const [offlineMode, setOfflineMode] = useState(false);
   const [autoDownload, setAutoDownload] = useState(false);
-  const [dataUsage, setDataUsage] = useState('wifi-only');
 
   const handleOfflineModeToggle = (enabled: boolean) => {
     setOfflineMode(enabled);
@@ -62,13 +60,6 @@ const Profile = () => {
     });
   };
 
-  const handleUpgradeToVIP = () => {
-    toast({
-      title: "VIP Upgrade",
-      description: "Redirecting to subscription page...",
-    });
-  };
-
   return (
     <div className="pb-24 bg-background min-h-screen">
       <Navbar />
@@ -81,41 +72,7 @@ const Profile = () => {
           </div>
           <div className="flex-1">
             <h2 className="text-xl font-bold">HausaBox User</h2>
-            <div className="flex items-center">
-              <span className="text-muted-foreground text-sm">Free user</span>
-              <Button
-                onClick={handleUpgradeToVIP}
-                size="sm"
-                className="ml-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs"
-              >
-                <CreditCard size={12} className="mr-1" />
-                Upgrade to VIP
-              </Button>
-            </div>
-          </div>
-        </div>
-        
-        {/* VIP banner */}
-        <div className="bg-card rounded-lg mb-8 p-4 border border-border">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center">
-              <div className="text-amber-500 mr-2">💎</div>
-              <span className="font-semibold">VIP Premium</span>
-              <span className="ml-2 px-2 py-0.5 bg-red-600 text-white text-xs rounded">24% OFF</span>
-            </div>
-            <span className="text-muted-foreground text-sm">Not activated</span>
-          </div>
-          <p className="text-sm text-muted-foreground mb-3">
-            Unlock ad-free viewing, HD quality, and exclusive Hausa content
-          </p>
-          <div className="flex justify-end">
-            <Button 
-              onClick={handleUpgradeToVIP}
-              className="bg-amber-500/20 text-amber-500 hover:bg-amber-500/30 border border-amber-500/50"
-              variant="outline"
-            >
-              Activate Now
-            </Button>
+            <span className="text-muted-foreground text-sm">Free Account</span>
           </div>
         </div>
 
@@ -162,19 +119,6 @@ const Profile = () => {
               </div>
               <span className="text-muted-foreground">›</span>
             </Link>
-            
-            <div className="mt-4 flex space-x-3 overflow-x-auto scrollbar-none pb-2">
-              {[1, 2, 3].map((item) => (
-                <div key={item} className="min-w-[100px] w-[100px]">
-                  <img 
-                    src={`https://images.unsplash.com/photo-150067392298${item}-e212871fec22`} 
-                    alt="Movie thumbnail" 
-                    className="w-full h-[56px] object-cover rounded border border-border"
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground truncate">Hausa Movie {item}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
         

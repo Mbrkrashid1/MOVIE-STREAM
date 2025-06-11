@@ -8,6 +8,7 @@ import AdPlacements from "@/components/admin/AdPlacements";
 import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
 import UserManagement from "@/components/admin/UserManagement";
 import SettingsPanel from "@/components/admin/SettingsPanel";
+import AdStudio from "@/components/admin/AdStudio";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("movies");
@@ -20,6 +21,8 @@ const AdminDashboard = () => {
         return <AdManagement />;
       case "adPlacements":
         return <AdPlacements />;
+      case "adStudio":
+        return <AdStudio />;
       case "analytics":
         return <AnalyticsDashboard />;
       case "users":
