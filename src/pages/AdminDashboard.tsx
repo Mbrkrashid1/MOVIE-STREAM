@@ -3,6 +3,7 @@ import { useState } from "react";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import ContentManagement from "@/components/admin/ContentManagement";
+import SeriesManagement from "@/components/admin/SeriesManagement";
 import AdManagement from "@/components/admin/AdManagement";
 import AdPlacements from "@/components/admin/AdPlacements";
 import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard";
@@ -17,6 +18,8 @@ const AdminDashboard = () => {
     switch (activeTab) {
       case "movies":
         return <ContentManagement />;
+      case "series":
+        return <SeriesManagement />;
       case "ads":
         return <AdManagement />;
       case "adPlacements":

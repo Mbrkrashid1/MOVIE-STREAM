@@ -65,7 +65,7 @@ const Profile = () => {
       <Navbar />
       
       <div className="mt-14 p-4">
-        {/* Profile header with transparent overlay */}
+        {/* Profile header with HausaBox branding */}
         <div className="relative mb-8 p-6 rounded-xl bg-gradient-to-br from-primary/10 via-transparent to-background/5 backdrop-blur-sm border border-primary/20">
           <div className="flex items-center">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center mr-4 border-2 border-primary/20 backdrop-blur-sm">
@@ -166,6 +166,12 @@ const Profile = () => {
               to="/contact"
             />
           </div>
+        </div>
+
+        {/* HausaBox Info */}
+        <div className="text-center text-muted-foreground text-sm mt-8">
+          <p>HausaBox - Your Premium Hausa Entertainment Platform</p>
+          <p className="mt-1">Version 1.0.0</p>
         </div>
       </div>
       
