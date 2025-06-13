@@ -4,15 +4,33 @@ import { useVideoControls } from "./player/useVideoControls";
 import { useAdHandling } from "./player/useAdHandling";
 import VideoControls from "./player/VideoControls";
 import AdOverlay from "./player/AdOverlay";
+import { useMutation } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface VideoPlayerProps {
   videoUrl: string;
   contentId: string;
   thumbnail?: string;
   onClose?: () => void;
+  title?: string;
+  description?: string;
+  views?: number;
 }
 
-export function VideoPlayer({ videoUrl, contentId, thumbnail, onClose }: VideoPlayerProps) {
+export function VideoPlayer({ 
+  videoUrl, 
+  contentId, 
+  thumbnail, 
+  onClose, 
+  title = "Video", 
+  description = "",
+  views = 0 
+}: VideoPlayerProps) {
+  const { toast } = useToast();
+  const [hasTrackedView, setHasTrackedView] = useState(false);
+  const [currentViews, setCurrentViews] = useState(views);
+
   const {
     isPlaying,
     isMuted,
@@ -42,12 +60,42 @@ export function VideoPlayer({ videoUrl, contentId, thumbnail, onClose }: VideoPl
     checkForPostRollAds
   } = useAdHandling(contentId, onClose);
 
+  // Track view count mutation
+  const trackViewMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase
+        .from('content')
+        .update({ views: currentViews + 1 })
+        .eq('id', contentId)
+        .select('views')
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      setCurrentViews(data.views);
+      console.log('View tracked successfully');
+    },
+    onError: (error) => {
+      console.error('Error tracking view:', error);
+    }
+  });
+
   // Fetch ads when component mounts
   useEffect(() => {
     if (contentId) {
       fetchAds();
     }
   }, [contentId]);
+
+  // Track view after 30 seconds of playback
+  useEffect(() => {
+    if (isPlaying && currentTime > 30 && !hasTrackedView && !adPlaying) {
+      setHasTrackedView(true);
+      trackViewMutation.mutate();
+    }
+  }, [isPlaying, currentTime, hasTrackedView, adPlaying]);
 
   const handleTimeUpdate = () => {
     baseHandleTimeUpdate();
@@ -64,58 +112,97 @@ export function VideoPlayer({ videoUrl, contentId, thumbnail, onClose }: VideoPl
   };
 
   return (
-    <div className="relative w-full h-full bg-black">
-      {/* Ad overlay */}
-      {adPlaying && (
-        <AdOverlay
-          adPlaying={adPlaying}
-          videoRef={adVideoRef}
-          onTimeUpdate={baseHandleTimeUpdate}
-          onLoadedMetadata={handleLoadedMetadata}
-          onEnded={handleAdEnd}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          canSkip={canSkip}
-          skipCounter={skipCounter}
-          onSkip={skipAd}
-          thumbnail={thumbnail}
-        />
-      )}
-      
-      {/* Main video */}
-      {!adPlaying && (
-        <>
-          <video
-            ref={videoRef}
-            className="w-full h-full object-contain"
-            src={videoUrl}
-            poster={thumbnail}
-            onTimeUpdate={handleTimeUpdate}
+    <div className="relative w-full h-full bg-black flex flex-col">
+      {/* Video Container */}
+      <div className="relative flex-1">
+        {/* Ad overlay */}
+        {adPlaying && (
+          <AdOverlay
+            adPlaying={adPlaying}
+            videoRef={adVideoRef}
+            onTimeUpdate={baseHandleTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}
-            onEnded={handleVideoEnded}
+            onEnded={handleAdEnd}
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
+            canSkip={canSkip}
+            skipCounter={skipCounter}
+            onSkip={skipAd}
+            thumbnail={thumbnail}
           />
-          
-          {/* Controls overlay */}
-          <VideoControls
-            isPlaying={isPlaying}
-            isMuted={isMuted}
-            currentTime={currentTime}
-            duration={duration}
-            onTogglePlay={togglePlay}
-            onToggleMute={toggleMute}
-            onSeek={handleSeek}
-            formatTime={formatTime}
-            onClose={onClose}
-          />
-        </>
-      )}
-      
-      {/* Loading overlay */}
-      {loading && !adPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        )}
+        
+        {/* Main video */}
+        {!adPlaying && (
+          <>
+            <video
+              ref={videoRef}
+              className="w-full h-full object-contain"
+              src={videoUrl}
+              poster={thumbnail}
+              onTimeUpdate={handleTimeUpdate}
+              onLoadedMetadata={handleLoadedMetadata}
+              onEnded={handleVideoEnded}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+            />
+            
+            {/* Enhanced Controls overlay */}
+            <VideoControls
+              isPlaying={isPlaying}
+              isMuted={isMuted}
+              currentTime={currentTime}
+              duration={duration}
+              onTogglePlay={togglePlay}
+              onToggleMute={toggleMute}
+              onSeek={handleSeek}
+              formatTime={formatTime}
+              onClose={onClose}
+            />
+          </>
+        )}
+        
+        {/* Loading overlay */}
+        {loading && !adPlaying && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-white text-sm">Loading video...</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Video Info Bar (MovieBox Style) */}
+      {!adPlaying && (
+        <div className="bg-gradient-to-t from-black/90 to-transparent p-4 text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <h2 className="text-lg font-bold mb-1 line-clamp-1">{title}</h2>
+              <div className="flex items-center space-x-4 text-sm text-gray-300">
+                <span className="flex items-center">
+                  <span className="w-2 h-2 bg-primary rounded-full mr-2"></span>
+                  {currentViews.toLocaleString()} views
+                </span>
+                <span>•</span>
+                <span>{formatTime(duration)} duration</span>
+                {description && (
+                  <>
+                    <span>•</span>
+                    <span className="line-clamp-1 max-w-xs">{description}</span>
+                  </>
+                )}
+              </div>
+            </div>
+            
+            {/* View tracking indicator */}
+            {hasTrackedView && (
+              <div className="flex items-center text-xs text-green-400">
+                <div className="w-2 h-2 bg-green-400 rounded-full mr-1 animate-pulse"></div>
+                View tracked
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
