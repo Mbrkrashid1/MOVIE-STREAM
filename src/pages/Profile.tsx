@@ -1,11 +1,13 @@
 
-import { Settings, List, Download, Clock, BookmarkCheck, HelpCircle, Mail, Wifi, WifiOff, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Settings, List, Download, Clock, BookmarkCheck, HelpCircle, Mail, Wifi, WifiOff, User, LogOut, Edit } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import BottomNavigation from "@/components/layout/BottomNavigation";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const ProfileItem = ({ icon, title, to, onClick, rightElement }: { 
   icon: React.ReactNode, 
@@ -15,7 +17,7 @@ const ProfileItem = ({ icon, title, to, onClick, rightElement }: {
   rightElement?: React.ReactNode 
 }) => {
   const content = (
-    <div className="flex items-center py-4 border-b border-border/20">
+    <div className="flex items-center py-4 border-b border-border/20 hover:bg-muted/30 transition-colors rounded-lg px-2">
       <div className="mr-4 text-muted-foreground">
         {icon}
       </div>
@@ -25,7 +27,7 @@ const ProfileItem = ({ icon, title, to, onClick, rightElement }: {
   );
 
   if (to) {
-    return <Link to={to}>{content}</Link>;
+    return <Link to={to} className="block">{content}</Link>;
   }
 
   return (
@@ -37,6 +39,7 @@ const ProfileItem = ({ icon, title, to, onClick, rightElement }: {
 
 const Profile = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [offlineMode, setOfflineMode] = useState(false);
   const [autoDownload, setAutoDownload] = useState(false);
 
@@ -60,21 +63,94 @@ const Profile = () => {
     });
   };
 
+  const handleEditProfile = () => {
+    toast({
+      title: "Edit Profile",
+      description: "Profile editing feature coming soon!",
+    });
+  };
+
+  const handleLogout = () => {
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+    });
+    // Add actual logout logic here
+    navigate("/");
+  };
+
+  const handleContactUs = () => {
+    toast({
+      title: "Contact Support",
+      description: "Opening support chat...",
+    });
+    // Add contact functionality here
+  };
+
+  const handleHelp = () => {
+    toast({
+      title: "Help Center",
+      description: "Opening help documentation...",
+    });
+    // Add help functionality here
+  };
+
+  const handleSettings = () => {
+    toast({
+      title: "Settings",
+      description: "Opening app settings...",
+    });
+    // Navigate to settings or open settings modal
+  };
+
   return (
     <div className="pb-24 bg-zinc-950 min-h-screen">
       <Navbar />
       
       <div className="mt-14 p-4">
-        {/* Profile header with HausaBox branding */}
+        {/* Enhanced Profile header with HausaBox branding */}
         <div className="relative mb-8 p-6 rounded-xl bg-gradient-to-br from-primary/10 via-transparent to-background/5 backdrop-blur-sm border border-primary/20">
-          <div className="flex items-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center mr-4 border-2 border-primary/20 backdrop-blur-sm">
-              <User size={24} className="text-primary" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Avatar className="w-16 h-16 mr-4 border-2 border-primary/20">
+                <AvatarImage src="" />
+                <AvatarFallback className="bg-gradient-to-br from-primary/30 to-primary/10 text-primary">
+                  <User size={24} />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <h2 className="text-xl font-bold text-white">HausaBox User</h2>
+                <span className="text-muted-foreground text-sm">Free Account</span>
+                <p className="text-xs text-muted-foreground mt-1">user@hausabox.com</p>
+              </div>
             </div>
-            <div className="flex-1">
-              <h2 className="text-xl font-bold text-white">HausaBox User</h2>
-              <span className="text-muted-foreground text-sm">Free Account</span>
-            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleEditProfile}
+              className="text-primary hover:bg-primary/10"
+            >
+              <Edit size={16} />
+            </Button>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold mb-4 text-white">Quick Actions</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <Link to="/admin" className="block">
+              <div className="bg-card/80 backdrop-blur-sm rounded-lg p-4 border border-border/30 hover:border-primary/50 transition-colors text-center">
+                <Settings size={24} className="mx-auto mb-2 text-primary" />
+                <span className="text-sm text-white">Admin Panel</span>
+              </div>
+            </Link>
+            <button onClick={handleLogout} className="block w-full">
+              <div className="bg-card/80 backdrop-blur-sm rounded-lg p-4 border border-border/30 hover:border-destructive/50 transition-colors text-center">
+                <LogOut size={24} className="mx-auto mb-2 text-destructive" />
+                <span className="text-sm text-white">Logout</span>
+              </div>
+            </button>
           </div>
         </div>
 
@@ -113,14 +189,17 @@ const Profile = () => {
         {/* Watch History */}
         <div className="mb-8">
           <h3 className="text-lg font-semibold mb-4 text-white">Watch History</h3>
-          <div className="bg-card/80 backdrop-blur-sm rounded-lg p-4 border border-border/30">
-            <Link to="/history" className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Clock size={20} className="text-muted-foreground mr-3" />
-                <span className="text-white">Continue Watching</span>
-              </div>
-              <span className="text-muted-foreground">›</span>
-            </Link>
+          <div className="bg-card/80 backdrop-blur-sm rounded-lg border border-border/30">
+            <ProfileItem 
+              icon={<Clock size={20} />} 
+              title="Continue Watching" 
+              to="/history"
+            />
+            <ProfileItem 
+              icon={<List size={20} />} 
+              title="Watch History" 
+              to="/history"
+            />
           </div>
         </div>
         
@@ -146,24 +225,41 @@ const Profile = () => {
           </div>
         </div>
         
-        {/* Preferences section */}
+        {/* Settings & Support section */}
         <div className="mb-8">
           <h3 className="text-lg font-semibold mb-4 text-white">Settings & Support</h3>
           <div className="bg-card/80 backdrop-blur-sm rounded-lg border border-border/30">
             <ProfileItem 
               icon={<Settings size={20} />} 
               title="App Settings" 
-              to="/settings"
+              onClick={handleSettings}
             />
             <ProfileItem 
               icon={<HelpCircle size={20} />} 
               title="Help & Support" 
-              to="/help"
+              onClick={handleHelp}
             />
             <ProfileItem 
               icon={<Mail size={20} />} 
               title="Contact Us" 
-              to="/contact"
+              onClick={handleContactUs}
+            />
+          </div>
+        </div>
+
+        {/* Account Management */}
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold mb-4 text-white">Account</h3>
+          <div className="bg-card/80 backdrop-blur-sm rounded-lg border border-border/30">
+            <ProfileItem 
+              icon={<User size={20} />} 
+              title="Edit Profile" 
+              onClick={handleEditProfile}
+            />
+            <ProfileItem 
+              icon={<LogOut size={20} />} 
+              title="Logout" 
+              onClick={handleLogout}
             />
           </div>
         </div>
