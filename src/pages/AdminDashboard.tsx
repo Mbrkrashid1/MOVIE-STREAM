@@ -12,10 +12,13 @@ import SettingsPanel from "@/components/admin/SettingsPanel";
 import AdStudio from "@/components/admin/AdStudio";
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState("movies");
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const renderActiveTabContent = () => {
     switch (activeTab) {
+      case "dashboard":
+        return <AnalyticsDashboard />;
       case "movies":
         return <ContentManagement />;
       case "series":
@@ -33,19 +36,45 @@ const AdminDashboard = () => {
       case "settings":
         return <SettingsPanel />;
       default:
-        return <ContentManagement />;
+        return <AnalyticsDashboard />;
     }
   };
 
   return (
     <div className="min-h-screen bg-zinc-950">
-      <AdminHeader />
+      <AdminHeader 
+        sidebarOpen={sidebarOpen} 
+        setSidebarOpen={setSidebarOpen}
+      />
       
-      <div className="flex h-[calc(100vh-64px)]">
-        <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <div className="flex h-[calc(100vh-64px)] relative">
+        {/* Mobile Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
         
-        <div className="flex-1 overflow-y-auto p-6">
-          {renderActiveTabContent()}
+        {/* Sidebar */}
+        <div className={`
+          fixed lg:static inset-y-0 left-0 z-50 lg:z-auto
+          transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
+          lg:translate-x-0 transition-transform duration-300 ease-in-out
+          mt-16 lg:mt-0
+        `}>
+          <AdminSidebar 
+            activeTab={activeTab} 
+            setActiveTab={setActiveTab}
+            setSidebarOpen={setSidebarOpen}
+          />
+        </div>
+        
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4 lg:p-6">
+            {renderActiveTabContent()}
+          </div>
         </div>
       </div>
     </div>
