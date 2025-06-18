@@ -21,18 +21,15 @@ const Index = () => {
   } = useContentData();
 
   useEffect(() => {
-    // Show welcome toast on initial load
     toast({
       title: "Welcome to HausaBox! 🎬",
       description: "Discover amazing Hausa movies and series offline & online.",
     });
   }, []);
 
-  // Get movie and series content
   const movieContent = getMovieContent();
   const seriesContent = getSeriesContent();
 
-  // Loading state with enhanced graphics
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-card to-background">
@@ -40,14 +37,14 @@ const Index = () => {
         <div className="pt-16 h-[calc(100vh-120px)] flex items-center justify-center">
           <div className="text-center">
             <div className="relative">
-              <div className="w-20 h-20 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-6"></div>
-              <div className="absolute inset-0 w-16 h-16 border-4 border-accent/20 border-b-accent rounded-full animate-spin mx-auto mt-2 ml-2"></div>
+              <div className="w-16 h-16 border-3 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="absolute inset-0 w-12 h-12 border-3 border-accent/20 border-b-accent rounded-full animate-spin mx-auto mt-2 ml-2"></div>
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              <h3 className="text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 Loading HausaBox
               </h3>
-              <p className="text-muted-foreground animate-pulse">Preparing amazing Hausa content...</p>
+              <p className="text-muted-foreground animate-pulse text-sm">Preparing amazing Hausa content...</p>
             </div>
           </div>
         </div>
@@ -56,14 +53,14 @@ const Index = () => {
     );
   }
 
-  // Transform content for MovieBox components
+  // Transform content for MovieBox components with smaller sizes
   const transformedFeatured = featuredItems?.map(item => ({
     ...item,
     rating: 8.5 + Math.random() * 1.5,
     year: 2020 + Math.floor(Math.random() * 4),
     duration: "2h 15m",
     genre: "Drama",
-    description: "An epic Hausa story that captures the essence of Northern Nigerian culture with compelling characters and beautiful cinematography."
+    description: "An epic Hausa story that captures the essence of Northern Nigerian culture."
   })) || [];
 
   const transformedMovies = movieContent.map(item => ({
@@ -92,45 +89,44 @@ const Index = () => {
 
   const recentlyAdded = [...transformedMovies, ...transformedSeries]
     .sort(() => 0.5 - Math.random())
-    .slice(0, 10);
+    .slice(0, 12);
 
   const trending = [...transformedMovies, ...transformedSeries]
     .sort(() => 0.5 - Math.random())
-    .slice(0, 12);
+    .slice(0, 15);
 
-  // Separate video and image ads
   const videoAdsList = videoAds?.filter(ad => ad.video_url) || [];
   const imageAdsList = videoAds?.filter(ad => !ad.video_url && ad.thumbnail_url) || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-card/30 to-background pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-background via-card/20 to-background pb-20">
       <MovieBoxNavbar />
       
       <div className="pt-16">
-        {/* Enhanced Hero Section with Gradient Overlay */}
+        {/* MovieBox Hero Section */}
         {transformedFeatured.length > 0 && (
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent z-10"></div>
+          <div className="relative mb-6">
+            <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent z-10 pointer-events-none"></div>
             <MovieBoxHero items={transformedFeatured} />
           </div>
         )}
 
-        {/* Continuous Video Ad Section */}
+        {/* Premium Video Ad Section */}
         {videoAdsList.length > 0 && (
-          <div className="px-4 mt-8">
-            <ContinuousVideoAd ads={videoAdsList} />
+          <div className="px-3 mb-6">
+            <ContinuousVideoAd ads={[videoAdsList[0]]} />
           </div>
         )}
 
-        {/* Content Sections with Enhanced Styling */}
-        <div className="mt-12 space-y-8">
-          {/* Trending Section with Graphics */}
+        {/* Content Grid Layout - MovieBox Style */}
+        <div className="space-y-6">
+          {/* Trending Section with Compact Layout */}
           {trending.length > 0 && (
             <div className="relative">
-              <div className="absolute -top-4 -left-4 w-32 h-32 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-3xl"></div>
+              <div className="absolute -top-2 -left-2 w-24 h-24 bg-gradient-to-br from-primary/15 to-accent/15 rounded-full blur-2xl"></div>
               <MovieBoxRow 
-                title="🔥 Trending Hausa Content" 
-                movies={trending}
+                title="🔥 Trending Now" 
+                movies={trending.slice(0, 12)}
                 priority={true}
               />
             </div>
@@ -138,15 +134,34 @@ const Index = () => {
 
           {/* Image Banner Ad */}
           {imageAdsList.length > 0 && (
-            <div className="px-4">
+            <div className="px-3">
               <ImageBannerAd ad={imageAdsList[0]} />
             </div>
           )}
 
-          {/* Recently Added with Graphics */}
+          {/* Popular Movies - Compact Grid */}
+          {transformedMovies.length > 0 && (
+            <div className="relative">
+              <div className="absolute top-1/2 left-0 w-20 h-20 bg-gradient-to-r from-primary/20 to-transparent rounded-full blur-xl"></div>
+              <MovieBoxRow 
+                title="🎬 Popular Movies" 
+                movies={transformedMovies.slice(0, 10)}
+                viewAllLink="/movies"
+              />
+            </div>
+          )}
+
+          {/* Mid-Section Video Ad */}
+          {videoAdsList.length > 1 && (
+            <div className="px-3">
+              <ContinuousVideoAd ads={[videoAdsList[1]]} />
+            </div>
+          )}
+
+          {/* Recently Added - Smaller Cards */}
           {recentlyAdded.length > 0 && (
             <div className="relative">
-              <div className="absolute -top-4 -right-4 w-40 h-40 bg-gradient-to-bl from-accent/15 to-primary/15 rounded-full blur-3xl"></div>
+              <div className="absolute -top-2 -right-2 w-28 h-28 bg-gradient-to-bl from-accent/12 to-primary/12 rounded-full blur-2xl"></div>
               <MovieBoxRow 
                 title="✨ Fresh Uploads" 
                 movies={recentlyAdded}
@@ -154,47 +169,35 @@ const Index = () => {
             </div>
           )}
 
-          {/* Second Video Ad for Mid-Section */}
-          {videoAdsList.length > 1 && (
-            <div className="px-4">
-              <ContinuousVideoAd ads={[videoAdsList[1]]} />
-            </div>
-          )}
-
-          {/* Popular Movies with Enhanced Graphics */}
-          {transformedMovies.length > 0 && (
-            <div className="relative">
-              <div className="absolute top-1/2 left-0 w-24 h-24 bg-gradient-to-r from-primary/25 to-transparent rounded-full blur-2xl"></div>
-              <MovieBoxRow 
-                title="🎬 Popular Hausa Movies" 
-                movies={transformedMovies.slice(0, 12)}
-                viewAllLink="/movies"
-              />
-            </div>
-          )}
-
-          {/* Image Banner Ad (Second) */}
+          {/* Second Image Banner Ad */}
           {imageAdsList.length > 1 && (
-            <div className="px-4">
+            <div className="px-3">
               <ImageBannerAd ad={imageAdsList[1]} />
             </div>
           )}
 
-          {/* Latest Series with Graphics */}
+          {/* Kannywood Series */}
           {transformedSeries.length > 0 && (
             <div className="relative">
-              <div className="absolute top-1/2 right-0 w-28 h-28 bg-gradient-to-l from-accent/20 to-transparent rounded-full blur-2xl"></div>
+              <div className="absolute top-1/2 right-0 w-24 h-24 bg-gradient-to-l from-accent/18 to-transparent rounded-full blur-xl"></div>
               <MovieBoxRow 
                 title="📺 Kannywood Series" 
-                movies={transformedSeries.slice(0, 12)}
+                movies={transformedSeries.slice(0, 10)}
                 viewAllLink="/series"
               />
             </div>
           )}
+
+          {/* Bottom Video Ad */}
+          {videoAdsList.length > 2 && (
+            <div className="px-3">
+              <ContinuousVideoAd ads={[videoAdsList[2]]} />
+            </div>
+          )}
         </div>
 
-        {/* Bottom Gradient Overlay */}
-        <div className="h-16 bg-gradient-to-t from-background to-transparent mt-8"></div>
+        {/* Bottom Gradient Fade */}
+        <div className="h-12 bg-gradient-to-t from-background to-transparent mt-6"></div>
       </div>
       
       <BottomNavigation />
