@@ -113,8 +113,18 @@ export function VideoPlayer({
 
   return (
     <div className="relative w-full h-full bg-black flex flex-col">
-      {/* Video Container */}
-      <div className="relative flex-1">
+      {/* Video Container with responsive sizing */}
+      <div className="relative flex-1 w-full h-full">
+        {/* Backdrop image when video is not playing or loading */}
+        {(!isPlaying || loading) && thumbnail && !adPlaying && (
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${thumbnail})` }}
+          >
+            <div className="absolute inset-0 bg-black/40" />
+          </div>
+        )}
+
         {/* Ad overlay */}
         {adPlaying && (
           <AdOverlay
@@ -132,12 +142,12 @@ export function VideoPlayer({
           />
         )}
         
-        {/* Main video */}
+        {/* Main video with responsive object-fit */}
         {!adPlaying && (
           <>
             <video
               ref={videoRef}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain sm:object-cover md:object-contain"
               src={videoUrl}
               poster={thumbnail}
               onTimeUpdate={handleTimeUpdate}
@@ -173,33 +183,38 @@ export function VideoPlayer({
         )}
       </div>
 
-      {/* Video Info Bar (MovieBox Style) */}
+      {/* Video Info Bar (MovieBox Style) - Responsive */}
       {!adPlaying && (
-        <div className="bg-gradient-to-t from-black/90 to-transparent p-4 text-white">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <h2 className="text-lg font-bold mb-1 line-clamp-1">{title}</h2>
-              <div className="flex items-center space-x-4 text-sm text-gray-300">
+        <div className="bg-gradient-to-t from-black/90 to-transparent p-3 sm:p-4 text-white">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-base sm:text-lg font-bold mb-1 line-clamp-1">{title}</h2>
+              <div className="flex items-center flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-gray-300">
                 <span className="flex items-center">
                   <span className="w-2 h-2 bg-primary rounded-full mr-2"></span>
                   {currentViews.toLocaleString()} views
                 </span>
-                <span>•</span>
-                <span>{formatTime(duration)} duration</span>
+                <span className="hidden sm:inline">•</span>
+                <span className="hidden sm:inline">{formatTime(duration)} duration</span>
                 {description && (
                   <>
-                    <span>•</span>
-                    <span className="line-clamp-1 max-w-xs">{description}</span>
+                    <span className="hidden md:inline">•</span>
+                    <span className="hidden md:inline line-clamp-1 max-w-xs">{description}</span>
                   </>
                 )}
+              </div>
+              {/* Mobile-specific info row */}
+              <div className="sm:hidden mt-1 text-xs text-gray-400">
+                {formatTime(duration)} • {description && <span className="line-clamp-1">{description}</span>}
               </div>
             </div>
             
             {/* View tracking indicator */}
             {hasTrackedView && (
-              <div className="flex items-center text-xs text-green-400">
+              <div className="flex items-center text-xs text-green-400 shrink-0">
                 <div className="w-2 h-2 bg-green-400 rounded-full mr-1 animate-pulse"></div>
-                View tracked
+                <span className="hidden sm:inline">View tracked</span>
+                <span className="sm:hidden">✓</span>
               </div>
             )}
           </div>
