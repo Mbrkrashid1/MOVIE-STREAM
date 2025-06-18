@@ -8,6 +8,7 @@ import LoadingScreen from "@/components/home/LoadingScreen";
 import HeroSection from "@/components/home/HeroSection";
 import ContentRowsSection from "@/components/home/ContentRowsSection";
 import AdsPlacement from "@/components/home/AdsPlacement";
+import ContinuousVideoAd from "@/components/home/ContinuousVideoAd";
 
 const Index = () => {
   const { toast } = useToast();
