@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useVideoControls } from "./player/useVideoControls";
 import { useAdHandling } from "./player/useAdHandling";
@@ -29,6 +30,7 @@ export function VideoPlayer({
   const { toast } = useToast();
   const [hasTrackedView, setHasTrackedView] = useState(false);
   const [currentViews, setCurrentViews] = useState(views);
+  const [videoError, setVideoError] = useState<string | null>(null);
 
   const {
     isPlaying,
@@ -112,17 +114,92 @@ export function VideoPlayer({
     checkForPostRollAds();
   };
 
+  const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
+    const video = e.currentTarget;
+    const error = video.error;
+    
+    if (error) {
+      let errorMessage = "Video playback failed";
+      
+      switch (error.code) {
+        case MediaError.MEDIA_ERR_ABORTED:
+          errorMessage = "Video playback was aborted";
+          break;
+        case MediaError.MEDIA_ERR_NETWORK:
+          errorMessage = "Network error occurred while loading video";
+          break;
+        case MediaError.MEDIA_ERR_DECODE:
+          errorMessage = "Video format is not supported or corrupted";
+          break;
+        case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+          errorMessage = "Video source is not supported";
+          break;
+        default:
+          errorMessage = "Unknown video error occurred";
+      }
+      
+      setVideoError(errorMessage);
+      setLoading(false);
+      
+      toast({
+        title: "Video Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleCanPlay = () => {
+    setLoading(false);
+    setVideoError(null);
+  };
+
+  const handleWaiting = () => {
+    setLoading(true);
+  };
+
+  const handleCanPlayThrough = () => {
+    setLoading(false);
+  };
+
   return (
     <div className="relative w-full h-full bg-black flex flex-col">
       {/* Video Container with responsive sizing */}
       <div className="relative flex-1 w-full h-full">
         {/* Backdrop image when video is not playing or loading */}
-        {(!isPlaying || loading) && thumbnail && !adPlaying && (
+        {(!isPlaying || loading) && thumbnail && !adPlaying && !videoError && (
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url(${thumbnail})` }}
           >
             <div className="absolute inset-0 bg-black/40" />
+          </div>
+        )}
+
+        {/* Video Error Display */}
+        {videoError && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black text-white">
+            <div className="text-center p-8">
+              <div className="mb-4 text-red-400">
+                <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-2">Playback Error</h3>
+              <p className="text-gray-300 mb-4">{videoError}</p>
+              <button 
+                onClick={() => {
+                  setVideoError(null);
+                  setLoading(true);
+                  if (videoRef.current) {
+                    videoRef.current.load();
+                  }
+                }}
+                className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/80 transition-colors"
+              >
+                Retry Playback
+              </button>
+            </div>
           </div>
         )}
 
@@ -144,7 +221,7 @@ export function VideoPlayer({
         )}
         
         {/* Main video with responsive object-fit */}
-        {!adPlaying && (
+        {!adPlaying && !videoError && (
           <>
             <video
               ref={videoRef}
@@ -156,6 +233,13 @@ export function VideoPlayer({
               onEnded={handleVideoEnded}
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
+              onError={handleVideoError}
+              onCanPlay={handleCanPlay}
+              onWaiting={handleWaiting}
+              onCanPlayThrough={handleCanPlayThrough}
+              preload="metadata"
+              playsInline
+              controls={false}
             />
             
             {/* Enhanced Controls overlay */}
@@ -169,12 +253,14 @@ export function VideoPlayer({
               onSeek={handleSeek}
               formatTime={formatTime}
               onClose={onClose}
+              loading={loading}
+              videoError={videoError}
             />
           </>
         )}
         
         {/* Loading overlay */}
-        {loading && !adPlaying && (
+        {loading && !adPlaying && !videoError && (
           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
             <div className="flex flex-col items-center space-y-4">
               <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -185,7 +271,7 @@ export function VideoPlayer({
       </div>
 
       {/* Video Info Bar (MovieBox Style) - Responsive */}
-      {!adPlaying && (
+      {!adPlaying && !videoError && (
         <div className="bg-gradient-to-t from-black/90 to-transparent p-3 sm:p-4 text-white">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
             <div className="flex-1 min-w-0">
