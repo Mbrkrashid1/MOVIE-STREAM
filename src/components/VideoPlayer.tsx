@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useVideoControls } from "./player/useVideoControls";
 import { useAdHandling } from "./player/useAdHandling";
@@ -74,8 +73,10 @@ export function VideoPlayer({
       return data;
     },
     onSuccess: (data) => {
-      setCurrentViews(data.views);
-      console.log('View tracked successfully');
+      if (data) {
+        setCurrentViews(data.views || 0);
+        console.log('View tracked successfully');
+      }
     },
     onError: (error) => {
       console.error('Error tracking view:', error);
