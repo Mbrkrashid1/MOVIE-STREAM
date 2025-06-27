@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import MovieBoxNavbar from "@/components/layout/MovieBoxNavbar";
 import BottomNavigation from "@/components/layout/BottomNavigation";
@@ -9,6 +8,7 @@ import HeroSection from "@/components/home/HeroSection";
 import ContentRowsSection from "@/components/home/ContentRowsSection";
 import AdsPlacement from "@/components/home/AdsPlacement";
 import ContinuousVideoAd from "@/components/home/ContinuousVideoAd";
+import Scene3D from "@/components/home/Scene3D";
 
 const Index = () => {
   const { toast } = useToast();
@@ -39,39 +39,60 @@ const Index = () => {
   const imageAdsList = videoAds?.filter(ad => !ad.video_url && ad.thumbnail_url) || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-card/20 to-background pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-background via-card/20 to-background pb-20 relative overflow-hidden">
+      {/* 3D Background Scene */}
+      <Scene3D />
+      
       <MovieBoxNavbar />
       
-      <div className="pt-16">
-        {/* Hero Section */}
+      <div className="pt-16 relative z-10">
+        {/* Hero Section with enhanced 3D effects */}
         {featuredItems && featuredItems.length > 0 && (
-          <HeroSection featuredItems={featuredItems} />
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-accent/10 blur-3xl"></div>
+            <HeroSection featuredItems={featuredItems} />
+          </div>
         )}
 
-        {/* Ads and Content Layout */}
-        <div className="space-y-6">
-          {/* First Video Ad */}
+        {/* Ads and Content Layout with 3D spacing */}
+        <div className="space-y-8 relative">
+          {/* Floating 3D decorative elements */}
+          <div className="absolute -top-10 -left-10 w-32 h-32 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-2xl animate-pulse-slow"></div>
+          <div className="absolute top-1/2 -right-10 w-24 h-24 bg-gradient-to-bl from-accent/15 to-primary/15 rounded-full blur-xl animate-spin-slow"></div>
+          
+          {/* First Video Ad with 3D container */}
           {videoAdsList.length > 0 && (
-            <div className="px-3 mb-6">
-              <ContinuousVideoAd ads={[videoAdsList[0]]} />
+            <div className="px-3 mb-8 relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl blur-lg transform scale-105"></div>
+              <div className="relative z-10">
+                <ContinuousVideoAd ads={[videoAdsList[0]]} />
+              </div>
             </div>
           )}
 
-          {/* Content Rows */}
-          <ContentRowsSection 
-            movieContent={movieContent} 
-            seriesContent={seriesContent} 
-          />
+          {/* Content Rows with enhanced 3D presentation */}
+          <div className="relative">
+            <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-40 h-40 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-full blur-3xl"></div>
+            <ContentRowsSection 
+              movieContent={movieContent} 
+              seriesContent={seriesContent} 
+            />
+          </div>
 
-          {/* Additional Ads */}
-          <AdsPlacement 
-            videoAds={videoAdsList.slice(1)} 
-            imageAds={imageAdsList} 
-          />
+          {/* Additional Ads with 3D depth */}
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent pointer-events-none"></div>
+            <AdsPlacement 
+              videoAds={videoAdsList.slice(1)} 
+              imageAds={imageAdsList} 
+            />
+          </div>
         </div>
 
-        {/* Bottom Gradient Fade */}
-        <div className="h-12 bg-gradient-to-t from-background to-transparent mt-6"></div>
+        {/* Enhanced Bottom Gradient with 3D effect */}
+        <div className="h-16 bg-gradient-to-t from-background via-background/80 to-transparent mt-8 relative">
+          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 blur-sm"></div>
+        </div>
       </div>
       
       <BottomNavigation />
