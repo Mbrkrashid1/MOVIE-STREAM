@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useVideoControls } from "./player/useVideoControls";
 import { useAdHandling } from "./player/useAdHandling";
@@ -31,6 +30,8 @@ export function VideoPlayer({
   const [hasTrackedView, setHasTrackedView] = useState(false);
   const [currentViews, setCurrentViews] = useState(views);
   const [videoError, setVideoError] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
 
   const {
     isPlaying,
@@ -84,6 +85,87 @@ export function VideoPlayer({
       console.error('Error tracking view:', error);
     }
   });
+
+  // Handle orientation changes
+  useEffect(() => {
+    const handleOrientationChange = () => {
+      const orientation = window.screen?.orientation?.angle || 0;
+      setIsLandscape(orientation === 90 || orientation === -90 || orientation === 270);
+    };
+
+    // Initial check
+    handleOrientationChange();
+
+    // Listen for orientation changes
+    window.addEventListener('orientationchange', handleOrientationChange);
+    window.addEventListener('resize', handleOrientationChange);
+
+    return () => {
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      window.removeEventListener('resize', handleOrientationChange);
+    };
+  }, []);
+
+  // Handle fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
+
+  // Fullscreen functions
+  const enterFullscreen = async () => {
+    const element = document.documentElement;
+    try {
+      if (element.requestFullscreen) {
+        await element.requestFullscreen();
+      } else if ((element as any).webkitRequestFullscreen) {
+        await (element as any).webkitRequestFullscreen();
+      } else if ((element as any).mozRequestFullScreen) {
+        await (element as any).mozRequestFullScreen();
+      } else if ((element as any).msRequestFullscreen) {
+        await (element as any).msRequestFullscreen();
+      }
+    } catch (error) {
+      console.error('Error entering fullscreen:', error);
+    }
+  };
+
+  const exitFullscreen = async () => {
+    try {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen();
+      } else if ((document as any).webkitExitFullscreen) {
+        await (document as any).webkitExitFullscreen();
+      } else if ((document as any).mozCancelFullScreen) {
+        await (document as any).mozCancelFullScreen();
+      } else if ((document as any).msExitFullscreen) {
+        await (document as any).msExitFullscreen();
+      }
+    } catch (error) {
+      console.error('Error exiting fullscreen:', error);
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (isFullscreen) {
+      exitFullscreen();
+    } else {
+      enterFullscreen();
+    }
+  };
 
   // Fetch ads when component mounts
   useEffect(() => {
@@ -162,8 +244,23 @@ export function VideoPlayer({
     setLoading(false);
   };
 
+  // Determine container classes based on orientation and fullscreen
+  const getContainerClasses = () => {
+    if (isFullscreen || isLandscape) {
+      return "fixed inset-0 z-50 bg-black";
+    }
+    return "relative w-full h-full bg-black flex flex-col";
+  };
+
+  const getVideoClasses = () => {
+    if (isFullscreen || isLandscape) {
+      return "w-full h-full object-contain";
+    }
+    return "w-full h-full object-contain sm:object-cover md:object-contain";
+  };
+
   return (
-    <div className="relative w-full h-full bg-black flex flex-col">
+    <div className={getContainerClasses()}>
       {/* Video Container with responsive sizing */}
       <div className="relative flex-1 w-full h-full">
         {/* Backdrop image when video is not playing or loading */}
@@ -225,7 +322,7 @@ export function VideoPlayer({
           <>
             <video
               ref={videoRef}
-              className="w-full h-full object-contain sm:object-cover md:object-contain"
+              className={getVideoClasses()}
               src={videoUrl}
               poster={thumbnail}
               onTimeUpdate={handleTimeUpdate}
@@ -255,6 +352,8 @@ export function VideoPlayer({
               onClose={onClose}
               loading={loading}
               videoError={videoError}
+              isFullscreen={isFullscreen}
+              onToggleFullscreen={toggleFullscreen}
             />
           </>
         )}
@@ -270,8 +369,8 @@ export function VideoPlayer({
         )}
       </div>
 
-      {/* Video Info Bar (MovieBox Style) - Responsive */}
-      {!adPlaying && !videoError && (
+      {/* Video Info Bar (MovieBox Style) - Hide in fullscreen/landscape */}
+      {!adPlaying && !videoError && !isFullscreen && !isLandscape && (
         <div className="bg-gradient-to-t from-black/90 to-transparent p-3 sm:p-4 text-white">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
             <div className="flex-1 min-w-0">

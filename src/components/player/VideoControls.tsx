@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Volume2, VolumeX, X, SkipBack, SkipForward, Maximize, Settings } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, X, SkipBack, SkipForward, Maximize, Minimize, Settings } from "lucide-react";
 
 interface VideoControlsProps {
   isPlaying: boolean;
@@ -15,6 +15,8 @@ interface VideoControlsProps {
   onClose?: () => void;
   loading?: boolean;
   videoError?: string | null;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
 }
 
 export const VideoControls: React.FC<VideoControlsProps> = ({
@@ -28,7 +30,9 @@ export const VideoControls: React.FC<VideoControlsProps> = ({
   formatTime,
   onClose,
   loading = false,
-  videoError = null
+  videoError = null,
+  isFullscreen = false,
+  onToggleFullscreen
 }) => {
   const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -63,7 +67,7 @@ export const VideoControls: React.FC<VideoControlsProps> = ({
           </Button>
         </div>
         
-        {onClose && (
+        {onClose && !isFullscreen && (
           <Button 
             variant="ghost" 
             size="icon"
@@ -208,15 +212,28 @@ export const VideoControls: React.FC<VideoControlsProps> = ({
               {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
             </Button>
             
-            <Button 
-              variant="ghost" 
-              size="icon"
-              disabled={loading}
-              className="text-white hover:bg-white/20 transition-all duration-200 h-8 w-8 sm:h-10 sm:w-10 active:scale-95 disabled:opacity-50"
-            >
-              <Maximize size={16} className="sm:hidden" />
-              <Maximize size={20} className="hidden sm:block" />
-            </Button>
+            {/* Fullscreen toggle */}
+            {onToggleFullscreen && (
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={onToggleFullscreen}
+                disabled={loading}
+                className="text-white hover:bg-white/20 transition-all duration-200 h-8 w-8 sm:h-10 sm:w-10 active:scale-95 disabled:opacity-50"
+              >
+                {isFullscreen ? (
+                  <>
+                    <Minimize size={16} className="sm:hidden" />
+                    <Minimize size={20} className="hidden sm:block" />
+                  </>
+                ) : (
+                  <>
+                    <Maximize size={16} className="sm:hidden" />
+                    <Maximize size={20} className="hidden sm:block" />
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       </div>
