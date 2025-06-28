@@ -25,7 +25,7 @@ const ContentRowsSection = ({ movieContent, seriesContent }: ContentRowsSectionP
         <div key={`movie-${item.id}-${index}`} className="mb-8">
           <MovieBoxRow 
             title="Featured Movies" 
-            items={movieContent.slice(index * 4, (index * 4) + 4)} 
+            movies={movieContent.slice(index * 4, (index * 4) + 4)} 
           />
         </div>
       );
@@ -34,7 +34,7 @@ const ContentRowsSection = ({ movieContent, seriesContent }: ContentRowsSectionP
         <div key={`series-${item.id}-${index}`} className="mb-8">
           <MovieBoxRow 
             title="Popular Series" 
-            items={seriesContent.slice(index * 4, (index * 4) + 4)} 
+            movies={seriesContent.slice(index * 4, (index * 4) + 4)} 
           />
         </div>
       );
@@ -61,7 +61,7 @@ const ContentRowsSection = ({ movieContent, seriesContent }: ContentRowsSectionP
           <div key={`movie-row-${index}`} className="mb-8">
             <MovieBoxRow 
               title={`Featured Movies ${Math.floor(index / 2) + 1}`} 
-              items={rowMovies} 
+              movies={rowMovies} 
             />
           </div>
         );
@@ -74,7 +74,7 @@ const ContentRowsSection = ({ movieContent, seriesContent }: ContentRowsSectionP
           <div key={`series-row-${index}`} className="mb-8">
             <MovieBoxRow 
               title={`Popular Series ${Math.floor(index / 2) + 1}`} 
-              items={rowSeries} 
+              movies={rowSeries} 
             />
           </div>
         );

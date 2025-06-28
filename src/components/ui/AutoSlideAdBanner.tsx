@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, X, ExternalLink, ChevronLeft, ChevronRight, Pause } from "lucide-react";
@@ -230,20 +229,25 @@ const AutoSlideAdBanner = ({
       {isAutoPlaying && ads.length > 1 && !isPlaying && (
         <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-800">
           <div 
-            className="h-full bg-primary transition-all duration-100 ease-linear"
+            className="h-full bg-primary transition-all duration-100 ease-linear progress-bar"
             style={{
-              animation: `progress ${autoSlideInterval}ms linear infinite`
+              animationDuration: `${autoSlideInterval}ms`
             }}
           />
         </div>
       )}
 
-      <style jsx>{`
-        @keyframes progress {
-          from { width: 0% }
-          to { width: 100% }
-        }
-      `}</style>
+      <style>
+        {`
+          @keyframes progress {
+            from { width: 0% }
+            to { width: 100% }
+          }
+          .progress-bar {
+            animation: progress linear infinite;
+          }
+        `}
+      </style>
     </div>
   );
 };
