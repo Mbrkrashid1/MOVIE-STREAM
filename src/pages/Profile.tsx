@@ -1,542 +1,530 @@
 
-import { Settings, List, Download, Clock, BookmarkCheck, HelpCircle, Mail, Wifi, WifiOff, User, LogOut, Edit, Bell, Shield, Palette, Globe, Volume2, Monitor } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { User, Settings, Download, Shield, Bell, Moon, Sun, Smartphone, Wifi, Database, Play, Pause } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import BottomNavigation from "@/components/layout/BottomNavigation";
-import { Switch } from "@/components/ui/switch";
-import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-
-const ProfileItem = ({ icon, title, to, onClick, rightElement }: { 
-  icon: React.ReactNode, 
-  title: string, 
-  to?: string,
-  onClick?: () => void,
-  rightElement?: React.ReactNode 
-}) => {
-  const content = (
-    <div className="flex items-center py-4 border-b border-border/20 hover:bg-muted/30 transition-colors rounded-lg px-2">
-      <div className="mr-4 text-muted-foreground">
-        {icon}
-      </div>
-      <div className="flex-1">{title}</div>
-      {rightElement || <div className="text-muted-foreground">›</div>}
-    </div>
-  );
-
-  if (to) {
-    return <Link to={to} className="block">{content}</Link>;
-  }
-
-  return (
-    <button onClick={onClick} className="w-full text-left">
-      {content}
-    </button>
-  );
-};
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
 
 const Profile = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
   
-  // Enhanced state management for all features
-  const [offlineMode, setOfflineMode] = useState(false);
-  const [autoDownload, setAutoDownload] = useState(false);
-  const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(true);
-  const [autoPlay, setAutoPlay] = useState(true);
-  const [dataSaver, setDataSaver] = useState(false);
-  const [volume, setVolume] = useState([80]);
-  const [language, setLanguage] = useState("hausa");
-  const [quality, setQuality] = useState("auto");
-  
-  // Profile edit state
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [profileData, setProfileData] = useState({
-    name: "HausaBox User",
-    email: "user@hausabox.com",
+  // Profile state
+  const [profile, setProfile] = useState({
+    name: "John Doe",
+    email: "john.doe@example.com",
     phone: "",
-    bio: "Hausa entertainment enthusiast"
+    bio: "",
   });
 
-  // Enhanced toggle handlers with real functionality
-  const handleOfflineModeToggle = (enabled: boolean) => {
-    setOfflineMode(enabled);
-    localStorage.setItem('offlineMode', enabled.toString());
+  // App preferences state
+  const [appPreferences, setAppPreferences] = useState({
+    theme: "dark",
+    language: "english",
+    notifications: true,
+    autoPlay: true,
+    dataUsage: "standard",
+  });
+
+  // Playback preferences state
+  const [playbackPreferences, setPlaybackPreferences] = useState({
+    quality: "auto",
+    subtitles: true,
+    autoNext: true,
+    skipIntro: false,
+    volume: 80,
+  });
+
+  // Download settings state
+  const [downloadSettings, setDownloadSettings] = useState({
+    downloadQuality: "hd",
+    wifiOnly: true,
+    maxDownloads: 5,
+    autoDelete: true,
+    dataSaver: false,
+  });
+
+  // Account settings state
+  const [accountSettings, setAccountSettings] = useState({
+    twoFactor: false,
+    loginAlerts: true,
+    dataSharing: false,
+    analytics: true,
+  });
+
+  // Load settings from localStorage on component mount
+  useEffect(() => {
+    const savedAppPrefs = localStorage.getItem('appPreferences');
+    const savedPlaybackPrefs = localStorage.getItem('playbackPreferences');
+    const savedDownloadSettings = localStorage.getItem('downloadSettings');
+    const savedAccountSettings = localStorage.getItem('accountSettings');
+    const savedProfile = localStorage.getItem('userProfile');
+
+    if (savedAppPrefs) setAppPreferences(JSON.parse(savedAppPrefs));
+    if (savedPlaybackPrefs) setPlaybackPreferences(JSON.parse(savedPlaybackPrefs));
+    if (savedDownloadSettings) setDownloadSettings(JSON.parse(savedDownloadSettings));
+    if (savedAccountSettings) setAccountSettings(JSON.parse(savedAccountSettings));
+    if (savedProfile) setProfile(JSON.parse(savedProfile));
+  }, []);
+
+  // Save settings to localStorage
+  const saveSettings = (key: string, data: any) => {
+    localStorage.setItem(key, JSON.stringify(data));
     toast({
-      title: enabled ? "Offline mode enabled" : "Offline mode disabled",
-      description: enabled 
-        ? "Content will be available for offline viewing"
-        : "Offline content access disabled",
+      title: "Settings Updated",
+      description: "Your preferences have been saved successfully.",
     });
   };
 
-  const handleAutoDownloadToggle = (enabled: boolean) => {
-    setAutoDownload(enabled);
-    localStorage.setItem('autoDownload', enabled.toString());
-    toast({
-      title: enabled ? "Auto-download enabled" : "Auto-download disabled",
-      description: enabled 
-        ? "New episodes will download automatically when on WiFi"
-        : "Manual downloads only",
-    });
+  const handleProfileUpdate = () => {
+    saveSettings('userProfile', profile);
   };
 
-  const handleNotificationsToggle = (enabled: boolean) => {
-    setNotifications(enabled);
-    localStorage.setItem('notifications', enabled.toString());
-    toast({
-      title: enabled ? "Notifications enabled" : "Notifications disabled",
-      description: enabled 
-        ? "You'll receive updates about new content"
-        : "Notifications turned off",
-    });
+  const handleAppPreferencesUpdate = (key: string, value: any) => {
+    const updated = { ...appPreferences, [key]: value };
+    setAppPreferences(updated);
+    saveSettings('appPreferences', updated);
   };
 
-  const handleDarkModeToggle = (enabled: boolean) => {
-    setDarkMode(enabled);
-    document.documentElement.classList.toggle('dark', enabled);
-    localStorage.setItem('darkMode', enabled.toString());
-    toast({
-      title: enabled ? "Dark mode enabled" : "Light mode enabled",
-      description: "Theme preference saved",
-    });
+  const handlePlaybackPreferencesUpdate = (key: string, value: any) => {
+    const updated = { ...playbackPreferences, [key]: value };
+    setPlaybackPreferences(updated);
+    saveSettings('playbackPreferences', updated);
   };
 
-  const handleAutoPlayToggle = (enabled: boolean) => {
-    setAutoPlay(enabled);
-    localStorage.setItem('autoPlay', enabled.toString());
-    toast({
-      title: enabled ? "Auto-play enabled" : "Auto-play disabled",
-      description: enabled 
-        ? "Videos will play automatically"
-        : "Manual video start required",
-    });
+  const handleDownloadSettingsUpdate = (key: string, value: any) => {
+    const updated = { ...downloadSettings, [key]: value };
+    setDownloadSettings(updated);
+    saveSettings('downloadSettings', updated);
   };
 
-  const handleDataSaverToggle = (enabled: boolean) => {
-    setDataSaver(enabled);
-    localStorage.setItem('dataSaver', enabled.toString());
-    toast({
-      title: enabled ? "Data saver enabled" : "Data saver disabled",
-      description: enabled 
-        ? "Lower quality videos to save data"
-        : "Best quality videos enabled",
-    });
-  };
-
-  const handleVolumeChange = (value: number[]) => {
-    setVolume(value);
-    localStorage.setItem('defaultVolume', value[0].toString());
-  };
-
-  const handleLanguageChange = (value: string) => {
-    setLanguage(value);
-    localStorage.setItem('preferredLanguage', value);
-    toast({
-      title: "Language updated",
-      description: `Preferred language set to ${value.charAt(0).toUpperCase() + value.slice(1)}`,
-    });
-  };
-
-  const handleQualityChange = (value: string) => {
-    setQuality(value);
-    localStorage.setItem('videoQuality', value);
-    toast({
-      title: "Video quality updated",
-      description: `Default quality set to ${value.toUpperCase()}`,
-    });
-  };
-
-  const handleEditProfile = () => {
-    setIsEditingProfile(true);
-  };
-
-  const handleSaveProfile = () => {
-    // Save profile data logic would go here
-    setIsEditingProfile(false);
-    toast({
-      title: "Profile updated",
-      description: "Your profile has been successfully updated.",
-    });
+  const handleAccountSettingsUpdate = (key: string, value: any) => {
+    const updated = { ...accountSettings, [key]: value };
+    setAccountSettings(updated);
+    saveSettings('accountSettings', updated);
   };
 
   const handleLogout = () => {
-    // Clear all stored preferences
-    localStorage.clear();
     toast({
-      title: "Logged out",
+      title: "Logged Out",
       description: "You have been successfully logged out.",
     });
-    navigate("/");
   };
 
-  const handleContactUs = () => {
+  const handleDeleteAccount = () => {
     toast({
-      title: "Contact Support",
-      description: "Opening support chat...",
-    });
-    // Add actual contact functionality here
-  };
-
-  const handleHelp = () => {
-    window.open('https://help.hausabox.com', '_blank');
-    toast({
-      title: "Help Center",
-      description: "Opening help documentation...",
-    });
-  };
-
-  const handleClearCache = () => {
-    // Clear cache logic
-    toast({
-      title: "Cache cleared",
-      description: "App cache has been cleared successfully.",
-    });
-  };
-
-  const handleExportData = () => {
-    const userData = {
-      profile: profileData,
-      settings: {
-        offlineMode,
-        autoDownload,
-        notifications,
-        darkMode,
-        autoPlay,
-        dataServer: dataServer,
-        volume: volume[0],
-        language,
-        quality
-      },
-      exportDate: new Date().toISOString()
-    };
-    
-    const blob = new Blob([JSON.stringify(userData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'hausabox-profile.json';
-    a.click();
-    
-    toast({
-      title: "Data exported",
-      description: "Your profile data has been downloaded.",
+      title: "Account Deletion",
+      description: "Please contact support to delete your account.",
+      variant: "destructive"
     });
   };
 
   return (
-    <div className="pb-24 bg-zinc-950 min-h-screen">
+    <div className="pb-24 bg-background min-h-screen">
       <Navbar />
       
-      <div className="mt-14 p-4 space-y-6">
-        {/* Enhanced Profile header */}
-        <div className="relative p-6 rounded-xl bg-gradient-to-br from-primary/10 via-transparent to-background/5 backdrop-blur-sm border border-primary/20">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Avatar className="w-16 h-16 mr-4 border-2 border-primary/20">
-                <AvatarImage src="" />
-                <AvatarFallback className="bg-gradient-to-br from-primary/30 to-primary/10 text-primary text-xl font-bold">
-                  {profileData.name.split(' ').map(n => n[0]).join('')}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <h2 className="text-xl font-bold text-white">{profileData.name}</h2>
-                <span className="text-muted-foreground text-sm">Premium Account</span>
-                <p className="text-xs text-muted-foreground mt-1">{profileData.email}</p>
-              </div>
+      <div className="mt-14 px-4 py-6 max-w-4xl mx-auto">
+        <div className="text-center mb-8">
+          <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <User size={40} className="text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold">{profile.name}</h1>
+          <p className="text-muted-foreground">{profile.email}</p>
+        </div>
+
+        <div className="space-y-8">
+          {/* Profile Settings */}
+          <div className="bg-card rounded-lg p-6 border">
+            <div className="flex items-center mb-4">
+              <User className="mr-3" size={20} />
+              <h2 className="text-xl font-semibold">Profile Information</h2>
             </div>
             
-            <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleEditProfile}
-                  className="text-primary hover:bg-primary/10"
-                >
-                  <Edit size={16} />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-zinc-900 border-zinc-800">
-                <DialogHeader>
-                  <DialogTitle className="text-white">Edit Profile</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    value={profile.name}
+                    onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                    placeholder="Enter your full name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={profile.email}
+                    onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                    placeholder="Enter your email"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  value={profile.phone}
+                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                  placeholder="Enter your phone number"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="bio">Bio</Label>
+                <Input
+                  id="bio"
+                  value={profile.bio}
+                  onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                  placeholder="Tell us about yourself"
+                />
+              </div>
+              
+              <Button onClick={handleProfileUpdate} className="w-full md:w-auto">
+                Update Profile
+              </Button>
+            </div>
+          </div>
+
+          {/* App Preferences */}
+          <div className="bg-card rounded-lg p-6 border">
+            <div className="flex items-center mb-4">
+              <Settings className="mr-3" size={20} />
+              <h2 className="text-xl font-semibold">App Preferences</h2>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  {appPreferences.theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
                   <div>
-                    <Label htmlFor="name" className="text-white">Name</Label>
-                    <Input
-                      id="name"
-                      value={profileData.name}
-                      onChange={(e) => setProfileData({...profileData, name: e.target.value})}
-                      className="bg-zinc-800 border-zinc-700 text-white"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email" className="text-white">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={profileData.email}
-                      onChange={(e) => setProfileData({...profileData, email: e.target.value})}
-                      className="bg-zinc-800 border-zinc-700 text-white"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone" className="text-white">Phone</Label>
-                    <Input
-                      id="phone"
-                      value={profileData.phone}
-                      onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
-                      className="bg-zinc-800 border-zinc-700 text-white"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button onClick={handleSaveProfile} className="flex-1 bg-primary hover:bg-primary/90">
-                      Save Changes
-                    </Button>
-                    <Button variant="outline" onClick={() => setIsEditingProfile(false)} className="flex-1">
-                      Cancel
-                    </Button>
+                    <Label>Theme</Label>
+                    <p className="text-sm text-muted-foreground">Choose your preferred theme</p>
                   </div>
                 </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-white">Quick Actions</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <Link to="/admin" className="block">
-              <div className="bg-card/80 backdrop-blur-sm rounded-lg p-4 border border-border/30 hover:border-primary/50 transition-colors text-center">
-                <Settings size={24} className="mx-auto mb-2 text-primary" />
-                <span className="text-sm text-white">Admin Panel</span>
-              </div>
-            </Link>
-            <button onClick={handleClearCache} className="block w-full">
-              <div className="bg-card/80 backdrop-blur-sm rounded-lg p-4 border border-border/30 hover:border-blue-500/50 transition-colors text-center">
-                <Monitor size={24} className="mx-auto mb-2 text-blue-400" />
-                <span className="text-sm text-white">Clear Cache</span>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        {/* App Preferences */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-white">App Preferences</h3>
-          <div className="bg-card/80 backdrop-blur-sm rounded-lg border border-border/30">
-            <ProfileItem 
-              icon={<Bell size={20} />} 
-              title="Push Notifications" 
-              rightElement={
-                <Switch 
-                  checked={notifications}
-                  onCheckedChange={handleNotificationsToggle}
-                />
-              }
-            />
-            <ProfileItem 
-              icon={<Palette size={20} />} 
-              title="Dark Mode" 
-              rightElement={
-                <Switch 
-                  checked={darkMode}
-                  onCheckedChange={handleDarkModeToggle}
-                />
-              }
-            />
-            <ProfileItem 
-              icon={<Globe size={20} />} 
-              title="Language" 
-              rightElement={
-                <Select value={language} onValueChange={handleLanguageChange}>
-                  <SelectTrigger className="w-32 bg-zinc-800 border-zinc-700">
+                <Select
+                  value={appPreferences.theme}
+                  onValueChange={(value) => handleAppPreferencesUpdate('theme', value)}
+                >
+                  <SelectTrigger className="w-32">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-zinc-800 border-zinc-700">
-                    <SelectItem value="hausa">Hausa</SelectItem>
+                  <SelectContent>
+                    <SelectItem value="light">Light</SelectItem>
+                    <SelectItem value="dark">Dark</SelectItem>
+                    <SelectItem value="system">System</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Smartphone size={20} />
+                  <div>
+                    <Label>Language</Label>
+                    <p className="text-sm text-muted-foreground">Select your preferred language</p>
+                  </div>
+                </div>
+                <Select
+                  value={appPreferences.language}
+                  onValueChange={(value) => handleAppPreferencesUpdate('language', value)}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
                     <SelectItem value="english">English</SelectItem>
+                    <SelectItem value="hausa">Hausa</SelectItem>
                     <SelectItem value="yoruba">Yoruba</SelectItem>
                     <SelectItem value="igbo">Igbo</SelectItem>
                   </SelectContent>
                 </Select>
-              }
-            />
-          </div>
-        </div>
+              </div>
 
-        {/* Playback Settings */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-white">Playback Settings</h3>
-          <div className="bg-card/80 backdrop-blur-sm rounded-lg border border-border/30">
-            <ProfileItem 
-              icon={<Play size={20} />} 
-              title="Auto-play videos" 
-              rightElement={
-                <Switch 
-                  checked={autoPlay}
-                  onCheckedChange={handleAutoPlayToggle}
-                />
-              }
-            />
-            <ProfileItem 
-              icon={<Monitor size={20} />} 
-              title="Video Quality" 
-              rightElement={
-                <Select value={quality} onValueChange={handleQualityChange}>
-                  <SelectTrigger className="w-20 bg-zinc-800 border-zinc-700">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-zinc-800 border-zinc-700">
-                    <SelectItem value="auto">Auto</SelectItem>
-                    <SelectItem value="1080p">1080p</SelectItem>
-                    <SelectItem value="720p">720p</SelectItem>
-                    <SelectItem value="480p">480p</SelectItem>
-                  </SelectContent>
-                </Select>
-              }
-            />
-            <div className="flex items-center py-4 border-b border-border/20 px-2">
-              <Volume2 size={20} className="mr-4 text-muted-foreground" />
-              <div className="flex-1">
-                <span>Default Volume</span>
-                <div className="mt-2">
-                  <Slider
-                    value={volume}
-                    onValueChange={handleVolumeChange}
-                    max={100}
-                    step={1}
-                    className="w-full"
-                  />
-                  <div className="text-xs text-muted-foreground mt-1">{volume[0]}%</div>
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Bell size={20} />
+                  <div>
+                    <Label>Push Notifications</Label>
+                    <p className="text-sm text-muted-foreground">Receive updates about new content</p>
+                  </div>
                 </div>
+                <Switch
+                  checked={appPreferences.notifications}
+                  onCheckedChange={(checked) => handleAppPreferencesUpdate('notifications', checked)}
+                />
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Play size={20} />
+                  <div>
+                    <Label>Auto Play</Label>
+                    <p className="text-sm text-muted-foreground">Automatically play next video</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={appPreferences.autoPlay}
+                  onCheckedChange={(checked) => handleAppPreferencesUpdate('autoPlay', checked)}
+                />
               </div>
             </div>
-            <ProfileItem 
-              icon={<Shield size={20} />} 
-              title="Data Saver Mode" 
-              rightElement={
-                <Switch 
-                  checked={dataServer}
-                  onCheckedChange={handleDataSaverToggle}
-                />
-              }
-            />
           </div>
-        </div>
 
-        {/* Download & Offline Settings */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-white">Download & Offline</h3>
-          <div className="bg-card/80 backdrop-blur-sm rounded-lg border border-border/30">
-            <ProfileItem 
-              icon={offlineMode ? <WifiOff size={20} /> : <Wifi size={20} />} 
-              title="Offline Mode" 
-              rightElement={
-                <Switch 
-                  checked={offlineMode}
-                  onCheckedChange={handleOfflineModeToggle}
-                />
-              }
-            />
-            <ProfileItem 
-              icon={<Download size={20} />} 
-              title="Auto-download new episodes" 
-              rightElement={
-                <Switch 
-                  checked={autoDownload}
-                  onCheckedChange={handleAutoDownloadToggle}
-                />
-              }
-            />
-            <ProfileItem 
-              icon={<Download size={20} />} 
-              title="Downloaded Content" 
-              to="/downloads"
-            />
-          </div>
-        </div>
-        
-        {/* Watch History */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-white">Watch History</h3>
-          <div className="bg-card/80 backdrop-blur-sm rounded-lg border border-border/30">
-            <ProfileItem 
-              icon={<Clock size={20} />} 
-              title="Continue Watching" 
-              to="/history"
-            />
-            <ProfileItem 
-              icon={<List size={20} />} 
-              title="Watch History" 
-              to="/history"
-            />
-            <ProfileItem 
-              icon={<BookmarkCheck size={20} />} 
-              title="My Watchlist" 
-              to="/my-list"
-            />
-          </div>
-        </div>
-        
-        {/* Account Management */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-white">Account Management</h3>
-          <div className="bg-card/80 backdrop-blur-sm rounded-lg border border-border/30">
-            <ProfileItem 
-              icon={<Download size={20} />} 
-              title="Export My Data" 
-              onClick={handleExportData}
-            />
-            <ProfileItem 
-              icon={<Settings size={20} />} 
-              title="Privacy Settings" 
-              onClick={() => toast({ title: "Privacy Settings", description: "Privacy controls opened" })}
-            />
-            <ProfileItem 
-              icon={<Shield size={20} />} 
-              title="Security Settings" 
-              onClick={() => toast({ title: "Security Settings", description: "Security options opened" })}
-            />
-          </div>
-        </div>
+          {/* Playback Preferences */}
+          <div className="bg-card rounded-lg p-6 border">
+            <div className="flex items-center mb-4">
+              <Play className="mr-3" size={20} />
+              <h2 className="text-xl font-semibold">Playback Settings</h2>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Video Quality</Label>
+                  <p className="text-sm text-muted-foreground">Default playback quality</p>
+                </div>
+                <Select
+                  value={playbackPreferences.quality}
+                  onValueChange={(value) => handlePlaybackPreferencesUpdate('quality', value)}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">Auto</SelectItem>
+                    <SelectItem value="hd">HD (1080p)</SelectItem>
+                    <SelectItem value="sd">SD (720p)</SelectItem>
+                    <SelectItem value="low">Low (480p)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-        {/* Settings & Support section */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-white">Settings & Support</h3>
-          <div className="bg-card/80 backdrop-blur-sm rounded-lg border border-border/30">
-            <ProfileItem 
-              icon={<HelpCircle size={20} />} 
-              title="Help & Support" 
-              onClick={handleHelp}
-            />
-            <ProfileItem 
-              icon={<Mail size={20} />} 
-              title="Contact Us" 
-              onClick={handleContactUs}
-            />
-            <ProfileItem 
-              icon={<LogOut size={20} />} 
-              title="Logout" 
-              onClick={handleLogout}
-            />
-          </div>
-        </div>
+              <Separator />
 
-        {/* HausaBox Info */}
-        <div className="text-center text-muted-foreground text-sm mt-8">
-          <p>HausaBox - Your Premium Hausa Entertainment Platform</p>
-          <p className="mt-1">Version 1.2.0 • All Features Activated</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Subtitles</Label>
+                  <p className="text-sm text-muted-foreground">Show subtitles by default</p>
+                </div>
+                <Switch
+                  checked={playbackPreferences.subtitles}
+                  onCheckedChange={(checked) => handlePlaybackPreferencesUpdate('subtitles', checked)}
+                />
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Auto Next Episode</Label>
+                  <p className="text-sm text-muted-foreground">Automatically play next episode in series</p>
+                </div>
+                <Switch
+                  checked={playbackPreferences.autoNext}
+                  onCheckedChange={(checked) => handlePlaybackPreferencesUpdate('autoNext', checked)}
+                />
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Skip Intro</Label>
+                  <p className="text-sm text-muted-foreground">Automatically skip intro sequences</p>
+                </div>
+                <Switch
+                  checked={playbackPreferences.skipIntro}
+                  onCheckedChange={(checked) => handlePlaybackPreferencesUpdate('skipIntro', checked)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Download Settings */}
+          <div className="bg-card rounded-lg p-6 border">
+            <div className="flex items-center mb-4">
+              <Download className="mr-3" size={20} />
+              <h2 className="text-xl font-semibold">Download & Offline</h2>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Download Quality</Label>
+                  <p className="text-sm text-muted-foreground">Quality for downloaded content</p>
+                </div>
+                <Select
+                  value={downloadSettings.downloadQuality}
+                  onValueChange={(value) => handleDownloadSettingsUpdate('downloadQuality', value)}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hd">HD (1080p)</SelectItem>
+                    <SelectItem value="sd">SD (720p)</SelectItem>
+                    <SelectItem value="low">Low (480p)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Wifi size={20} />
+                  <div>
+                    <Label>WiFi Only Downloads</Label>
+                    <p className="text-sm text-muted-foreground">Only download over WiFi connection</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={downloadSettings.wifiOnly}
+                  onCheckedChange={(checked) => handleDownloadSettingsUpdate('wifiOnly', checked)}
+                />
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Database size={20} />
+                  <div>
+                    <Label>Data Saver Mode</Label>
+                    <p className="text-sm text-muted-foreground">Reduce data usage for streaming</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={downloadSettings.dataSaver}
+                  onCheckedChange={(checked) => handleDownloadSettingsUpdate('dataSaver', checked)}
+                />
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Max Downloads</Label>
+                  <p className="text-sm text-muted-foreground">Maximum number of simultaneous downloads</p>
+                </div>
+                <Select
+                  value={downloadSettings.maxDownloads.toString()}
+                  onValueChange={(value) => handleDownloadSettingsUpdate('maxDownloads', parseInt(value))}
+                >
+                  <SelectTrigger className="w-20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1</SelectItem>
+                    <SelectItem value="3">3</SelectItem>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="10">10</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Auto Delete Downloads</Label>
+                  <p className="text-sm text-muted-foreground">Delete downloads after watching</p>
+                </div>
+                <Switch
+                  checked={downloadSettings.autoDelete}
+                  onCheckedChange={(checked) => handleDownloadSettingsUpdate('autoDelete', checked)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Account Settings */}
+          <div className="bg-card rounded-lg p-6 border">
+            <div className="flex items-center mb-4">
+              <Shield className="mr-3" size={20} />
+              <h2 className="text-xl font-semibold">Account & Security</h2>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Two-Factor Authentication</Label>
+                  <p className="text-sm text-muted-foreground">Add extra security to your account</p>
+                </div>
+                <Switch
+                  checked={accountSettings.twoFactor}
+                  onCheckedChange={(checked) => handleAccountSettingsUpdate('twoFactor', checked)}
+                />
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Login Alerts</Label>
+                  <p className="text-sm text-muted-foreground">Get notified of new login attempts</p>
+                </div>
+                <Switch
+                  checked={accountSettings.loginAlerts}
+                  onCheckedChange={(checked) => handleAccountSettingsUpdate('loginAlerts', checked)}
+                />
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Data Sharing</Label>
+                  <p className="text-sm text-muted-foreground">Share usage data for improvements</p>
+                </div>
+                <Switch
+                  checked={accountSettings.dataSharing}
+                  onCheckedChange={(checked) => handleAccountSettingsUpdate('dataSharing', checked)}
+                />
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Analytics</Label>
+                  <p className="text-sm text-muted-foreground">Help improve the app with usage analytics</p>
+                </div>
+                <Switch
+                  checked={accountSettings.analytics}
+                  onCheckedChange={(checked) => handleAccountSettingsUpdate('analytics', checked)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Account Actions */}
+          <div className="bg-card rounded-lg p-6 border">
+            <h2 className="text-xl font-semibold mb-4">Account Actions</h2>
+            <div className="space-y-4">
+              <Button variant="outline" onClick={handleLogout} className="w-full">
+                Sign Out
+              </Button>
+              <Button variant="destructive" onClick={handleDeleteAccount} className="w-full">
+                Delete Account
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
       
