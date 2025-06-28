@@ -161,6 +161,7 @@ export type Database = {
       }
       content: {
         Row: {
+          backdrop_url: string | null
           category: string
           created_at: string | null
           description: string | null
@@ -178,6 +179,7 @@ export type Database = {
           views: number | null
         }
         Insert: {
+          backdrop_url?: string | null
           category: string
           created_at?: string | null
           description?: string | null
@@ -195,6 +197,7 @@ export type Database = {
           views?: number | null
         }
         Update: {
+          backdrop_url?: string | null
           category?: string
           created_at?: string | null
           description?: string | null
