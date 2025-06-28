@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Download, Play, Share, MessageSquare, Eye } from "lucide-react";
@@ -247,6 +246,7 @@ const MovieDetail = () => {
             videoUrl={movie.video_url} 
             contentId={movie.id}
             thumbnail={movie.thumbnail_url}
+            backdrop={movie.thumbnail_url} // Pass backdrop image
             title={movie.title}
             description={movie.description}
             views={movie.views || 0}

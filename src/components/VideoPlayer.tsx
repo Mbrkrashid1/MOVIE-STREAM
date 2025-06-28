@@ -11,6 +11,7 @@ interface VideoPlayerProps {
   videoUrl: string;
   contentId: string;
   thumbnail?: string;
+  backdrop?: string; // New backdrop image prop
   onClose?: () => void;
   title?: string;
   description?: string;
@@ -21,6 +22,7 @@ export function VideoPlayer({
   videoUrl, 
   contentId, 
   thumbnail, 
+  backdrop, // Accept backdrop prop
   onClose, 
   title = "Video", 
   description = "",
@@ -93,10 +95,7 @@ export function VideoPlayer({
       setIsLandscape(orientation === 90 || orientation === -90 || orientation === 270);
     };
 
-    // Initial check
     handleOrientationChange();
-
-    // Listen for orientation changes
     window.addEventListener('orientationchange', handleOrientationChange);
     window.addEventListener('resize', handleOrientationChange);
 
@@ -252,6 +251,11 @@ export function VideoPlayer({
     return "relative w-full h-full bg-black flex flex-col";
   };
 
+  // Enhanced backdrop image - prioritize backdrop over thumbnail
+  const getBackdropImage = () => {
+    return backdrop || thumbnail;
+  };
+
   const getVideoClasses = () => {
     if (isFullscreen || isLandscape) {
       return "w-full h-full object-contain";
@@ -261,6 +265,19 @@ export function VideoPlayer({
 
   return (
     <div className={getContainerClasses()}>
+      {/* Enhanced backdrop with custom image support */}
+      {getBackdropImage() && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-300"
+          style={{ 
+            backgroundImage: `url(${getBackdropImage()})`,
+            opacity: (!isPlaying || loading) && !adPlaying && !videoError ? 1 : 0
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/80" />
+        </div>
+      )}
+
       {/* Video Container with responsive sizing */}
       <div className="relative flex-1 w-full h-full">
         {/* Backdrop image when video is not playing or loading */}
@@ -275,7 +292,7 @@ export function VideoPlayer({
 
         {/* Video Error Display */}
         {videoError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black text-white">
+          <div className="absolute inset-0 flex items-center justify-center bg-black text-white z-20">
             <div className="text-center p-8">
               <div className="mb-4 text-red-400">
                 <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -313,7 +330,7 @@ export function VideoPlayer({
             canSkip={canSkip}
             skipCounter={skipCounter}
             onSkip={skipAd}
-            thumbnail={thumbnail}
+            thumbnail={getBackdropImage()}
           />
         )}
         
@@ -324,7 +341,7 @@ export function VideoPlayer({
               ref={videoRef}
               className={getVideoClasses()}
               src={videoUrl}
-              poster={thumbnail}
+              poster={getBackdropImage()}
               onTimeUpdate={handleTimeUpdate}
               onLoadedMetadata={handleLoadedMetadata}
               onEnded={handleVideoEnded}
@@ -360,7 +377,7 @@ export function VideoPlayer({
         
         {/* Loading overlay */}
         {loading && !adPlaying && !videoError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
             <div className="flex flex-col items-center space-y-4">
               <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
               <p className="text-white text-sm">Loading video...</p>
