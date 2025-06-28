@@ -105,12 +105,13 @@ const MovieDetail = () => {
           <Navbar />
           
           <div className="mt-14">
-            {/* Movie poster and gradient overlay */}
+            {/* Movie poster with backdrop support */}
             <div className="relative h-[50vh]">
               <img 
-                src={movie.thumbnail_url || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
+                src={movie.backdrop_url || movie.thumbnail_url || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
                 alt={movie.title} 
                 className="w-full h-full object-cover"
+                style={{ imageRendering: 'high-quality' }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
               
@@ -246,7 +247,7 @@ const MovieDetail = () => {
             videoUrl={movie.video_url} 
             contentId={movie.id}
             thumbnail={movie.thumbnail_url}
-            backdrop={movie.thumbnail_url} // Pass backdrop image
+            backdrop={movie.backdrop_url || movie.thumbnail_url} // Use backdrop if available, fallback to thumbnail
             title={movie.title}
             description={movie.description}
             views={movie.views || 0}

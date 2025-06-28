@@ -20,6 +20,7 @@ interface ContentFormData {
   type: string;
   category: string;
   thumbnail_url: string;
+  backdrop_url: string;
   video_url: string;
   duration: string;
   release_year: string;
@@ -48,8 +49,10 @@ export function ContentForm({
 }: ContentFormProps) {
   const { toast } = useToast();
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const [uploadingBackdrop, setUploadingBackdrop] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const fileInputRefThumbnail = useRef<HTMLInputElement>(null);
+  const fileInputRefBackdrop = useRef<HTMLInputElement>(null);
   const fileInputRefVideo = useRef<HTMLInputElement>(null);
 
   const handleUploadThumbnail = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -91,6 +94,48 @@ export function ContentForm({
     } finally {
       setUploadingThumbnail(false);
       if (fileInputRefThumbnail.current) fileInputRefThumbnail.current.value = "";
+    }
+  };
+
+  const handleUploadBackdrop = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setUploadingBackdrop(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-backdrop.${fileExt}`;
+      const filePath = `backdrops/${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('content')
+        .upload(filePath, file);
+      
+      if (uploadError) throw uploadError;
+      
+      const { data: publicUrlData } = supabase.storage
+        .from('content')
+        .getPublicUrl(filePath);
+      
+      setFormData(prev => ({
+        ...prev,
+        backdrop_url: publicUrlData.publicUrl
+      }));
+      
+      toast({
+        title: "Backdrop uploaded",
+        description: "Backdrop image has been uploaded successfully."
+      });
+    } catch (error: any) {
+      console.error("Error uploading backdrop:", error);
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to upload backdrop image.",
+        variant: "destructive"
+      });
+    } finally {
+      setUploadingBackdrop(false);
+      if (fileInputRefBackdrop.current) fileInputRefBackdrop.current.value = "";
     }
   };
   
@@ -265,6 +310,39 @@ export function ContentForm({
                 className="hidden"
               />
             </div>
+          </div>
+
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="backdrop_url">Backdrop Image (HD Background)</Label>
+            <div className="flex items-center gap-2">
+              <Input 
+                id="backdrop_url" 
+                name="backdrop_url" 
+                value={formData.backdrop_url} 
+                onChange={onInputChange}
+                placeholder="https://example.com/backdrop.jpg"
+                className="bg-input border-border"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRefBackdrop.current?.click()}
+                disabled={uploadingBackdrop}
+                className="whitespace-nowrap"
+              >
+                {uploadingBackdrop ? 'Uploading...' : <><Upload size={16} className="mr-2" /> Upload HD</>}
+              </Button>
+              <input
+                type="file"
+                ref={fileInputRefBackdrop}
+                onChange={handleUploadBackdrop}
+                accept="image/*"
+                className="hidden"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Upload a high-quality backdrop image (recommended: 1920x1080 or higher) for the video player background
+            </p>
           </div>
 
           <div className="space-y-2">

@@ -25,16 +25,29 @@ export function VideoPlayerContainer({
 
   return (
     <div className={getContainerClasses()}>
-      {/* Enhanced backdrop with custom image support */}
+      {/* Enhanced HD backdrop with optimized loading */}
       {backdropImage && (
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-300"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-500"
           style={{ 
             backgroundImage: `url(${backdropImage})`,
-            opacity: showBackdrop ? 1 : 0
+            opacity: showBackdrop ? 1 : 0,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            imageRendering: 'high-quality'
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/80" />
+          {/* Enhanced gradient overlay for better readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/90" />
+          
+          {/* Preload the image for better performance */}
+          <img 
+            src={backdropImage} 
+            alt="Backdrop" 
+            className="hidden" 
+            loading="eager"
+            onLoad={() => console.log('Backdrop loaded')}
+          />
         </div>
       )}
       
