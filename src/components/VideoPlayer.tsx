@@ -79,7 +79,7 @@ export function VideoPlayer({
 
   // Track view after 30 seconds of playback
   useEffect(() => {
-    trackView(isPlaying, currentTime, adPlaying);
+    trackView(isPlaying, currentTime, !!adPlaying);
   }, [isPlaying, currentTime, adPlaying]);
 
   const handleTimeUpdate = () => {
