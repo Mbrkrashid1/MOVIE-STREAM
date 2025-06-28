@@ -33,8 +33,7 @@ export function VideoPlayerContainer({
             backgroundImage: `url(${backdropImage})`,
             opacity: showBackdrop ? 1 : 0,
             backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            imageRendering: 'high-quality'
+            backgroundPosition: 'center'
           }}
         >
           {/* Enhanced gradient overlay for better readability */}

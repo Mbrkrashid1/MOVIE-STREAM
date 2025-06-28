@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Download, Play, Share, MessageSquare, Eye } from "lucide-react";
@@ -108,10 +109,9 @@ const MovieDetail = () => {
             {/* Movie poster with backdrop support */}
             <div className="relative h-[50vh]">
               <img 
-                src={movie.backdrop_url || movie.thumbnail_url || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
+                src={(movie as any).backdrop_url || movie.thumbnail_url || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
                 alt={movie.title} 
                 className="w-full h-full object-cover"
-                style={{ imageRendering: 'high-quality' }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
               
@@ -247,7 +247,7 @@ const MovieDetail = () => {
             videoUrl={movie.video_url} 
             contentId={movie.id}
             thumbnail={movie.thumbnail_url}
-            backdrop={movie.backdrop_url || movie.thumbnail_url} // Use backdrop if available, fallback to thumbnail
+            backdrop={(movie as any).backdrop_url || movie.thumbnail_url}
             title={movie.title}
             description={movie.description}
             views={movie.views || 0}
