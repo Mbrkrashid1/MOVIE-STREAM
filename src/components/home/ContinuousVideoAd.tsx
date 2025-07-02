@@ -36,21 +36,33 @@ const ContinuousVideoAd = ({ ads }: ContinuousVideoAdProps) => {
 
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
+    const handleError = (e: Event) => {
+      console.error('Video ad error:', e);
+      // Try next ad on error
+      const nextIndex = (currentAdIndex + 1) % ads.length;
+      setCurrentAdIndex(nextIndex);
+    };
 
     video.addEventListener('ended', handleEnded);
     video.addEventListener('play', handlePlay);
     video.addEventListener('pause', handlePause);
+    video.addEventListener('error', handleError);
 
     // Auto-play when ad changes
-    video.play().catch(() => {
-      // Handle autoplay restrictions
-      setIsPlaying(false);
-    });
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        // Handle autoplay restrictions
+        setIsPlaying(false);
+        console.log('Autoplay was prevented');
+      });
+    }
 
     return () => {
       video.removeEventListener('ended', handleEnded);
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
+      video.removeEventListener('error', handleError);
     };
   }, [currentAdIndex, ads.length]);
 
@@ -61,7 +73,12 @@ const ContinuousVideoAd = ({ ads }: ContinuousVideoAdProps) => {
     if (isPlaying) {
       video.pause();
     } else {
-      video.play();
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => {
+          console.error('Play failed:', error);
+        });
+      }
     }
   };
 
@@ -82,20 +99,20 @@ const ContinuousVideoAd = ({ ads }: ContinuousVideoAdProps) => {
   if (!ads.length) return null;
 
   return (
-    <div className="relative rounded-xl overflow-hidden shadow-2xl border border-primary/20 bg-gradient-to-br from-card/90 to-background/50 backdrop-blur-sm">
+    <div className="relative rounded-lg overflow-hidden shadow-lg border border-primary/10 bg-gradient-to-br from-card/90 to-background/50 backdrop-blur-sm">
       {/* Ad Label */}
-      <div className="absolute top-3 left-3 z-20 bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs px-3 py-1 rounded-full font-bold shadow-lg">
+      <div className="absolute top-2 left-2 z-20 bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs px-2 py-0.5 rounded-full font-bold shadow-sm">
         SPONSORED
       </div>
 
       {/* Ad Counter */}
       {ads.length > 1 && (
-        <div className="absolute top-3 right-3 z-20 bg-black/70 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
+        <div className="absolute top-2 right-2 z-20 bg-black/70 text-white text-xs px-2 py-0.5 rounded backdrop-blur-sm">
           {currentAdIndex + 1} / {ads.length}
         </div>
       )}
 
-      {/* Video Container */}
+      {/* Video Container - YouTube Home Section Size */}
       <div 
         className="relative group cursor-pointer"
         onMouseEnter={() => setShowControls(true)}
@@ -104,12 +121,13 @@ const ContinuousVideoAd = ({ ads }: ContinuousVideoAdProps) => {
       >
         <video
           ref={videoRef}
-          className="w-full h-64 object-cover"
+          className="w-full h-44 sm:h-48 object-cover"
           src={currentAd.video_url}
           poster={currentAd.thumbnail_url}
           muted={isMuted}
           loop={false}
           playsInline
+          preload="metadata"
         />
 
         {/* Video Controls Overlay */}
@@ -120,26 +138,26 @@ const ContinuousVideoAd = ({ ads }: ContinuousVideoAdProps) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="bg-primary/90 hover:bg-primary text-white rounded-full h-16 w-16 transition-all duration-300 hover:scale-110"
+                className="bg-primary/90 hover:bg-primary text-white rounded-full h-12 w-12 transition-all duration-300 hover:scale-110"
               >
-                <Play size={24} fill="white" />
+                <Play size={20} fill="white" />
               </Button>
             )}
           </div>
 
           {/* Bottom Controls */}
-          <div className="absolute bottom-0 left-0 right-0 p-4">
+          <div className="absolute bottom-0 left-0 right-0 p-3">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <h3 className="text-white font-bold text-lg drop-shadow-lg">{currentAd.title}</h3>
+                <h3 className="text-white font-bold text-base drop-shadow-lg line-clamp-1">{currentAd.title}</h3>
                 {currentAd.description && (
-                  <p className="text-gray-200 text-sm mt-1 line-clamp-2 drop-shadow-md">
+                  <p className="text-gray-200 text-xs mt-0.5 line-clamp-1 drop-shadow-md">
                     {currentAd.description}
                   </p>
                 )}
               </div>
               
-              <div className="flex items-center space-x-2 ml-4">
+              <div className="flex items-center space-x-1 ml-3">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -147,9 +165,9 @@ const ContinuousVideoAd = ({ ads }: ContinuousVideoAdProps) => {
                     e.stopPropagation();
                     toggleMute();
                   }}
-                  className="bg-black/50 hover:bg-black/70 text-white rounded-full backdrop-blur-sm"
+                  className="bg-black/50 hover:bg-black/70 text-white rounded-full backdrop-blur-sm h-8 w-8"
                 >
-                  {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                  {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
                 </Button>
               </div>
             </div>
@@ -157,29 +175,30 @@ const ContinuousVideoAd = ({ ads }: ContinuousVideoAdProps) => {
         </div>
       </div>
 
-      {/* CTA Section */}
-      <div className="p-4 bg-gradient-to-r from-card/80 to-background/60 backdrop-blur-sm">
+      {/* CTA Section - Compact */}
+      <div className="p-3 bg-gradient-to-r from-card/80 to-background/60 backdrop-blur-sm">
         <div className="flex items-center justify-between">
-          <div className="flex space-x-3">
+          <div className="flex space-x-2">
             {currentAd.cta_text && (
               <Button 
                 onClick={handleCTAClick}
-                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold px-6 py-2 shadow-lg transition-all duration-200 hover:scale-105"
+                size="sm"
+                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-medium px-4 py-1.5 shadow-md transition-all duration-200 hover:scale-105"
               >
-                <ExternalLink size={16} className="mr-2" />
+                <ExternalLink size={14} className="mr-1.5" />
                 {currentAd.cta_text}
               </Button>
             )}
           </div>
           
-          {/* Ad Navigation Dots */}
+          {/* Ad Navigation Dots - Smaller */}
           {ads.length > 1 && (
-            <div className="flex space-x-2">
+            <div className="flex space-x-1.5">
               {ads.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentAdIndex(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                  className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
                     index === currentAdIndex 
                       ? 'bg-primary scale-125' 
                       : 'bg-gray-400 hover:bg-gray-300'

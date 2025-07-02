@@ -100,6 +100,14 @@ export function VideoPlayer({
     const video = e.currentTarget;
     const error = video.error;
     
+    console.log('Video error occurred:', {
+      errorCode: error?.code,
+      errorMessage: error?.message,
+      videoUrl,
+      readyState: video.readyState,
+      networkState: video.networkState
+    });
+    
     if (error) {
       let errorMessage = "Video playback failed";
       
@@ -132,19 +140,28 @@ export function VideoPlayer({
   };
 
   const handleCanPlay = () => {
+    console.log('Video can play:', {
+      duration: videoRef.current?.duration,
+      readyState: videoRef.current?.readyState,
+      videoWidth: videoRef.current?.videoWidth,
+      videoHeight: videoRef.current?.videoHeight
+    });
     setLoading(false);
     setVideoError(null);
   };
 
   const handleWaiting = () => {
+    console.log('Video waiting for data');
     setLoading(true);
   };
 
   const handleCanPlayThrough = () => {
+    console.log('Video can play through');
     setLoading(false);
   };
 
   const handleRetry = () => {
+    console.log('Retrying video playback');
     setVideoError(null);
     setLoading(true);
     if (videoRef.current) {
@@ -175,16 +192,6 @@ export function VideoPlayer({
     >
       {/* Video Container with responsive sizing */}
       <div className="relative flex-1 w-full h-full">
-        {/* Backdrop image when video is not playing or loading */}
-        {(!isPlaying || loading) && thumbnail && !adPlaying && !videoError && (
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${thumbnail})` }}
-          >
-            <div className="absolute inset-0 bg-black/40" />
-          </div>
-        )}
-
         {/* Video Error Display */}
         {videoError && (
           <VideoErrorDisplay error={videoError} onRetry={handleRetry} />
@@ -207,7 +214,7 @@ export function VideoPlayer({
           />
         )}
         
-        {/* Main video with responsive object-fit */}
+        {/* Main video with enhanced error handling */}
         {!adPlaying && !videoError && (
           <>
             <video
@@ -224,9 +231,15 @@ export function VideoPlayer({
               onCanPlay={handleCanPlay}
               onWaiting={handleWaiting}
               onCanPlayThrough={handleCanPlayThrough}
+              onLoadStart={() => console.log('Video load started')}
+              onLoadedData={() => console.log('Video data loaded')}
+              onSuspend={() => console.log('Video suspended')}
+              onStalled={() => console.log('Video stalled')}
+              onProgress={() => console.log('Video progress')}
               preload="metadata"
               playsInline
               controls={false}
+              crossOrigin="anonymous"
             />
             
             {/* Enhanced Controls overlay */}
