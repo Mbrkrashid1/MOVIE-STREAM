@@ -39,14 +39,14 @@ const Index = () => {
 
   const videoAdsList = videoAds?.filter(ad => ad.thumbnail_url && ad.video_url) || [];
   
-  // Convert video ads to banner ads format
+  // Convert video ads to banner ads format - safely handle optional CTA properties
   const bannerAds = videoAdsList.slice(0, 5).map(ad => ({
     id: ad.id,
     title: ad.title,
     description: ad.description,
     image_url: ad.thumbnail_url || '',
-    cta_text: ad.cta_text,
-    cta_url: ad.cta_url,
+    cta_text: ad.cta_text || undefined,
+    cta_url: ad.cta_url || undefined,
     background_color: 'from-purple-900/20 to-blue-900/20'
   }));
 

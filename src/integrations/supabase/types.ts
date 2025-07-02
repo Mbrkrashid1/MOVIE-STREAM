@@ -88,6 +88,8 @@ export type Database = {
       ads: {
         Row: {
           created_at: string | null
+          cta_text: string | null
+          cta_url: string | null
           description: string | null
           duration: number | null
           id: string
@@ -100,6 +102,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          cta_text?: string | null
+          cta_url?: string | null
           description?: string | null
           duration?: number | null
           id?: string
@@ -112,6 +116,8 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          cta_text?: string | null
+          cta_url?: string | null
           description?: string | null
           duration?: number | null
           id?: string
