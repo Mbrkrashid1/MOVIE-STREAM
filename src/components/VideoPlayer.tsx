@@ -36,6 +36,7 @@ export function VideoPlayer({
 }: VideoPlayerProps) {
   const { toast } = useToast();
   const [videoError, setVideoError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const {
     isPlaying,
@@ -82,24 +83,58 @@ export function VideoPlayer({
     trackView(isPlaying, currentTime, !!adPlaying);
   }, [isPlaying, currentTime, adPlaying]);
 
-  // Validate video URL on mount
+  // Enhanced video URL validation and error handling
   useEffect(() => {
-    if (!videoUrl || videoUrl.trim() === '') {
-      setVideoError("No video URL provided");
+    if (!videoUrl || videoUrl.trim() === '' || videoUrl === 'placeholder') {
+      setVideoError("Video not available");
       return;
     }
 
-    // Check if URL is valid
+    // Reset error and retry count when URL changes
+    setVideoError(null);
+    setRetryCount(0);
+    setLoading(true);
+
+    // Validate URL format
     try {
-      new URL(videoUrl);
+      const url = new URL(videoUrl);
+      // Check if it's a valid video URL
+      if (!url.protocol.startsWith('http')) {
+        throw new Error('Invalid protocol');
+      }
     } catch (error) {
       console.error('Invalid video URL:', videoUrl);
       setVideoError("Invalid video URL format");
+      setLoading(false);
       return;
     }
 
-    // Reset error when URL changes
-    setVideoError(null);
+    // Preload video to check if it's valid
+    const testVideo = document.createElement('video');
+    testVideo.preload = 'metadata';
+    testVideo.muted = true;
+    
+    const handleTestLoad = () => {
+      console.log('Video URL validated successfully');
+      setVideoError(null);
+      setLoading(false);
+    };
+    
+    const handleTestError = () => {
+      console.error('Video URL validation failed:', videoUrl);
+      setVideoError("Video source is not accessible");
+      setLoading(false);
+    };
+    
+    testVideo.addEventListener('loadedmetadata', handleTestLoad);
+    testVideo.addEventListener('error', handleTestError);
+    testVideo.src = videoUrl;
+    
+    return () => {
+      testVideo.removeEventListener('loadedmetadata', handleTestLoad);
+      testVideo.removeEventListener('error', handleTestError);
+      testVideo.src = '';
+    };
   }, [videoUrl]);
 
   const handleTimeUpdate = () => {
@@ -126,7 +161,8 @@ export function VideoPlayer({
       videoUrl,
       readyState: video.readyState,
       networkState: video.networkState,
-      src: video.src
+      src: video.src,
+      retryCount
     });
     
     if (error) {
@@ -137,13 +173,13 @@ export function VideoPlayer({
           errorMessage = "Video playback was aborted";
           break;
         case MediaError.MEDIA_ERR_NETWORK:
-          errorMessage = "Network error occurred while loading video";
+          errorMessage = "Network error - check your connection";
           break;
         case MediaError.MEDIA_ERR_DECODE:
-          errorMessage = "Video format is not supported or corrupted";
+          errorMessage = "Video format not supported or file corrupted";
           break;
         case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-          errorMessage = "Video source is not supported";
+          errorMessage = "Video source not supported";
           break;
         default:
           errorMessage = "Unknown video error occurred";
@@ -152,11 +188,14 @@ export function VideoPlayer({
       setVideoError(errorMessage);
       setLoading(false);
       
-      toast({
-        title: "Video Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
+      // Only show toast for first error to avoid spam
+      if (retryCount === 0) {
+        toast({
+          title: "Video Error",
+          description: errorMessage,
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -183,11 +222,26 @@ export function VideoPlayer({
   };
 
   const handleRetry = () => {
-    console.log('Retrying video playback');
+    console.log('Retrying video playback, attempt:', retryCount + 1);
+    setRetryCount(prev => prev + 1);
     setVideoError(null);
     setLoading(true);
+    
     if (videoRef.current) {
+      // Reset video element
+      videoRef.current.currentTime = 0;
       videoRef.current.load();
+      
+      // Try to play after a short delay
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.play().catch(err => {
+            console.error('Retry play failed:', err);
+            setVideoError("Unable to play video after retry");
+            setLoading(false);
+          });
+        }
+      }, 1000);
     }
   };
 
@@ -206,7 +260,7 @@ export function VideoPlayer({
   const showBackdrop = (!isPlaying || loading) && !adPlaying && !videoError;
 
   // Show error if video URL is invalid
-  if (videoError && !videoUrl) {
+  if (videoError && (!videoUrl || videoUrl === 'placeholder')) {
     return (
       <VideoPlayerContainer
         isFullscreen={isFullscreen}
@@ -251,7 +305,7 @@ export function VideoPlayer({
         )}
         
         {/* Main video with enhanced error handling */}
-        {!adPlaying && !videoError && videoUrl && (
+        {!adPlaying && !videoError && videoUrl && videoUrl !== 'placeholder' && (
           <>
             <video
               ref={videoRef}

@@ -19,25 +19,37 @@ export function useVideoControls() {
         videoRef.current.pause();
         setIsPlaying(false);
       } else {
-        // Check if video source is valid before playing
-        if (!videoRef.current.src || videoRef.current.src === window.location.href) {
+        // Enhanced video source validation
+        if (!videoRef.current.src || 
+            videoRef.current.src === window.location.href ||
+            videoRef.current.src === 'placeholder') {
           console.error('Invalid video source:', videoRef.current.src);
           toast({
             title: "Video Error",
-            description: "Invalid video source. Please check the video URL.",
+            description: "No valid video source available.",
             variant: "destructive"
           });
           return;
         }
 
-        // Ensure video is ready before playing
+        // Check if video is ready before playing
         if (videoRef.current.readyState >= 2) {
           await videoRef.current.play();
           setIsPlaying(true);
         } else {
-          // Wait for video to be ready
+          // Wait for video to be ready with timeout
           setLoading(true);
+          const timeoutId = setTimeout(() => {
+            setLoading(false);
+            toast({
+              title: "Video Loading Timeout",
+              description: "Video is taking too long to load. Please try again.",
+              variant: "destructive"
+            });
+          }, 10000); // 10 second timeout
+
           const handleCanPlay = () => {
+            clearTimeout(timeoutId);
             videoRef.current?.play()
               .then(() => setIsPlaying(true))
               .catch(handlePlayError);
@@ -58,23 +70,29 @@ export function useVideoControls() {
     setIsPlaying(false);
     setLoading(false);
     
-    // Handle different types of play errors
+    // Handle different types of play errors with more specific messages
     if (error.name === 'NotAllowedError') {
       toast({
         title: "Playback Blocked",
-        description: "Please tap to enable video playback.",
+        description: "Please tap to enable video playback or check browser permissions.",
         variant: "destructive"
       });
     } else if (error.name === 'NotSupportedError') {
       toast({
         title: "Format Not Supported",
-        description: "This video format is not supported. Trying alternative formats...",
+        description: "This video format is not supported by your browser.",
+        variant: "destructive"
+      });
+    } else if (error.name === 'AbortError') {
+      toast({
+        title: "Playback Aborted",
+        description: "Video playback was interrupted. Please try again.",
         variant: "destructive"
       });
     } else {
       toast({
         title: "Playback Error",
-        description: "There was an error playing this video. Please try again.",
+        description: "Unable to play this video. Please check your connection and try again.",
         variant: "destructive"
       });
     }
@@ -87,7 +105,7 @@ export function useVideoControls() {
     videoRef.current.muted = newMutedState;
     setIsMuted(newMutedState);
     
-    // Also adjust volume to provide visual feedback
+    // Provide better volume feedback
     if (newMutedState) {
       videoRef.current.volume = 0;
     } else {
@@ -101,16 +119,22 @@ export function useVideoControls() {
     setDuration(videoRef.current.duration);
     setLoading(false);
     
-    // Set initial volume
+    // Set initial volume and validate video
     videoRef.current.volume = 0.8;
     
-    console.log('Video loaded:', {
+    console.log('Video loaded successfully:', {
       duration: videoRef.current.duration,
       readyState: videoRef.current.readyState,
       videoWidth: videoRef.current.videoWidth,
       videoHeight: videoRef.current.videoHeight,
-      src: videoRef.current.src
+      src: videoRef.current.src,
+      networkState: videoRef.current.networkState
     });
+
+    // Additional validation for video dimensions
+    if (videoRef.current.videoWidth === 0 || videoRef.current.videoHeight === 0) {
+      console.warn('Video loaded but has no dimensions - might be audio only or corrupted');
+    }
   }, []);
 
   const formatTime = useCallback((time: number) => {
