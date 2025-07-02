@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, X, ExternalLink, ChevronLeft, ChevronRight, Pause } from "lucide-react";
+import { X, ExternalLink, ChevronLeft, ChevronRight, Pause } from "lucide-react";
 import VideoPlayer from "@/components/VideoPlayer";
 
 interface Ad {
@@ -28,7 +28,6 @@ const AutoSlideAdBanner = ({
 }: AutoSlideAdBannerProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
   // Auto-slide functionality
@@ -100,7 +99,7 @@ const AutoSlideAdBanner = ({
               size="sm"
               className="text-xs text-gray-400 hover:text-white h-6 px-2"
             >
-              {isAutoPlaying ? <Pause size={10} /> : <Play size={10} />}
+              {isAutoPlaying ? <Pause size={10} /> : <Pause size={10} />}
               {isAutoPlaying ? 'Pause' : 'Auto'}
             </Button>
           )}
@@ -108,7 +107,7 @@ const AutoSlideAdBanner = ({
         </div>
       </div>
 
-      {/* Ad Content - YouTube Home Section Size (16:9 aspect ratio, smaller height) */}
+      {/* Ad Content */}
       <div className="bg-gradient-to-br from-card/80 to-background/60 backdrop-blur-sm">
         {isPlaying && currentAd.video_url ? (
           <div className="relative w-full h-44 sm:h-48">
@@ -129,7 +128,7 @@ const AutoSlideAdBanner = ({
           </div>
         ) : (
           <>
-            <div className="relative group">
+            <div className="relative group cursor-pointer" onClick={handlePlayVideo}>
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10"></div>
               <img 
                 src={currentAd.thumbnail_url || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
@@ -141,13 +140,19 @@ const AutoSlideAdBanner = ({
               {ads.length > 1 && showControls && (
                 <>
                   <button
-                    onClick={handlePrevious}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePrevious();
+                    }}
                     className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center transition-all duration-200"
                   >
                     <ChevronLeft size={16} />
                   </button>
                   <button
-                    onClick={handleNext}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleNext();
+                    }}
                     className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center transition-all duration-200"
                   >
                     <ChevronRight size={16} />
@@ -155,21 +160,7 @@ const AutoSlideAdBanner = ({
                 </>
               )}
               
-              {/* Play Button */}
-              {currentAd.video_url && (
-                <div className="absolute inset-0 flex items-center justify-center z-20">
-                  <Button 
-                    onClick={handlePlayVideo}
-                    variant="ghost" 
-                    size="icon" 
-                    className="rounded-full bg-primary/90 hover:bg-primary text-white h-12 w-12 transition-all duration-300 hover:scale-110 shadow-lg backdrop-blur-sm"
-                  >
-                    <Play size={20} fill="white" />
-                  </Button>
-                </div>
-              )}
-              
-              {/* Content Overlay */}
+              {/* Content Overlay - No Play Button for Auto-Play */}
               <div className="absolute bottom-0 left-0 right-0 z-20 p-3">
                 <h3 className="text-lg font-bold text-white mb-1 drop-shadow-lg line-clamp-1">{currentAd.title}</h3>
                 {currentAd.description && (
@@ -183,17 +174,6 @@ const AutoSlideAdBanner = ({
             {/* Action Buttons - Compact */}
             <div className="p-3">
               <div className="flex flex-wrap gap-2 mb-3">
-                {currentAd.video_url && (
-                  <Button 
-                    onClick={handlePlayVideo} 
-                    size="sm"
-                    className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-medium px-4 py-1.5 rounded-md shadow-md transition-all duration-200 hover:scale-105"
-                  >
-                    <Play size={14} className="mr-1.5" fill="white" /> 
-                    Watch
-                  </Button>
-                )}
-                
                 {currentAd.cta_text && (
                   <Button 
                     onClick={handleCTAClick} 

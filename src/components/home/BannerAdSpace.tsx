@@ -28,18 +28,17 @@ const BannerAdSpace = ({
 }: BannerAdSpaceProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
-  const [isPaused, setIsPaused] = useState(false);
 
-  // Auto-slide functionality
+  // Auto-slide functionality - Fixed to always auto-scroll
   useEffect(() => {
-    if (!isPaused && ads.length > 1 && autoSlideInterval > 0) {
+    if (ads.length > 1 && autoSlideInterval > 0) {
       const interval = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % ads.length);
       }, autoSlideInterval);
 
       return () => clearInterval(interval);
     }
-  }, [isPaused, ads.length, autoSlideInterval]);
+  }, [ads.length, autoSlideInterval]);
 
   if (!ads.length || !isVisible) return null;
 
@@ -47,17 +46,14 @@ const BannerAdSpace = ({
 
   const handlePrevious = () => {
     setCurrentIndex((prev) => (prev - 1 + ads.length) % ads.length);
-    setIsPaused(true);
   };
 
   const handleNext = () => {
     setCurrentIndex((prev) => (prev + 1) % ads.length);
-    setIsPaused(true);
   };
 
   const handleDotClick = (index: number) => {
     setCurrentIndex(index);
-    setIsPaused(true);
   };
 
   const handleCTAClick = () => {
@@ -160,8 +156,8 @@ const BannerAdSpace = ({
         </div>
       )}
 
-      {/* Progress Bar */}
-      {!isPaused && ads.length > 1 && autoSlideInterval > 0 && (
+      {/* Progress Bar - Always show for auto-scrolling */}
+      {ads.length > 1 && autoSlideInterval > 0 && (
         <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gray-800">
           <div 
             className="h-full bg-primary transition-all duration-100 ease-linear animate-progress"
