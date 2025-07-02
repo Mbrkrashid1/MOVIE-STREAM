@@ -82,6 +82,26 @@ export function VideoPlayer({
     trackView(isPlaying, currentTime, !!adPlaying);
   }, [isPlaying, currentTime, adPlaying]);
 
+  // Validate video URL on mount
+  useEffect(() => {
+    if (!videoUrl || videoUrl.trim() === '') {
+      setVideoError("No video URL provided");
+      return;
+    }
+
+    // Check if URL is valid
+    try {
+      new URL(videoUrl);
+    } catch (error) {
+      console.error('Invalid video URL:', videoUrl);
+      setVideoError("Invalid video URL format");
+      return;
+    }
+
+    // Reset error when URL changes
+    setVideoError(null);
+  }, [videoUrl]);
+
   const handleTimeUpdate = () => {
     baseHandleTimeUpdate();
     
@@ -105,7 +125,8 @@ export function VideoPlayer({
       errorMessage: error?.message,
       videoUrl,
       readyState: video.readyState,
-      networkState: video.networkState
+      networkState: video.networkState,
+      src: video.src
     });
     
     if (error) {
@@ -144,7 +165,8 @@ export function VideoPlayer({
       duration: videoRef.current?.duration,
       readyState: videoRef.current?.readyState,
       videoWidth: videoRef.current?.videoWidth,
-      videoHeight: videoRef.current?.videoHeight
+      videoHeight: videoRef.current?.videoHeight,
+      src: videoRef.current?.src
     });
     setLoading(false);
     setVideoError(null);
@@ -183,6 +205,20 @@ export function VideoPlayer({
 
   const showBackdrop = (!isPlaying || loading) && !adPlaying && !videoError;
 
+  // Show error if video URL is invalid
+  if (videoError && !videoUrl) {
+    return (
+      <VideoPlayerContainer
+        isFullscreen={isFullscreen}
+        isLandscape={isLandscape}
+        backdropImage={getBackdropImage()}
+        showBackdrop={false}
+      >
+        <VideoErrorDisplay error="No video available" onRetry={handleRetry} />
+      </VideoPlayerContainer>
+    );
+  }
+
   return (
     <VideoPlayerContainer
       isFullscreen={isFullscreen}
@@ -215,7 +251,7 @@ export function VideoPlayer({
         )}
         
         {/* Main video with enhanced error handling */}
-        {!adPlaying && !videoError && (
+        {!adPlaying && !videoError && videoUrl && (
           <>
             <video
               ref={videoRef}

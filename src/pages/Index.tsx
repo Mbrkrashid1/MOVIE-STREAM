@@ -8,6 +8,8 @@ import LoadingScreen from "@/components/home/LoadingScreen";
 import HeroSection from "@/components/home/HeroSection";
 import ContentRowsSection from "@/components/home/ContentRowsSection";
 import AutoSlideAdBanner from "@/components/ui/AutoSlideAdBanner";
+import AutoPlayAdSequencer from "@/components/home/AutoPlayAdSequencer";
+import BannerAdSpace from "@/components/home/BannerAdSpace";
 import Scene3D from "@/components/home/Scene3D";
 
 const Index = () => {
@@ -35,7 +37,23 @@ const Index = () => {
     return <LoadingScreen />;
   }
 
-  const videoAdsList = videoAds?.filter(ad => ad.thumbnail_url) || [];
+  const videoAdsList = videoAds?.filter(ad => ad.thumbnail_url && ad.video_url) || [];
+  
+  // Convert video ads to banner ads format
+  const bannerAds = videoAdsList.slice(0, 5).map(ad => ({
+    id: ad.id,
+    title: ad.title,
+    description: ad.description,
+    image_url: ad.thumbnail_url || '',
+    cta_text: ad.cta_text,
+    cta_url: ad.cta_url,
+    background_color: 'from-purple-900/20 to-blue-900/20'
+  }));
+
+  const handleAdComplete = (adId: string) => {
+    console.log('Ad completed:', adId);
+    // Track ad completion here
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-card/20 to-background pb-20 relative overflow-hidden">
@@ -50,6 +68,18 @@ const Index = () => {
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-accent/10 blur-3xl"></div>
             <HeroSection featuredItems={featuredItems} />
+          </div>
+        )}
+
+        {/* Banner Ad Space */}
+        {bannerAds.length > 0 && (
+          <div className="px-3 mb-6">
+            <BannerAdSpace 
+              ads={bannerAds}
+              autoSlideInterval={6000}
+              showNavigation={true}
+              className="mb-4"
+            />
           </div>
         )}
 
@@ -88,6 +118,15 @@ const Index = () => {
           <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 blur-sm"></div>
         </div>
       </div>
+      
+      {/* Auto-Playing Ad Sequencer (Fixed Position) */}
+      {videoAdsList.length > 0 && (
+        <AutoPlayAdSequencer
+          ads={videoAdsList}
+          autoPlayDuration={30}
+          onAdComplete={handleAdComplete}
+        />
+      )}
       
       <BottomNavigation />
     </div>

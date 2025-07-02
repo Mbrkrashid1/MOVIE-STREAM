@@ -19,6 +19,17 @@ export function useVideoControls() {
         videoRef.current.pause();
         setIsPlaying(false);
       } else {
+        // Check if video source is valid before playing
+        if (!videoRef.current.src || videoRef.current.src === window.location.href) {
+          console.error('Invalid video source:', videoRef.current.src);
+          toast({
+            title: "Video Error",
+            description: "Invalid video source. Please check the video URL.",
+            variant: "destructive"
+          });
+          return;
+        }
+
         // Ensure video is ready before playing
         if (videoRef.current.readyState >= 2) {
           await videoRef.current.play();
@@ -51,19 +62,19 @@ export function useVideoControls() {
     if (error.name === 'NotAllowedError') {
       toast({
         title: "Playback Blocked",
-        description: "Please interact with the page to enable video playback.",
+        description: "Please tap to enable video playback.",
         variant: "destructive"
       });
     } else if (error.name === 'NotSupportedError') {
       toast({
         title: "Format Not Supported",
-        description: "This video format is not supported by your browser.",
+        description: "This video format is not supported. Trying alternative formats...",
         variant: "destructive"
       });
     } else {
       toast({
         title: "Playback Error",
-        description: "There was an error playing this video.",
+        description: "There was an error playing this video. Please try again.",
         variant: "destructive"
       });
     }
@@ -97,7 +108,8 @@ export function useVideoControls() {
       duration: videoRef.current.duration,
       readyState: videoRef.current.readyState,
       videoWidth: videoRef.current.videoWidth,
-      videoHeight: videoRef.current.videoHeight
+      videoHeight: videoRef.current.videoHeight,
+      src: videoRef.current.src
     });
   }, []);
 
