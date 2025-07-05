@@ -10,6 +10,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import VideoPlayer from "@/components/VideoPlayer";
 import CommentSection from "@/components/CommentSection";
+import BannerAdSpace from "@/components/home/BannerAdSpace";
 
 const MovieDetail = () => {
   const { id } = useParams();
@@ -52,7 +53,41 @@ const MovieDetail = () => {
     enabled: !!movie?.category
   });
 
+  // Fetch banner ads for bottom placement
+  const { data: bannerAds } = useQuery({
+    queryKey: ['banner-ads'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('ads')
+        .select('*')
+        .limit(5);
+        
+      if (error) throw error;
+      
+      // Convert to banner ad format
+      return data?.map(ad => ({
+        id: ad.id,
+        title: ad.title,
+        description: ad.description,
+        image_url: ad.thumbnail_url || '',
+        cta_text: ad.cta_text || 'Learn More',
+        cta_url: ad.cta_url || undefined,
+        background_color: 'from-purple-900/20 to-blue-900/20'
+      })) || [];
+    }
+  });
+
   const handlePlay = () => {
+    // Validate video URL before playing
+    if (!movie?.video_url || movie.video_url.trim() === '' || movie.video_url === 'placeholder') {
+      toast({
+        title: "Video Not Available",
+        description: "This content doesn't have a valid video source.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsPlaying(true);
   };
 
@@ -163,9 +198,10 @@ const MovieDetail = () => {
               <Button 
                 onClick={handlePlay} 
                 className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-3 transition-all duration-200 hover:scale-105"
+                disabled={!movie.video_url || movie.video_url.trim() === '' || movie.video_url === 'placeholder'}
               >
                 <Play size={18} className="mr-2" fill="white" /> 
-                Play Now
+                {(!movie.video_url || movie.video_url.trim() === '' || movie.video_url === 'placeholder') ? 'Video Not Available' : 'Play Now'}
               </Button>
               <Button 
                 onClick={handleDownload} 
@@ -201,6 +237,18 @@ const MovieDetail = () => {
             {showComments && (
               <div className="px-6 mb-8">
                 <CommentSection contentId={movie.id} />
+              </div>
+            )}
+            
+            {/* Banner Ad Space - Sequential Display */}
+            {bannerAds && bannerAds.length > 0 && (
+              <div className="px-6 mb-8">
+                <BannerAdSpace 
+                  ads={bannerAds}
+                  autoSlideInterval={8000}
+                  showNavigation={true}
+                  className="mb-4"
+                />
               </div>
             )}
             

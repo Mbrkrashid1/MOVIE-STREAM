@@ -85,9 +85,17 @@ export function VideoPlayer({
 
   // Enhanced video URL validation and error handling
   useEffect(() => {
-    if (!videoUrl || videoUrl.trim() === '' || videoUrl === 'placeholder') {
-      setVideoError("Video not available");
+    // Check for invalid/empty video URLs immediately
+    if (!videoUrl || videoUrl.trim() === '' || videoUrl === 'placeholder' || videoUrl === 'null' || videoUrl === 'undefined') {
+      console.log('Invalid video URL detected:', videoUrl);
+      setVideoError("No video source available for this content");
       setLoading(false);
+      
+      toast({
+        title: "Video Not Available",
+        description: "This content doesn't have a valid video source.",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -103,13 +111,27 @@ export function VideoPlayer({
         throw new Error('Invalid protocol');
       }
     } catch (error) {
-      console.error('Invalid video URL:', videoUrl);
+      console.error('Invalid video URL format:', videoUrl);
       setVideoError("Invalid video URL format");
       setLoading(false);
+      
+      toast({
+        title: "Video Error",
+        description: "The video source format is not supported.",
+        variant: "destructive"
+      });
       return;
     }
 
-    // Test video accessibility
+    // For blob URLs, don't test accessibility as they're temporary
+    if (videoUrl.startsWith('blob:')) {
+      console.log('Blob URL detected, skipping validation');
+      setLoading(false);
+      setVideoError(null);
+      return;
+    }
+
+    // Test video accessibility for http/https URLs
     const testVideo = document.createElement('video');
     testVideo.preload = 'metadata';
     testVideo.muted = true;
@@ -126,6 +148,12 @@ export function VideoPlayer({
       console.error('Video URL validation failed:', videoUrl, e);
       setVideoError("Video source is not accessible or format not supported");
       setLoading(false);
+      
+      toast({
+        title: "Video Error",
+        description: "Unable to load video. Please check if the source is accessible.",
+        variant: "destructive"
+      });
       cleanup();
     };
 
@@ -293,7 +321,7 @@ export function VideoPlayer({
   const showBackdrop = (!isPlaying || loading) && !adPlaying && !videoError;
 
   // Show error if video URL is invalid
-  if (videoError && (!videoUrl || videoUrl === 'placeholder')) {
+  if (videoError && (!videoUrl || videoUrl === 'placeholder' || videoUrl.trim() === '')) {
     return (
       <VideoPlayerContainer
         isFullscreen={isFullscreen}
@@ -301,7 +329,7 @@ export function VideoPlayer({
         backdropImage={getBackdropImage()}
         showBackdrop={false}
       >
-        <VideoErrorDisplay error="No video available" onRetry={handleRetry} />
+        <VideoErrorDisplay error="No video available for this content" onRetry={onClose || (() => {})} />
       </VideoPlayerContainer>
     );
   }
@@ -338,7 +366,7 @@ export function VideoPlayer({
         )}
         
         {/* Main video with enhanced error handling */}
-        {!adPlaying && !videoError && videoUrl && videoUrl !== 'placeholder' && (
+        {!adPlaying && !videoError && videoUrl && videoUrl !== 'placeholder' && videoUrl.trim() !== '' && (
           <>
             <video
               ref={videoRef}
