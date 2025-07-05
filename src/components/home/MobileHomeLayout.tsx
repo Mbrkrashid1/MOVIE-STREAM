@@ -48,16 +48,21 @@ const MobileHomeLayout = () => {
     background_color: 'from-purple-900/20 to-blue-900/20'
   }));
 
-  // Trending content (mix of movies and series)
+  // Trending content (mix of movies and series) - Fixed type issues
   const trendingContent = [...movieContent, ...seriesContent]
-    .sort((a, b) => (b.views || 0) - (a.views || 0))
+    .sort((a, b) => {
+      const aViews = typeof a.views === 'string' ? parseInt(a.views) || 0 : 0;
+      const bViews = typeof b.views === 'string' ? parseInt(b.views) || 0 : 0;
+      return bViews - aViews;
+    })
     .slice(0, 6);
 
-  const formatViews = (views: number) => {
-    if (views >= 1000) {
-      return `${(views / 1000).toFixed(1)}k`;
+  const formatViews = (views: string | number) => {
+    const numViews = typeof views === 'string' ? parseInt(views) || 0 : views;
+    if (numViews >= 1000) {
+      return `${(numViews / 1000).toFixed(1)}k`;
     }
-    return views.toString();
+    return numViews.toString();
   };
 
   return (
@@ -94,7 +99,7 @@ const MobileHomeLayout = () => {
               >
                 <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-gray-800">
                   <img 
-                    src={item.thumbnail_url || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
+                    src={item.thumbnail || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -108,7 +113,7 @@ const MobileHomeLayout = () => {
                   
                   {/* Stats overlay */}
                   <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                    {formatViews(item.views || 0)} booked
+                    {formatViews(item.views)} booked
                   </div>
                 </div>
                 
@@ -170,7 +175,7 @@ const MobileHomeLayout = () => {
               >
                 <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-gray-800">
                   <img 
-                    src={item.thumbnail_url || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
+                    src={item.thumbnail || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -210,7 +215,7 @@ const MobileHomeLayout = () => {
               >
                 <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-gray-800">
                   <img 
-                    src={item.thumbnail_url || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
+                    src={item.thumbnail || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
