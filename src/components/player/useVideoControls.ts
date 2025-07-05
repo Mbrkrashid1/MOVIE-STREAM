@@ -22,7 +22,8 @@ export function useVideoControls() {
         // Enhanced video source validation
         if (!videoRef.current.src || 
             videoRef.current.src === window.location.href ||
-            videoRef.current.src === 'placeholder') {
+            videoRef.current.src === 'placeholder' ||
+            videoRef.current.src.trim() === '') {
           console.error('Invalid video source:', videoRef.current.src);
           toast({
             title: "Video Error",
@@ -32,32 +33,68 @@ export function useVideoControls() {
           return;
         }
 
-        // Check if video is ready before playing
+        // Check video readiness with enhanced validation
         if (videoRef.current.readyState >= 2) {
-          await videoRef.current.play();
-          setIsPlaying(true);
+          const playPromise = videoRef.current.play();
+          if (playPromise !== undefined) {
+            await playPromise;
+            setIsPlaying(true);
+          }
         } else {
-          // Wait for video to be ready with timeout
+          // Wait for video to be ready with enhanced timeout handling
           setLoading(true);
+          
           const timeoutId = setTimeout(() => {
             setLoading(false);
             toast({
               title: "Video Loading Timeout",
-              description: "Video is taking too long to load. Please try again.",
+              description: "Video is taking too long to load. Please check your connection and try again.",
               variant: "destructive"
             });
-          }, 10000); // 10 second timeout
+          }, 15000); // Increased timeout to 15 seconds
 
-          const handleCanPlay = () => {
+          const handleCanPlay = async () => {
             clearTimeout(timeoutId);
-            videoRef.current?.play()
-              .then(() => setIsPlaying(true))
-              .catch(handlePlayError);
-            videoRef.current?.removeEventListener('canplay', handleCanPlay);
             setLoading(false);
+            
+            try {
+              if (videoRef.current) {
+                const playPromise = videoRef.current.play();
+                if (playPromise !== undefined) {
+                  await playPromise;
+                  setIsPlaying(true);
+                }
+              }
+            } catch (error) {
+              handlePlayError(error);
+            }
+            
+            videoRef.current?.removeEventListener('canplay', handleCanPlay);
           };
           
           videoRef.current.addEventListener('canplay', handleCanPlay);
+          
+          // Also listen for canplaythrough for better reliability
+          const handleCanPlayThrough = async () => {
+            clearTimeout(timeoutId);
+            setLoading(false);
+            
+            try {
+              if (videoRef.current) {
+                const playPromise = videoRef.current.play();
+                if (playPromise !== undefined) {
+                  await playPromise;
+                  setIsPlaying(true);
+                }
+              }
+            } catch (error) {
+              handlePlayError(error);
+            }
+            
+            videoRef.current?.removeEventListener('canplaythrough', handleCanPlayThrough);
+          };
+          
+          videoRef.current.addEventListener('canplaythrough', handleCanPlayThrough);
         }
       }
     } catch (error) {
@@ -70,32 +107,34 @@ export function useVideoControls() {
     setIsPlaying(false);
     setLoading(false);
     
-    // Handle different types of play errors with more specific messages
+    // Enhanced error handling with more specific messages
+    let errorTitle = "Playback Error";
+    let errorDescription = "Unable to play this video.";
+    
     if (error.name === 'NotAllowedError') {
-      toast({
-        title: "Playback Blocked",
-        description: "Please tap to enable video playback or check browser permissions.",
-        variant: "destructive"
-      });
+      errorTitle = "Playback Blocked";
+      errorDescription = "Please tap to enable video playback or check browser permissions.";
     } else if (error.name === 'NotSupportedError') {
-      toast({
-        title: "Format Not Supported",
-        description: "This video format is not supported by your browser.",
-        variant: "destructive"
-      });
+      errorTitle = "Format Not Supported";
+      errorDescription = "This video format is not supported by your browser.";
     } else if (error.name === 'AbortError') {
-      toast({
-        title: "Playback Aborted",
-        description: "Video playback was interrupted. Please try again.",
-        variant: "destructive"
-      });
+      errorTitle = "Playback Aborted";
+      errorDescription = "Video playback was interrupted. Please try again.";
+    } else if (error.name === 'NetworkError') {
+      errorTitle = "Network Error";
+      errorDescription = "Unable to load video due to network issues. Check your connection.";
+    } else if (error.message && error.message.includes('decode')) {
+      errorTitle = "Video Decode Error";
+      errorDescription = "The video file appears to be corrupted or in an unsupported format.";
     } else {
-      toast({
-        title: "Playback Error",
-        description: "Unable to play this video. Please check your connection and try again.",
-        variant: "destructive"
-      });
+      errorDescription = "Please check your connection and try again.";
     }
+    
+    toast({
+      title: errorTitle,
+      description: errorDescription,
+      variant: "destructive"
+    });
   };
 
   const toggleMute = useCallback(() => {
@@ -105,11 +144,12 @@ export function useVideoControls() {
     videoRef.current.muted = newMutedState;
     setIsMuted(newMutedState);
     
-    // Provide better volume feedback
+    // Enhanced volume control
     if (newMutedState) {
       videoRef.current.volume = 0;
     } else {
-      videoRef.current.volume = 0.8; // Set to 80% volume when unmuting
+      // Gradually increase volume for better UX
+      videoRef.current.volume = 0.8;
     }
   }, [isMuted]);
 
@@ -119,7 +159,7 @@ export function useVideoControls() {
     setDuration(videoRef.current.duration);
     setLoading(false);
     
-    // Set initial volume and validate video
+    // Enhanced video setup
     videoRef.current.volume = 0.8;
     
     console.log('Video loaded successfully:', {
@@ -131,9 +171,14 @@ export function useVideoControls() {
       networkState: videoRef.current.networkState
     });
 
-    // Additional validation for video dimensions
+    // Enhanced validation for video dimensions
     if (videoRef.current.videoWidth === 0 || videoRef.current.videoHeight === 0) {
       console.warn('Video loaded but has no dimensions - might be audio only or corrupted');
+      toast({
+        title: "Video Warning",
+        description: "Video loaded but may have display issues.",
+        variant: "destructive"
+      });
     }
   }, []);
 

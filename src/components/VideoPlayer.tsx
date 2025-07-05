@@ -87,6 +87,7 @@ export function VideoPlayer({
   useEffect(() => {
     if (!videoUrl || videoUrl.trim() === '' || videoUrl === 'placeholder') {
       setVideoError("Video not available");
+      setLoading(false);
       return;
     }
 
@@ -98,7 +99,6 @@ export function VideoPlayer({
     // Validate URL format
     try {
       const url = new URL(videoUrl);
-      // Check if it's a valid video URL
       if (!url.protocol.startsWith('http')) {
         throw new Error('Invalid protocol');
       }
@@ -109,31 +109,55 @@ export function VideoPlayer({
       return;
     }
 
-    // Preload video to check if it's valid
+    // Test video accessibility
     const testVideo = document.createElement('video');
     testVideo.preload = 'metadata';
     testVideo.muted = true;
+    testVideo.crossOrigin = 'anonymous';
     
     const handleTestLoad = () => {
       console.log('Video URL validated successfully');
       setVideoError(null);
       setLoading(false);
+      cleanup();
     };
     
-    const handleTestError = () => {
-      console.error('Video URL validation failed:', videoUrl);
-      setVideoError("Video source is not accessible");
+    const handleTestError = (e: Event) => {
+      console.error('Video URL validation failed:', videoUrl, e);
+      setVideoError("Video source is not accessible or format not supported");
       setLoading(false);
+      cleanup();
+    };
+
+    const cleanup = () => {
+      testVideo.removeEventListener('loadedmetadata', handleTestLoad);
+      testVideo.removeEventListener('error', handleTestError);
+      testVideo.removeEventListener('canplay', handleTestLoad);
+      try {
+        testVideo.src = '';
+        testVideo.load();
+      } catch (e) {
+        // Ignore cleanup errors
+      }
     };
     
     testVideo.addEventListener('loadedmetadata', handleTestLoad);
+    testVideo.addEventListener('canplay', handleTestLoad);
     testVideo.addEventListener('error', handleTestError);
+    
+    // Set source with timeout
+    const timeoutId = setTimeout(() => {
+      console.warn('Video validation timeout');
+      setVideoError("Video loading timeout - please try again");
+      setLoading(false);
+      cleanup();
+    }, 10000);
+    
     testVideo.src = videoUrl;
     
     return () => {
-      testVideo.removeEventListener('loadedmetadata', handleTestLoad);
-      testVideo.removeEventListener('error', handleTestError);
-      testVideo.src = '';
+      clearTimeout(timeoutId);
+      cleanup();
     };
   }, [videoUrl]);
 
@@ -155,7 +179,7 @@ export function VideoPlayer({
     const video = e.currentTarget;
     const error = video.error;
     
-    console.log('Video error occurred:', {
+    console.error('Video error occurred:', {
       errorCode: error?.code,
       errorMessage: error?.message,
       videoUrl,
@@ -170,16 +194,16 @@ export function VideoPlayer({
       
       switch (error.code) {
         case MediaError.MEDIA_ERR_ABORTED:
-          errorMessage = "Video playback was aborted";
+          errorMessage = "Video playback was aborted - please try again";
           break;
         case MediaError.MEDIA_ERR_NETWORK:
-          errorMessage = "Network error - check your connection";
+          errorMessage = "Network error - check your internet connection";
           break;
         case MediaError.MEDIA_ERR_DECODE:
           errorMessage = "Video format not supported or file corrupted";
           break;
         case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-          errorMessage = "Video source not supported";
+          errorMessage = "Video source not supported by your browser";
           break;
         default:
           errorMessage = "Unknown video error occurred";
@@ -188,7 +212,7 @@ export function VideoPlayer({
       setVideoError(errorMessage);
       setLoading(false);
       
-      // Only show toast for first error to avoid spam
+      // Show toast for first error only
       if (retryCount === 0) {
         toast({
           title: "Video Error",
@@ -212,12 +236,12 @@ export function VideoPlayer({
   };
 
   const handleWaiting = () => {
-    console.log('Video waiting for data');
+    console.log('Video waiting for data - buffering');
     setLoading(true);
   };
 
   const handleCanPlayThrough = () => {
-    console.log('Video can play through');
+    console.log('Video can play through without interruption');
     setLoading(false);
   };
 
@@ -228,24 +252,33 @@ export function VideoPlayer({
     setLoading(true);
     
     if (videoRef.current) {
-      // Reset video element
+      // Reset and reload video
       videoRef.current.currentTime = 0;
       videoRef.current.load();
       
-      // Try to play after a short delay
+      // Attempt to play after reload
       setTimeout(() => {
         if (videoRef.current) {
-          videoRef.current.play().catch(err => {
-            console.error('Retry play failed:', err);
-            setVideoError("Unable to play video after retry");
-            setLoading(false);
-          });
+          const playPromise = videoRef.current.play();
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => {
+                console.log('Retry successful');
+                setIsPlaying(true);
+                setVideoError(null);
+              })
+              .catch(err => {
+                console.error('Retry play failed:', err);
+                setVideoError("Unable to play video after retry - please check your connection");
+                setLoading(false);
+              });
+          }
         }
       }, 1000);
     }
   };
 
-  // Enhanced backdrop image - prioritize backdrop over thumbnail
+  // Enhanced backdrop image
   const getBackdropImage = () => {
     return backdrop || thumbnail;
   };
@@ -325,7 +358,8 @@ export function VideoPlayer({
               onLoadedData={() => console.log('Video data loaded')}
               onSuspend={() => console.log('Video suspended')}
               onStalled={() => console.log('Video stalled')}
-              onProgress={() => console.log('Video progress')}
+              onProgress={() => console.log('Video loading progress')}
+              onDurationChange={() => console.log('Video duration changed')}
               preload="metadata"
               playsInline
               controls={false}
