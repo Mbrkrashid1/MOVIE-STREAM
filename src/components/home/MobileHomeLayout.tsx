@@ -7,6 +7,7 @@ import BannerAdSpace from "@/components/home/BannerAdSpace";
 import MovieBoxNavbar from "@/components/layout/MovieBoxNavbar";
 import BottomNavigation from "@/components/layout/BottomNavigation";
 import LoadingScreen from "@/components/home/LoadingScreen";
+import HeroSection from "@/components/home/HeroSection";
 import { Link } from "react-router-dom";
 import { Play, Eye } from "lucide-react";
 
@@ -70,6 +71,11 @@ const MobileHomeLayout = () => {
       <MovieBoxNavbar />
       
       <div className="pt-16">
+        {/* Hero Section with Backdrop Images */}
+        {featuredItems && featuredItems.length > 0 && (
+          <HeroSection featuredItems={featuredItems} />
+        )}
+
         {/* Search Bar */}
         <div className="px-4 py-3">
           <div className="bg-gray-800 rounded-full px-4 py-3 flex items-center">
@@ -88,10 +94,60 @@ const MobileHomeLayout = () => {
           <button className="text-gray-400 font-medium pb-2">Western</button>
         </div>
 
-        {/* Trending Content Grid */}
+        {/* Centered Video Ad Banner */}
+        {videoAdsList.length > 0 && (
+          <div className="px-4 mb-8 flex justify-center">
+            <div className="w-full max-w-md">
+              <AutoSlideAdBanner 
+                ads={videoAdsList.slice(0, 3)} 
+                autoSlideInterval={8000}
+                showControls={true}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Content Categories with Larger Display */}
         <div className="px-4 mb-6">
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="bg-gray-800 rounded-lg p-4 text-center">
+              <h3 className="text-white font-semibold mb-1">Hot Movies</h3>
+              <p className="text-gray-400 text-sm">Latest releases</p>
+              <div className="mt-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center mx-auto">
+                <span className="text-white text-lg">+</span>
+              </div>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-4 text-center">
+              <h3 className="text-white font-semibold mb-1">Trending Series</h3>
+              <p className="text-gray-400 text-sm">Popular shows</p>
+              <div className="mt-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center mx-auto">
+                <span className="text-white text-lg">+</span>
+              </div>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-4 text-center">
+              <h3 className="text-white font-semibold mb-1">African Cinema</h3>
+              <p className="text-gray-400 text-sm">Local content</p>
+              <div className="mt-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center mx-auto">
+                <span className="text-white text-lg">+</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Hollywood Movies Section - Larger Cards */}
+        <div className="px-4 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-white text-lg font-semibold">Hollywood Movies</h2>
+            <button className="text-gray-400 text-sm flex items-center">
+              More
+              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+          
           <div className="grid grid-cols-3 gap-3">
-            {trendingContent.map((item, index) => (
+            {movieContent.slice(0, 6).map((item) => (
               <Link 
                 to={`/${item.type}/${item.id}`} 
                 key={item.id}
@@ -111,67 +167,77 @@ const MobileHomeLayout = () => {
                     </div>
                   </div>
                   
-                  {/* Stats overlay */}
-                  <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                    {formatViews(item.views)} booked
+                  {/* View count */}
+                  <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                    👁 {formatViews(item.views)}
                   </div>
                 </div>
                 
-                <div className="mt-2">
-                  <h3 className="text-white text-sm font-medium line-clamp-1">{item.title}</h3>
-                  <div className="flex items-center text-xs text-teal-400 mt-1">
-                    <div className="w-3 h-3 border border-teal-400 rounded mr-1 flex items-center justify-center">
-                      <span className="text-[8px]">+</span>
-                    </div>
-                    <span>Remind me</span>
-                  </div>
-                </div>
+                <h3 className="text-white text-sm font-medium mt-2 line-clamp-1">{item.title}</h3>
               </Link>
             ))}
           </div>
         </div>
 
-        {/* Premium Auto-Slide Ad Banner */}
-        {videoAdsList.length > 0 && (
-          <div className="px-4 mb-6">
-            <AutoSlideAdBanner 
-              ads={videoAdsList.slice(0, 5)} 
-              autoSlideInterval={7000}
-              showControls={true}
-            />
+        {/* Trending Music Videos Section */}
+        <div className="px-4 mb-6">
+          <h2 className="text-white text-lg font-semibold mb-4">Trending Music Videos</h2>
+          
+          <div className="grid grid-cols-2 gap-3">
+            {seriesContent.slice(0, 4).map((item) => (
+              <Link 
+                to={`/${item.type}/${item.id}`} 
+                key={item.id}
+                className="relative group"
+              >
+                <div className="relative aspect-[16/9] rounded-lg overflow-hidden bg-gray-800">
+                  <img 
+                    src={item.thumbnail || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  
+                  {/* Play overlay */}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <div className="bg-primary rounded-full p-2">
+                      <Play size={16} fill="white" className="text-white ml-0.5" />
+                    </div>
+                  </div>
+                  
+                  {/* Duration */}
+                  <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                    {item.duration}
+                  </div>
+                </div>
+                
+                <h3 className="text-white text-sm font-medium mt-2 line-clamp-2">{item.title}</h3>
+              </Link>
+            ))}
           </div>
-        )}
+        </div>
 
-        {/* Banner Ad Space */}
+        {/* Secondary Banner Ad Space */}
         {bannerAds.length > 0 && (
           <div className="px-4 mb-6">
             <BannerAdSpace 
               ads={bannerAds}
-              autoSlideInterval={6000}
+              autoSlideInterval={10000}
               showNavigation={true}
               className="mb-4"
             />
           </div>
         )}
 
-        {/* Must-watch Section */}
+        {/* Hot Novels Section */}
         <div className="px-4 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white text-lg font-semibold">Must-watch Black Shows</h2>
-            <button className="text-gray-400 text-sm flex items-center">
-              More
-              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
+          <h2 className="text-white text-lg font-semibold mb-4">📚 Hot Novels</h2>
           
-          <div className="flex space-x-3 overflow-x-auto scrollbar-hide">
-            {seriesContent.slice(0, 5).map((item) => (
+          <div className="grid grid-cols-3 gap-3">
+            {trendingContent.slice(0, 3).map((item) => (
               <Link 
                 to={`/${item.type}/${item.id}`} 
                 key={item.id}
-                className="flex-shrink-0 w-32 group"
+                className="relative group"
               >
                 <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-gray-800">
                   <img 
@@ -180,55 +246,14 @@ const MobileHomeLayout = () => {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   
-                  {/* Play overlay */}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <div className="bg-primary rounded-full p-2">
-                      <Play size={12} fill="white" className="text-white ml-0.5" />
-                    </div>
-                  </div>
-                </div>
-                
-                <h3 className="text-white text-sm font-medium mt-2 line-clamp-1">{item.title}</h3>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Made in Africa Section */}
-        <div className="px-4 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white text-lg font-semibold">Made in Africa</h2>
-            <button className="text-gray-400 text-sm flex items-center">
-              More
-              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-          
-          <div className="flex space-x-3 overflow-x-auto scrollbar-hide">
-            {movieContent.slice(0, 5).map((item) => (
-              <Link 
-                to={`/${item.type}/${item.id}`} 
-                key={item.id}
-                className="flex-shrink-0 w-32 group"
-              >
-                <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-gray-800">
-                  <img 
-                    src={item.thumbnail || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+                  {/* Book overlay effect */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80"></div>
                   
-                  {/* Play overlay */}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <div className="bg-primary rounded-full p-2">
-                      <Play size={12} fill="white" className="text-white ml-0.5" />
-                    </div>
+                  {/* Title overlay */}
+                  <div className="absolute bottom-2 left-2 right-2">
+                    <h3 className="text-white text-xs font-medium line-clamp-2">{item.title}</h3>
                   </div>
                 </div>
-                
-                <h3 className="text-white text-sm font-medium mt-2 line-clamp-1">{item.title}</h3>
               </Link>
             ))}
           </div>
