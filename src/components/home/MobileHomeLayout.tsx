@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useContentData } from "@/hooks/useContentData";
 import { useToast } from "@/hooks/use-toast";
@@ -38,8 +37,8 @@ const MobileHomeLayout = () => {
 
   const videoAdsList = videoAds?.filter(ad => ad.thumbnail_url && ad.video_url) || [];
   
-  // Convert video ads to banner ads format
-  const bannerAds = videoAdsList.slice(0, 5).map(ad => ({
+  // Convert video ads to banner ads format - Enhanced banner detection
+  const bannerAds = videoAds?.filter(ad => ad.thumbnail_url && ad.duration === 0).map(ad => ({
     id: ad.id,
     title: ad.title,
     description: ad.description,
@@ -47,7 +46,10 @@ const MobileHomeLayout = () => {
     cta_text: ad.cta_text || undefined,
     cta_url: ad.cta_url || undefined,
     background_color: 'from-purple-900/20 to-blue-900/20'
-  }));
+  })) || [];
+
+  // Video ads (non-banner ads)
+  const actualVideoAds = videoAds?.filter(ad => ad.duration && ad.duration > 0) || [];
 
   // Trending content (mix of movies and series) - Fixed type issues
   const trendingContent = [...movieContent, ...seriesContent]
@@ -94,12 +96,24 @@ const MobileHomeLayout = () => {
           <button className="text-gray-400 font-medium pb-2">Western</button>
         </div>
 
+        {/* Banner Ad Display */}
+        {bannerAds.length > 0 && (
+          <div className="px-4 mb-8">
+            <BannerAdSpace 
+              ads={bannerAds}
+              autoSlideInterval={10000}
+              showNavigation={true}
+              className="mb-4"
+            />
+          </div>
+        )}
+
         {/* Centered Video Ad Banner */}
-        {videoAdsList.length > 0 && (
+        {actualVideoAds.length > 0 && (
           <div className="px-4 mb-8 flex justify-center">
             <div className="w-full max-w-md">
               <AutoSlideAdBanner 
-                ads={videoAdsList.slice(0, 3)} 
+                ads={actualVideoAds.slice(0, 3)} 
                 autoSlideInterval={8000}
                 showControls={true}
               />
@@ -160,14 +174,12 @@ const MobileHomeLayout = () => {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   
-                  {/* Play overlay */}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                     <div className="bg-primary rounded-full p-3">
                       <Play size={16} fill="white" className="text-white ml-0.5" />
                     </div>
                   </div>
                   
-                  {/* View count */}
                   <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
                     👁 {formatViews(item.views)}
                   </div>
@@ -197,14 +209,12 @@ const MobileHomeLayout = () => {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   
-                  {/* Play overlay */}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                     <div className="bg-primary rounded-full p-2">
                       <Play size={16} fill="white" className="text-white ml-0.5" />
                     </div>
                   </div>
                   
-                  {/* Duration */}
                   <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
                     {item.duration}
                   </div>
@@ -215,18 +225,6 @@ const MobileHomeLayout = () => {
             ))}
           </div>
         </div>
-
-        {/* Secondary Banner Ad Space */}
-        {bannerAds.length > 0 && (
-          <div className="px-4 mb-6">
-            <BannerAdSpace 
-              ads={bannerAds}
-              autoSlideInterval={10000}
-              showNavigation={true}
-              className="mb-4"
-            />
-          </div>
-        )}
 
         {/* Hot Novels Section */}
         <div className="px-4 mb-6">
@@ -246,10 +244,8 @@ const MobileHomeLayout = () => {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   
-                  {/* Book overlay effect */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80"></div>
                   
-                  {/* Title overlay */}
                   <div className="absolute bottom-2 left-2 right-2">
                     <h3 className="text-white text-xs font-medium line-clamp-2">{item.title}</h3>
                   </div>

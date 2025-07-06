@@ -3,12 +3,14 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Upload, Film, Play } from "lucide-react";
+import { Upload, Film, Play, Video, Image } from "lucide-react";
 import { AdForm } from "./ads/AdForm";
 import { AdTable } from "./ads/AdTable";
 import { useAdMutations } from "./ads/useAdMutations";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ContentUploadForm from "./ads/ContentUploadForm";
+import ShortVideoUploadForm from "./ads/ShortVideoUploadForm";
+import BannerUploadForm from "./ads/BannerUploadForm";
 
 const AdManagement = () => {
   const [editingAd, setEditingAd] = useState<any>(null);
@@ -81,24 +83,32 @@ const AdManagement = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-white">Ad & Content Management</h1>
-          <p className="text-gray-400 mt-1">Manage advertising campaigns and upload movies/series</p>
+          <h1 className="text-3xl font-bold text-white">Content & Ad Management</h1>
+          <p className="text-gray-400 mt-1">Manage all content uploads and advertising campaigns</p>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-card">
+        <TabsList className="grid w-full grid-cols-5 bg-card">
           <TabsTrigger value="ads" className="data-[state=active]:bg-primary">
             <Play className="mr-2" size={16} />
-            Ad Campaigns
+            Video Ads
+          </TabsTrigger>
+          <TabsTrigger value="banners" className="data-[state=active]:bg-primary">
+            <Image className="mr-2" size={16} />
+            Banner Ads
           </TabsTrigger>
           <TabsTrigger value="movies" className="data-[state=active]:bg-primary">
             <Film className="mr-2" size={16} />
-            Upload Movies
+            Movies
           </TabsTrigger>
           <TabsTrigger value="series" className="data-[state=active]:bg-primary">
             <Upload className="mr-2" size={16} />
-            Upload Series
+            Series
+          </TabsTrigger>
+          <TabsTrigger value="shorts" className="data-[state=active]:bg-primary">
+            <Video className="mr-2" size={16} />
+            Short Videos
           </TabsTrigger>
         </TabsList>
 
@@ -109,7 +119,7 @@ const AdManagement = () => {
               onClick={() => setIsDialogOpen(true)}
             >
               <Upload className="mr-2" size={16} />
-              Upload Ad
+              Upload Video Ad
             </Button>
           </div>
 
@@ -130,6 +140,13 @@ const AdManagement = () => {
           />
         </TabsContent>
 
+        <TabsContent value="banners" className="space-y-6">
+          <div className="bg-card p-6 rounded-lg border border-border">
+            <h2 className="text-xl font-semibold text-white mb-4">Upload Banner Advertisement</h2>
+            <BannerUploadForm />
+          </div>
+        </TabsContent>
+
         <TabsContent value="movies" className="space-y-6">
           <div className="bg-card p-6 rounded-lg border border-border">
             <h2 className="text-xl font-semibold text-white mb-4">Upload Movie Content</h2>
@@ -141,6 +158,13 @@ const AdManagement = () => {
           <div className="bg-card p-6 rounded-lg border border-border">
             <h2 className="text-xl font-semibold text-white mb-4">Upload Series Content</h2>
             <ContentUploadForm contentType="series" />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="shorts" className="space-y-6">
+          <div className="bg-card p-6 rounded-lg border border-border">
+            <h2 className="text-xl font-semibold text-white mb-4">Upload Short Video Content</h2>
+            <ShortVideoUploadForm />
           </div>
         </TabsContent>
       </Tabs>
