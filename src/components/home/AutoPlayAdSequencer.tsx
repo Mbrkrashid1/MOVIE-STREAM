@@ -22,7 +22,7 @@ interface AutoPlayAdSequencerProps {
 
 const AutoPlayAdSequencer = ({ 
   ads, 
-  autoPlayDuration = 30,
+  autoPlayDuration = 5,
   onAdComplete 
 }: AutoPlayAdSequencerProps) => {
   const [currentAdIndex, setCurrentAdIndex] = useState(0);

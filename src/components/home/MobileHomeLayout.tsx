@@ -1,8 +1,10 @@
+
 import { useEffect } from "react";
 import { useContentData } from "@/hooks/useContentData";
 import { useToast } from "@/hooks/use-toast";
-import AutoSlideAdBanner from "@/components/ui/AutoSlideAdBanner";
+import AutoPlayAdSequencer from "@/components/home/AutoPlayAdSequencer";
 import BannerAdSpace from "@/components/home/BannerAdSpace";
+import ContinuousVideoAd from "@/components/home/ContinuousVideoAd";
 import MovieBoxNavbar from "@/components/layout/MovieBoxNavbar";
 import BottomNavigation from "@/components/layout/BottomNavigation";
 import LoadingScreen from "@/components/home/LoadingScreen";
@@ -35,10 +37,11 @@ const MobileHomeLayout = () => {
     return <LoadingScreen />;
   }
 
-  const videoAdsList = videoAds?.filter(ad => ad.thumbnail_url && ad.video_url) || [];
-  
-  // Convert video ads to banner ads format - Enhanced banner detection
-  const bannerAds = videoAds?.filter(ad => ad.thumbnail_url && ad.duration === 0).map(ad => ({
+  // Separate banner ads and video ads more intelligently
+  const bannerAds = videoAds?.filter(ad => {
+    // Banner ads are those with thumbnails but no video duration or duration is 0
+    return ad.thumbnail_url && (!ad.duration || ad.duration === 0);
+  }).map(ad => ({
     id: ad.id,
     title: ad.title,
     description: ad.description,
@@ -48,19 +51,22 @@ const MobileHomeLayout = () => {
     background_color: 'from-purple-900/20 to-blue-900/20'
   })) || [];
 
-  // Video ads (non-banner ads)
-  const actualVideoAds = videoAds?.filter(ad => ad.duration && ad.duration > 0) || [];
+  // Video ads are those with actual video content and duration > 0
+  const actualVideoAds = videoAds?.filter(ad => {
+    return ad.video_url && ad.duration && ad.duration > 0;
+  }) || [];
 
-  // Trending content (mix of movies and series) - Fixed type issues
+  // Trending content (mix of movies and series)
   const trendingContent = [...movieContent, ...seriesContent]
     .sort((a, b) => {
-      const aViews = typeof a.views === 'string' ? parseInt(a.views) || 0 : 0;
-      const bViews = typeof b.views === 'string' ? parseInt(b.views) || 0 : 0;
+      const aViews = typeof a.views === 'string' ? parseInt(a.views) || 0 : a.views || 0;
+      const bViews = typeof b.views === 'string' ? parseInt(b.views) || 0 : b.views || 0;
       return bViews - aViews;
     })
     .slice(0, 6);
 
-  const formatViews = (views: string | number) => {
+  const formatViews = (views: string | number | null) => {
+    if (!views) return "0";
     const numViews = typeof views === 'string' ? parseInt(views) || 0 : views;
     if (numViews >= 1000) {
       return `${(numViews / 1000).toFixed(1)}k`;
@@ -96,28 +102,28 @@ const MobileHomeLayout = () => {
           <button className="text-gray-400 font-medium pb-2">Western</button>
         </div>
 
-        {/* Banner Ad Display */}
+        {/* Dedicated Banner Ad Space */}
         {bannerAds.length > 0 && (
           <div className="px-4 mb-8">
+            <div className="mb-2">
+              <h3 className="text-sm font-medium text-gray-400 mb-3">Sponsored Content</h3>
+            </div>
             <BannerAdSpace 
               ads={bannerAds}
-              autoSlideInterval={10000}
+              autoSlideInterval={8000}
               showNavigation={true}
               className="mb-4"
             />
           </div>
         )}
 
-        {/* Centered Video Ad Banner */}
+        {/* Video Ad Space - Continuous Auto-Play */}
         {actualVideoAds.length > 0 && (
-          <div className="px-4 mb-8 flex justify-center">
-            <div className="w-full max-w-md">
-              <AutoSlideAdBanner 
-                ads={actualVideoAds.slice(0, 3)} 
-                autoSlideInterval={8000}
-                showControls={true}
-              />
+          <div className="px-4 mb-8">
+            <div className="mb-2">
+              <h3 className="text-sm font-medium text-gray-400 mb-3">Featured Videos</h3>
             </div>
+            <ContinuousVideoAd ads={actualVideoAds.slice(0, 5)} />
           </div>
         )}
 
@@ -255,6 +261,17 @@ const MobileHomeLayout = () => {
           </div>
         </div>
       </div>
+
+      {/* Floating Auto-Play Ad Sequencer */}
+      {actualVideoAds.length > 0 && (
+        <AutoPlayAdSequencer 
+          ads={actualVideoAds.slice(0, 3)}
+          autoPlayDuration={5}
+          onAdComplete={(adId) => {
+            console.log('Ad completed:', adId);
+          }}
+        />
+      )}
       
       <BottomNavigation />
     </div>
