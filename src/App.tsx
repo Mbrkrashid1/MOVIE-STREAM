@@ -1,45 +1,70 @@
 
-import React from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "next-themes";
+import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
+import MovieDetail from "./pages/MovieDetail";
+import Chat from "./pages/Chat";
+import Auth from "./pages/Auth";
+import AdminDashboard from "./pages/AdminDashboard";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Downloads from "./pages/Downloads";
 import Library from "./pages/Library";
 import Shorts from "./pages/Shorts";
-import MovieDetail from "./pages/MovieDetail";
-import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
+import "./App.css";
 
 const queryClient = new QueryClient();
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+  
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+  
+  return <>{children}</>;
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/auth" element={<Auth />} />
+      <Route path="/" element={<Index />} />
+      <Route path="/movie/:id" element={<MovieDetail />} />
+      <Route path="/chat" element={
+        <ProtectedRoute>
+          <Chat />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin" element={<AdminDashboard />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/settings" element={<Settings />} />
+      <Route path="/downloads" element={<Downloads />} />
+      <Route path="/library" element={<Library />} />
+      <Route path="/shorts" element={<Shorts />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/downloads" element={<Downloads />} />
-              <Route path="/library" element={<Library />} />
-              <Route path="/shorts" element={<Shorts />} />
-              <Route path="/movie/:id" element={<MovieDetail />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <div className="min-h-screen bg-background">
+            <AppRoutes />
+            <Toaster />
+          </div>
+        </Router>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
