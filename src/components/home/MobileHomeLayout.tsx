@@ -25,8 +25,8 @@ const MobileHomeLayout = () => {
 
   useEffect(() => {
     toast({
-      title: "Welcome to HausaBox! 🎬",
-      description: "Discover amazing Hausa movies and series offline & online.",
+      title: "Barka da zuwa HausaBox! 🎬",
+      description: "Gano kyawawan fina-finai da serials na Hausa.",
     });
   }, []);
 
@@ -39,7 +39,6 @@ const MobileHomeLayout = () => {
 
   // Separate banner ads and video ads more intelligently
   const bannerAds = videoAds?.filter(ad => {
-    // Banner ads are those with thumbnails but no video duration or duration is 0
     return ad.thumbnail_url && (!ad.duration || ad.duration === 0);
   }).map(ad => ({
     id: ad.id,
@@ -56,8 +55,23 @@ const MobileHomeLayout = () => {
     return ad.video_url && ad.duration && ad.duration > 0;
   }) || [];
 
-  // Trending content (mix of movies and series)
-  const trendingContent = [...movieContent, ...seriesContent]
+  // Filter content for Hausa categories only
+  const hausaMovies = movieContent.filter(item => 
+    item.title.toLowerCase().includes('hausa') || 
+    ['kannywood', 'hausa movie', 'arewa'].some(keyword => 
+      item.title.toLowerCase().includes(keyword)
+    )
+  );
+
+  const hausaSeries = seriesContent.filter(item => 
+    item.title.toLowerCase().includes('hausa') || 
+    ['hausa series', 'arewa series'].some(keyword => 
+      item.title.toLowerCase().includes(keyword)
+    )
+  );
+
+  // Trending Hausa content
+  const trendingContent = [...hausaMovies, ...hausaSeries]
     .sort((a, b) => {
       const aViews = typeof a.views === 'string' ? parseInt(a.views) || 0 : a.views || 0;
       const bViews = typeof b.views === 'string' ? parseInt(b.views) || 0 : b.views || 0;
@@ -90,16 +104,17 @@ const MobileHomeLayout = () => {
             <svg className="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <span className="text-gray-400">Search movies and series...</span>
+            <span className="text-gray-400">Nemo fina-finai da serials...</span>
           </div>
         </div>
 
-        {/* Category Tabs */}
-        <div className="flex px-4 space-x-6 mb-6">
-          <button className="text-white font-medium border-b-2 border-primary pb-2">Trending</button>
-          <button className="text-gray-400 font-medium pb-2">Nollywood</button>
-          <button className="text-gray-400 font-medium pb-2">Movie</button>
-          <button className="text-gray-400 font-medium pb-2">Western</button>
+        {/* Hausa Category Tabs */}
+        <div className="flex px-4 space-x-6 mb-6 overflow-x-auto">
+          <button className="text-white font-medium border-b-2 border-primary pb-2 whitespace-nowrap">Trending</button>
+          <button className="text-gray-400 font-medium pb-2 whitespace-nowrap">Kannywood</button>
+          <button className="text-gray-400 font-medium pb-2 whitespace-nowrap">Hausa Movies</button>
+          <button className="text-gray-400 font-medium pb-2 whitespace-nowrap">Hausa Series</button>
+          <button className="text-gray-400 font-medium pb-2 whitespace-nowrap">Music Videos</button>
         </div>
 
         {/* Dedicated Banner Ad Space */}
@@ -127,37 +142,30 @@ const MobileHomeLayout = () => {
           </div>
         )}
 
-        {/* Content Categories with Larger Display */}
+        {/* Hausa Content Categories */}
         <div className="px-4 mb-6">
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="bg-gray-800 rounded-lg p-4 text-center">
-              <h3 className="text-white font-semibold mb-1">Hot Movies</h3>
+              <h3 className="text-white font-semibold mb-1">Kannywood Movies</h3>
               <p className="text-gray-400 text-sm">Latest releases</p>
               <div className="mt-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center mx-auto">
-                <span className="text-white text-lg">+</span>
+                <span className="text-white text-lg">🎬</span>
               </div>
             </div>
             <div className="bg-gray-800 rounded-lg p-4 text-center">
-              <h3 className="text-white font-semibold mb-1">Trending Series</h3>
+              <h3 className="text-white font-semibold mb-1">Hausa Series</h3>
               <p className="text-gray-400 text-sm">Popular shows</p>
               <div className="mt-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center mx-auto">
-                <span className="text-white text-lg">+</span>
-              </div>
-            </div>
-            <div className="bg-gray-800 rounded-lg p-4 text-center">
-              <h3 className="text-white font-semibold mb-1">African Cinema</h3>
-              <p className="text-gray-400 text-sm">Local content</p>
-              <div className="mt-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center mx-auto">
-                <span className="text-white text-lg">+</span>
+                <span className="text-white text-lg">📺</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Hollywood Movies Section - Larger Cards */}
+        {/* Kannywood Movies Section */}
         <div className="px-4 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white text-lg font-semibold">Hollywood Movies</h2>
+            <h2 className="text-white text-lg font-semibold">Kannywood Movies</h2>
             <button className="text-gray-400 text-sm flex items-center">
               More
               <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -167,7 +175,7 @@ const MobileHomeLayout = () => {
           </div>
           
           <div className="grid grid-cols-3 gap-3">
-            {movieContent.slice(0, 6).map((item) => (
+            {(hausaMovies.length > 0 ? hausaMovies : movieContent).slice(0, 6).map((item) => (
               <Link 
                 to={`/${item.type}/${item.id}`} 
                 key={item.id}
@@ -178,6 +186,10 @@ const MobileHomeLayout = () => {
                     src={item.thumbnail || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5";
+                    }}
                   />
                   
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
@@ -197,12 +209,12 @@ const MobileHomeLayout = () => {
           </div>
         </div>
 
-        {/* Trending Music Videos Section */}
+        {/* Hausa Music Videos Section */}
         <div className="px-4 mb-6">
-          <h2 className="text-white text-lg font-semibold mb-4">Trending Music Videos</h2>
+          <h2 className="text-white text-lg font-semibold mb-4">Hausa Music Videos</h2>
           
           <div className="grid grid-cols-2 gap-3">
-            {seriesContent.slice(0, 4).map((item) => (
+            {(hausaSeries.length > 0 ? hausaSeries : seriesContent).slice(0, 4).map((item) => (
               <Link 
                 to={`/${item.type}/${item.id}`} 
                 key={item.id}
@@ -213,6 +225,10 @@ const MobileHomeLayout = () => {
                     src={item.thumbnail || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5";
+                    }}
                   />
                   
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
@@ -232,12 +248,12 @@ const MobileHomeLayout = () => {
           </div>
         </div>
 
-        {/* Hot Novels Section */}
+        {/* Trending Hausa Movies Section */}
         <div className="px-4 mb-6">
-          <h2 className="text-white text-lg font-semibold mb-4">📚 Hot Novels</h2>
+          <h2 className="text-white text-lg font-semibold mb-4">📈 Trending Hausa Movies</h2>
           
           <div className="grid grid-cols-3 gap-3">
-            {trendingContent.slice(0, 3).map((item) => (
+            {trendingContent.slice(0, 6).map((item) => (
               <Link 
                 to={`/${item.type}/${item.id}`} 
                 key={item.id}
@@ -248,12 +264,20 @@ const MobileHomeLayout = () => {
                     src={item.thumbnail || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5";
+                    }}
                   />
                   
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80"></div>
                   
                   <div className="absolute bottom-2 left-2 right-2">
                     <h3 className="text-white text-xs font-medium line-clamp-2">{item.title}</h3>
+                    <div className="flex items-center mt-1">
+                      <Eye size={10} className="text-gray-300 mr-1" />
+                      <span className="text-gray-300 text-xs">{formatViews(item.views)}</span>
+                    </div>
                   </div>
                 </div>
               </Link>

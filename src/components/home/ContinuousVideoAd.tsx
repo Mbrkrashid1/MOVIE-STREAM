@@ -1,7 +1,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Volume2, VolumeX, ExternalLink, X } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, ExternalLink } from "lucide-react";
 
 interface ContinuousVideoAdProps {
   ads: Array<{
@@ -17,16 +17,19 @@ interface ContinuousVideoAdProps {
 
 const ContinuousVideoAd = ({ ads }: ContinuousVideoAdProps) => {
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [showControls, setShowControls] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const currentAd = ads[currentAdIndex];
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || !currentAd?.video_url) return;
+
+    setHasError(false);
 
     const handleEnded = () => {
       // Auto-play next ad or loop back to first
@@ -36,39 +39,49 @@ const ContinuousVideoAd = ({ ads }: ContinuousVideoAdProps) => {
 
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
+    
     const handleError = (e: Event) => {
       console.error('Video ad error:', e);
-      // Try next ad on error
-      const nextIndex = (currentAdIndex + 1) % ads.length;
-      setCurrentAdIndex(nextIndex);
+      setHasError(true);
+      setIsPlaying(false);
+      
+      // Try next ad on error after a delay
+      setTimeout(() => {
+        const nextIndex = (currentAdIndex + 1) % ads.length;
+        setCurrentAdIndex(nextIndex);
+      }, 2000);
+    };
+
+    const handleCanPlay = () => {
+      setHasError(false);
+      // Auto-play when ad changes
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          setIsPlaying(false);
+          console.log('Autoplay was prevented');
+        });
+      }
     };
 
     video.addEventListener('ended', handleEnded);
     video.addEventListener('play', handlePlay);
     video.addEventListener('pause', handlePause);
     video.addEventListener('error', handleError);
-
-    // Auto-play when ad changes
-    const playPromise = video.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(() => {
-        // Handle autoplay restrictions
-        setIsPlaying(false);
-        console.log('Autoplay was prevented');
-      });
-    }
+    video.addEventListener('canplay', handleCanPlay);
 
     return () => {
       video.removeEventListener('ended', handleEnded);
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
       video.removeEventListener('error', handleError);
+      video.removeEventListener('canplay', handleCanPlay);
     };
-  }, [currentAdIndex, ads.length]);
+  }, [currentAdIndex, ads.length, currentAd?.video_url]);
 
   const togglePlay = () => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || hasError) return;
 
     if (isPlaying) {
       video.pause();
@@ -77,6 +90,7 @@ const ContinuousVideoAd = ({ ads }: ContinuousVideoAdProps) => {
       if (playPromise !== undefined) {
         playPromise.catch((error) => {
           console.error('Play failed:', error);
+          setHasError(true);
         });
       }
     }
@@ -96,7 +110,7 @@ const ContinuousVideoAd = ({ ads }: ContinuousVideoAdProps) => {
     }
   };
 
-  if (!ads.length) return null;
+  if (!ads.length || !currentAd) return null;
 
   return (
     <div className="relative rounded-lg overflow-hidden shadow-lg border border-primary/10 bg-gradient-to-br from-card/90 to-background/50 backdrop-blur-sm">
@@ -112,29 +126,39 @@ const ContinuousVideoAd = ({ ads }: ContinuousVideoAdProps) => {
         </div>
       )}
 
-      {/* Video Container - YouTube Home Section Size */}
+      {/* Video Container */}
       <div 
         className="relative group cursor-pointer"
         onMouseEnter={() => setShowControls(true)}
         onMouseLeave={() => setShowControls(false)}
         onClick={togglePlay}
       >
-        <video
-          ref={videoRef}
-          className="w-full h-44 sm:h-48 object-cover"
-          src={currentAd.video_url}
-          poster={currentAd.thumbnail_url}
-          muted={isMuted}
-          loop={false}
-          playsInline
-          preload="metadata"
-        />
+        {hasError ? (
+          <div className="w-full h-44 sm:h-48 bg-gray-800 flex items-center justify-center">
+            <div className="text-center text-gray-400">
+              <Play size={24} className="mx-auto mb-2" />
+              <p className="text-sm">Video unavailable</p>
+            </div>
+          </div>
+        ) : (
+          <video
+            ref={videoRef}
+            className="w-full h-44 sm:h-48 object-cover"
+            src={currentAd.video_url}
+            poster={currentAd.thumbnail_url}
+            muted={isMuted}
+            loop={false}
+            playsInline
+            preload="metadata"
+            onError={() => setHasError(true)}
+          />
+        )}
 
         {/* Video Controls Overlay */}
-        <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent transition-opacity duration-300 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent transition-opacity duration-300 ${showControls || !isPlaying || hasError ? 'opacity-100' : 'opacity-0'}`}>
           {/* Play/Pause Button */}
           <div className="absolute inset-0 flex items-center justify-center">
-            {!isPlaying && (
+            {(!isPlaying || hasError) && (
               <Button
                 variant="ghost"
                 size="icon"

@@ -15,12 +15,6 @@ export function useVideoPlayerState(videoUrl: string) {
       console.log('Invalid video URL detected:', videoUrl);
       setVideoError("No video source available for this content");
       setLoading(false);
-      
-      toast({
-        title: "Video Not Available",
-        description: "This content doesn't have a valid video source.",
-        variant: "destructive"
-      });
       return;
     }
 
@@ -39,12 +33,6 @@ export function useVideoPlayerState(videoUrl: string) {
       console.error('Invalid video URL format:', videoUrl);
       setVideoError("Invalid video URL format");
       setLoading(false);
-      
-      toast({
-        title: "Video Error",
-        description: "The video source format is not supported.",
-        variant: "destructive"
-      });
       return;
     }
 
@@ -56,7 +44,7 @@ export function useVideoPlayerState(videoUrl: string) {
       return;
     }
 
-    // Test video accessibility for http/https URLs
+    // Test video accessibility for http/https URLs with enhanced error handling
     const testVideo = document.createElement('video');
     testVideo.preload = 'metadata';
     testVideo.muted = true;
@@ -73,12 +61,6 @@ export function useVideoPlayerState(videoUrl: string) {
       console.error('Video URL validation failed:', videoUrl, e);
       setVideoError("Video source is not accessible or format not supported");
       setLoading(false);
-      
-      toast({
-        title: "Video Error",
-        description: "Unable to load video. Please check if the source is accessible.",
-        variant: "destructive"
-      });
       cleanup();
     };
 
@@ -104,7 +86,7 @@ export function useVideoPlayerState(videoUrl: string) {
       setVideoError("Video loading timeout - please try again");
       setLoading(false);
       cleanup();
-    }, 10000);
+    }, 8000);
     
     testVideo.src = videoUrl;
     
@@ -112,7 +94,7 @@ export function useVideoPlayerState(videoUrl: string) {
       clearTimeout(timeoutId);
       cleanup();
     };
-  }, [videoUrl, toast]);
+  }, [videoUrl]);
 
   return {
     videoError,

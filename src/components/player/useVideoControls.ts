@@ -48,10 +48,10 @@ export function useVideoControls() {
             setLoading(false);
             toast({
               title: "Video Loading Timeout",
-              description: "Video is taking too long to load. Please check your connection and try again.",
+              description: "Video is taking too long to load. Please check your connection.",
               variant: "destructive"
             });
-          }, 15000); // Increased timeout to 15 seconds
+          }, 10000);
 
           const handleCanPlay = async () => {
             clearTimeout(timeoutId);
@@ -123,9 +123,6 @@ export function useVideoControls() {
     } else if (error.name === 'NetworkError') {
       errorTitle = "Network Error";
       errorDescription = "Unable to load video due to network issues. Check your connection.";
-    } else if (error.message && error.message.includes('decode')) {
-      errorTitle = "Video Decode Error";
-      errorDescription = "The video file appears to be corrupted or in an unsupported format.";
     } else {
       errorDescription = "Please check your connection and try again.";
     }
@@ -148,7 +145,6 @@ export function useVideoControls() {
     if (newMutedState) {
       videoRef.current.volume = 0;
     } else {
-      // Gradually increase volume for better UX
       videoRef.current.volume = 0.8;
     }
   }, [isMuted]);
@@ -174,11 +170,6 @@ export function useVideoControls() {
     // Enhanced validation for video dimensions
     if (videoRef.current.videoWidth === 0 || videoRef.current.videoHeight === 0) {
       console.warn('Video loaded but has no dimensions - might be audio only or corrupted');
-      toast({
-        title: "Video Warning",
-        description: "Video loaded but may have display issues.",
-        variant: "destructive"
-      });
     }
   }, []);
 
