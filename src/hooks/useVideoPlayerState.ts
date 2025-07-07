@@ -8,8 +8,12 @@ export function useVideoPlayerState(videoUrl: string) {
   const [retryCount, setRetryCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Enhanced video URL validation and error handling
   useEffect(() => {
+    // Reset states when URL changes
+    setVideoError(null);
+    setRetryCount(0);
+    setLoading(true);
+
     // Check for invalid/empty video URLs immediately
     if (!videoUrl || videoUrl.trim() === '' || videoUrl === 'placeholder' || videoUrl === 'null' || videoUrl === 'undefined') {
       console.log('Invalid video URL detected:', videoUrl);
@@ -18,25 +22,22 @@ export function useVideoPlayerState(videoUrl: string) {
       return;
     }
 
-    // Reset error and retry count when URL changes
-    setVideoError(null);
-    setRetryCount(0);
-    setLoading(true);
-
-    // Validate URL format
-    try {
-      const url = new URL(videoUrl);
-      if (!url.protocol.startsWith('http')) {
-        throw new Error('Invalid protocol');
+    // Validate URL format for non-blob URLs
+    if (!videoUrl.startsWith('blob:')) {
+      try {
+        const url = new URL(videoUrl);
+        if (!url.protocol.startsWith('http')) {
+          throw new Error('Invalid protocol');
+        }
+      } catch (error) {
+        console.error('Invalid video URL format:', videoUrl);
+        setVideoError("Invalid video URL format");
+        setLoading(false);
+        return;
       }
-    } catch (error) {
-      console.error('Invalid video URL format:', videoUrl);
-      setVideoError("Invalid video URL format");
-      setLoading(false);
-      return;
     }
 
-    // For blob URLs, don't test accessibility as they're temporary
+    // For blob URLs, don't test accessibility
     if (videoUrl.startsWith('blob:')) {
       console.log('Blob URL detected, skipping validation');
       setLoading(false);
@@ -44,12 +45,24 @@ export function useVideoPlayerState(videoUrl: string) {
       return;
     }
 
-    // Test video accessibility for http/https URLs with enhanced error handling
+    // Test video accessibility with improved error handling
     const testVideo = document.createElement('video');
     testVideo.preload = 'metadata';
     testVideo.muted = true;
     testVideo.crossOrigin = 'anonymous';
     
+    const cleanup = () => {
+      testVideo.removeEventListener('loadedmetadata', handleTestLoad);
+      testVideo.removeEventListener('error', handleTestError);
+      testVideo.removeEventListener('canplay', handleTestLoad);
+      try {
+        testVideo.src = '';
+        testVideo.load();
+      } catch (e) {
+        // Ignore cleanup errors
+      }
+    };
+
     const handleTestLoad = () => {
       console.log('Video URL validated successfully');
       setVideoError(null);
@@ -62,18 +75,6 @@ export function useVideoPlayerState(videoUrl: string) {
       setVideoError("Video source is not accessible or format not supported");
       setLoading(false);
       cleanup();
-    };
-
-    const cleanup = () => {
-      testVideo.removeEventListener('loadedmetadata', handleTestLoad);
-      testVideo.removeEventListener('error', handleTestError);
-      testVideo.removeEventListener('canplay', handleTestLoad);
-      try {
-        testVideo.src = '';
-        testVideo.load();
-      } catch (e) {
-        // Ignore cleanup errors
-      }
     };
     
     testVideo.addEventListener('loadedmetadata', handleTestLoad);

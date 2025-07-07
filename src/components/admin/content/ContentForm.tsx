@@ -1,6 +1,6 @@
 
 import { useState, useRef, ChangeEvent } from "react";
-import { Upload } from "lucide-react";
+import { Upload, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -32,7 +33,7 @@ interface ContentFormProps {
   formData: ContentFormData;
   editingContent: any;
   onSubmit: (e: React.FormEvent) => void;
-  onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onSelectChange: (name: string, value: string) => void;
   onCancel: () => void;
   setFormData: React.Dispatch<React.SetStateAction<ContentFormData>>;
@@ -55,34 +56,61 @@ export function ContentForm({
   const fileInputRefBackdrop = useRef<HTMLInputElement>(null);
   const fileInputRefVideo = useRef<HTMLInputElement>(null);
 
+  const validateFile = (file: File, type: 'image' | 'video') => {
+    const maxSizes = {
+      image: 10 * 1024 * 1024, // 10MB for images
+      video: 500 * 1024 * 1024  // 500MB for videos
+    };
+
+    const allowedTypes = {
+      image: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+      video: ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/mkv']
+    };
+
+    if (!allowedTypes[type].includes(file.type)) {
+      throw new Error(`Invalid file type. Please select a valid ${type} file.`);
+    }
+
+    if (file.size > maxSizes[type]) {
+      const maxSizeMB = Math.floor(maxSizes[type] / (1024 * 1024));
+      throw new Error(`File too large. Please select a ${type} smaller than ${maxSizeMB}MB.`);
+    }
+  };
+
+  const uploadFile = async (file: File, folder: string, type: 'image' | 'video') => {
+    validateFile(file, type);
+    
+    const fileExt = file.name.split('.').pop()?.toLowerCase();
+    const fileName = `${folder}-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const filePath = `${folder}/${fileName}`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from('content')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+    
+    if (uploadError) throw uploadError;
+    
+    const { data: publicUrlData } = supabase.storage
+      .from('content')
+      .getPublicUrl(filePath);
+    
+    return publicUrlData.publicUrl;
+  };
+
   const handleUploadThumbnail = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     
     setUploadingThumbnail(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-thumbnail.${fileExt}`;
-      const filePath = `thumbnails/${fileName}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('content')
-        .upload(filePath, file);
-      
-      if (uploadError) throw uploadError;
-      
-      const { data: publicUrlData } = supabase.storage
-        .from('content')
-        .getPublicUrl(filePath);
-      
-      setFormData(prev => ({
-        ...prev,
-        thumbnail_url: publicUrlData.publicUrl
-      }));
-      
+      const url = await uploadFile(file, 'thumbnails', 'image');
+      setFormData(prev => ({ ...prev, thumbnail_url: url }));
       toast({
-        title: "Thumbnail uploaded",
-        description: "Thumbnail has been uploaded successfully."
+        title: "Success!",
+        description: "Thumbnail uploaded successfully."
       });
     } catch (error: any) {
       console.error("Error uploading thumbnail:", error);
@@ -103,28 +131,11 @@ export function ContentForm({
     
     setUploadingBackdrop(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-backdrop.${fileExt}`;
-      const filePath = `backdrops/${fileName}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('content')
-        .upload(filePath, file);
-      
-      if (uploadError) throw uploadError;
-      
-      const { data: publicUrlData } = supabase.storage
-        .from('content')
-        .getPublicUrl(filePath);
-      
-      setFormData(prev => ({
-        ...prev,
-        backdrop_url: publicUrlData.publicUrl
-      }));
-      
+      const url = await uploadFile(file, 'backdrops', 'image');
+      setFormData(prev => ({ ...prev, backdrop_url: url }));
       toast({
-        title: "Backdrop uploaded",
-        description: "Backdrop image has been uploaded successfully."
+        title: "Success!",
+        description: "Backdrop image uploaded successfully."
       });
     } catch (error: any) {
       console.error("Error uploading backdrop:", error);
@@ -145,31 +156,11 @@ export function ContentForm({
     
     setUploadingVideo(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-video.${fileExt}`;
-      const filePath = `videos/${fileName}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('content')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-      
-      if (uploadError) throw uploadError;
-      
-      const { data: publicUrlData } = supabase.storage
-        .from('content')
-        .getPublicUrl(filePath);
-      
-      setFormData(prev => ({
-        ...prev,
-        video_url: publicUrlData.publicUrl
-      }));
-      
+      const url = await uploadFile(file, 'videos', 'video');
+      setFormData(prev => ({ ...prev, video_url: url }));
       toast({
-        title: "Video uploaded",
-        description: "Video has been uploaded successfully."
+        title: "Success!",
+        description: "Video uploaded successfully."
       });
     } catch (error: any) {
       console.error("Error uploading video:", error);
@@ -184,13 +175,21 @@ export function ContentForm({
     }
   };
 
+  const clearField = (field: string) => {
+    setFormData(prev => ({ ...prev, [field]: '' }));
+  };
+
   return (
     <div className="bg-card p-6 rounded-lg border border-border mb-6">
-      <h3 className="text-lg font-medium mb-4">{editingContent ? 'Edit Content' : 'Add New Content'}</h3>
-      <form onSubmit={onSubmit} className="space-y-4">
+      <h3 className="text-xl font-semibold text-white mb-6">
+        {editingContent ? 'Edit Content' : 'Add New Content'}
+      </h3>
+      
+      <form onSubmit={onSubmit} className="space-y-6">
+        {/* Basic Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title" className="text-white">Title *</Label>
             <Input 
               id="title" 
               name="title" 
@@ -201,8 +200,9 @@ export function ContentForm({
               className="bg-input border-border"
             />
           </div>
+          
           <div className="space-y-2">
-            <Label htmlFor="type">Type</Label>
+            <Label htmlFor="type" className="text-white">Type *</Label>
             <Select 
               value={formData.type} 
               onValueChange={(value) => onSelectChange('type', value)}
@@ -216,8 +216,9 @@ export function ContentForm({
               </SelectContent>
             </Select>
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
+            <Label htmlFor="category" className="text-white">Category *</Label>
             <Select 
               value={formData.category} 
               onValueChange={(value) => onSelectChange('category', value)}
@@ -235,8 +236,9 @@ export function ContentForm({
               </SelectContent>
             </Select>
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="language">Language</Label>
+            <Label htmlFor="language" className="text-white">Language</Label>
             <Select 
               value={formData.language} 
               onValueChange={(value) => onSelectChange('language', value)}
@@ -253,24 +255,74 @@ export function ContentForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="video_url">Video</Label>
+            <Label htmlFor="duration" className="text-white">Duration (seconds)</Label>
+            <Input 
+              id="duration" 
+              name="duration" 
+              type="number"
+              value={formData.duration} 
+              onChange={onInputChange}
+              placeholder="Duration in seconds"
+              className="bg-input border-border"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="release_year" className="text-white">Release Year</Label>
+            <Input 
+              id="release_year" 
+              name="release_year" 
+              type="number"
+              value={formData.release_year} 
+              onChange={onInputChange}
+              placeholder="Release year"
+              className="bg-input border-border"
+            />
+          </div>
+        </div>
+
+        {/* Media Uploads */}
+        <div className="space-y-6">
+          {/* Video Upload */}
+          <div className="space-y-3">
+            <Label className="text-white text-lg">Video Content *</Label>
             <div className="flex items-center gap-2">
               <Input 
-                id="video_url" 
                 name="video_url" 
                 value={formData.video_url} 
                 onChange={onInputChange}
-                placeholder="https://example.com/video.mp4"
-                className="bg-input border-border"
+                placeholder="Video URL or upload file below"
+                className="bg-input border-border flex-1"
               />
+              {formData.video_url && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => clearField('video_url')}
+                  className="text-red-400 hover:text-red-300"
+                >
+                  <X size={16} />
+                </Button>
+              )}
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => fileInputRefVideo.current?.click()}
                 disabled={uploadingVideo}
-                className="whitespace-nowrap"
+                className="min-w-[120px]"
               >
-                {uploadingVideo ? 'Uploading...' : <><Upload size={16} className="mr-2" /> Upload</>}
+                {uploadingVideo ? (
+                  <>
+                    <Loader2 size={16} className="mr-2 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload size={16} className="mr-2" />
+                    Upload Video
+                  </>
+                )}
               </Button>
               <input
                 type="file"
@@ -282,25 +334,46 @@ export function ContentForm({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="thumbnail_url">Thumbnail</Label>
+          {/* Thumbnail Upload */}
+          <div className="space-y-3">
+            <Label className="text-white text-lg">Thumbnail Image</Label>
             <div className="flex items-center gap-2">
               <Input 
-                id="thumbnail_url" 
                 name="thumbnail_url" 
                 value={formData.thumbnail_url} 
                 onChange={onInputChange}
-                placeholder="https://example.com/thumbnail.jpg"
-                className="bg-input border-border"
+                placeholder="Thumbnail URL or upload file below"
+                className="bg-input border-border flex-1"
               />
+              {formData.thumbnail_url && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => clearField('thumbnail_url')}
+                  className="text-red-400 hover:text-red-300"
+                >
+                  <X size={16} />
+                </Button>
+              )}
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => fileInputRefThumbnail.current?.click()}
                 disabled={uploadingThumbnail}
-                className="whitespace-nowrap"
+                className="min-w-[120px]"
               >
-                {uploadingThumbnail ? 'Uploading...' : <><Upload size={16} className="mr-2" /> Upload</>}
+                {uploadingThumbnail ? (
+                  <>
+                    <Loader2 size={16} className="mr-2 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload size={16} className="mr-2" />
+                    Upload Image
+                  </>
+                )}
               </Button>
               <input
                 type="file"
@@ -310,27 +383,59 @@ export function ContentForm({
                 className="hidden"
               />
             </div>
+            {formData.thumbnail_url && (
+              <img 
+                src={formData.thumbnail_url} 
+                alt="Thumbnail preview" 
+                className="w-32 h-48 object-cover rounded border border-border"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
+            )}
           </div>
 
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="backdrop_url">Backdrop Image (HD Background)</Label>
+          {/* Backdrop Upload */}
+          <div className="space-y-3">
+            <Label className="text-white text-lg">Backdrop Image (HD Background)</Label>
             <div className="flex items-center gap-2">
               <Input 
-                id="backdrop_url" 
                 name="backdrop_url" 
                 value={formData.backdrop_url} 
                 onChange={onInputChange}
-                placeholder="https://example.com/backdrop.jpg"
-                className="bg-input border-border"
+                placeholder="Backdrop URL or upload file below"
+                className="bg-input border-border flex-1"
               />
+              {formData.backdrop_url && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => clearField('backdrop_url')}
+                  className="text-red-400 hover:text-red-300"
+                >
+                  <X size={16} />
+                </Button>
+              )}
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => fileInputRefBackdrop.current?.click()}
                 disabled={uploadingBackdrop}
-                className="whitespace-nowrap"
+                className="min-w-[120px]"
               >
-                {uploadingBackdrop ? 'Uploading...' : <><Upload size={16} className="mr-2" /> Upload HD</>}
+                {uploadingBackdrop ? (
+                  <>
+                    <Loader2 size={16} className="mr-2 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload size={16} className="mr-2" />
+                    Upload HD
+                  </>
+                )}
               </Button>
               <input
                 type="file"
@@ -340,61 +445,60 @@ export function ContentForm({
                 className="hidden"
               />
             </div>
-            <p className="text-xs text-muted-foreground">
-              Upload a high-quality backdrop image (recommended: 1920x1080 or higher) for the video player background
+            <p className="text-xs text-gray-400">
+              Upload a high-quality backdrop image (recommended: 1920x1080 or higher)
             </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="duration">Duration (seconds)</Label>
-            <Input 
-              id="duration" 
-              name="duration" 
-              type="number"
-              value={formData.duration} 
-              onChange={onInputChange}
-              placeholder="Duration in seconds"
-              className="bg-input border-border"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="release_year">Release Year</Label>
-            <Input 
-              id="release_year" 
-              name="release_year" 
-              type="number"
-              value={formData.release_year} 
-              onChange={onInputChange}
-              placeholder="Release year"
-              className="bg-input border-border"
-            />
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="description">Description</Label>
-            <Input 
-              id="description" 
-              name="description" 
-              value={formData.description} 
-              onChange={onInputChange}
-              placeholder="Content description"
-              className="bg-input border-border"
-            />
-          </div>
-          <div className="space-y-2 flex items-center">
-            <input 
-              id="is_featured" 
-              name="is_featured" 
-              type="checkbox" 
-              checked={formData.is_featured}
-              onChange={onInputChange}
-              className="mr-2"
-            />
-            <Label htmlFor="is_featured">Featured Content</Label>
+            {formData.backdrop_url && (
+              <img 
+                src={formData.backdrop_url} 
+                alt="Backdrop preview" 
+                className="w-full max-w-md h-32 object-cover rounded border border-border"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
+            )}
           </div>
         </div>
-        <div className="flex justify-end gap-2 mt-4">
-          <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-          <Button type="submit" className="bg-primary">
+
+        {/* Description */}
+        <div className="space-y-2">
+          <Label htmlFor="description" className="text-white">Description</Label>
+          <Textarea 
+            id="description" 
+            name="description" 
+            value={formData.description} 
+            onChange={onInputChange}
+            placeholder="Content description"
+            className="bg-input border-border resize-none"
+            rows={4}
+          />
+        </div>
+
+        {/* Featured Content Toggle */}
+        <div className="flex items-center space-x-2">
+          <input 
+            id="is_featured" 
+            name="is_featured" 
+            type="checkbox" 
+            checked={formData.is_featured}
+            onChange={onInputChange}
+            className="rounded border-border"
+          />
+          <Label htmlFor="is_featured" className="text-white">Featured Content (show on homepage)</Label>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-3 pt-6 border-t border-border">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button 
+            type="submit" 
+            className="bg-primary hover:bg-primary/90 min-w-[120px]"
+            disabled={uploadingThumbnail || uploadingBackdrop || uploadingVideo}
+          >
             {editingContent ? 'Update Content' : 'Add Content'}
           </Button>
         </div>

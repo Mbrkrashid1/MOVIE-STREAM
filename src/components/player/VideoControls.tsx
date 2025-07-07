@@ -1,7 +1,9 @@
 
-import React from "react";
+import { Play, Pause, Volume2, VolumeX, X, Maximize, Minimize } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Volume2, VolumeX, X, SkipBack, SkipForward, Maximize, Minimize, Settings } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { useOrientation } from "./useOrientation";
+import { OrientationToggle } from "./OrientationToggle";
 
 interface VideoControlsProps {
   isPlaying: boolean;
@@ -19,7 +21,7 @@ interface VideoControlsProps {
   onToggleFullscreen?: () => void;
 }
 
-export const VideoControls: React.FC<VideoControlsProps> = ({
+export default function VideoControls({
   isPlaying,
   isMuted,
   currentTime,
@@ -33,212 +35,103 @@ export const VideoControls: React.FC<VideoControlsProps> = ({
   videoError = null,
   isFullscreen = false,
   onToggleFullscreen
-}) => {
-  const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+}: VideoControlsProps) {
+  const { userPreference, toggleOrientation } = useOrientation();
 
-  const handleSkip = (seconds: number) => {
-    const video = document.querySelector('video');
-    if (video && !videoError) {
-      video.currentTime = Math.max(0, Math.min(video.currentTime + seconds, duration));
-    }
-  };
-
-  // Don't show controls if there's a video error
-  if (videoError) {
-    return null;
-  }
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="absolute inset-0 flex flex-col justify-between bg-gradient-to-b from-black/40 via-transparent to-black/80 opacity-0 hover:opacity-100 transition-opacity duration-300 group touch-auto">
-      {/* Top bar with close button and settings */}
-      <div className="p-3 sm:p-4 flex justify-between items-start">
-        <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          {/* Quality selector placeholder */}
-          <div className="bg-black/60 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
-            HD
-          </div>
-          {/* Settings button */}
-          <Button 
-            variant="ghost" 
-            size="icon"
-            className="bg-black/60 text-white hover:bg-black/80 backdrop-blur-sm transition-all duration-200 h-8 w-8"
-          >
-            <Settings size={16} />
-          </Button>
+    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 flex flex-col justify-between opacity-0 hover:opacity-100 transition-opacity duration-300 z-10">
+      {/* Top Controls */}
+      <div className="flex justify-between items-center p-4">
+        <div className="flex items-center space-x-2">
+          <OrientationToggle 
+            userPreference={userPreference}
+            onToggle={toggleOrientation}
+          />
         </div>
-        
-        {onClose && !isFullscreen && (
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={onClose}
-            className="bg-black/60 text-white hover:bg-black/80 backdrop-blur-sm transition-all duration-200 h-8 w-8 sm:h-10 sm:w-10"
-          >
-            <X size={16} className="sm:hidden" />
-            <X size={20} className="hidden sm:block" />
-          </Button>
-        )}
+        <div className="flex items-center space-x-2">
+          {onToggleFullscreen && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onToggleFullscreen}
+              className="text-white hover:bg-black/20"
+            >
+              {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
+            </Button>
+          )}
+          {onClose && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="text-white hover:bg-black/20"
+            >
+              <X size={16} />
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* Center play button for when paused - Enhanced for mobile */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        {!isPlaying && !loading && (
-          <Button 
-            variant="ghost" 
-            size="icon"
+      {/* Center Play Button */}
+      <div className="flex-1 flex items-center justify-center">
+        {!loading && !videoError && (
+          <Button
+            variant="ghost"
+            size="lg"
             onClick={onTogglePlay}
-            className="bg-black/70 text-white hover:bg-black/80 rounded-full h-16 w-16 sm:h-20 sm:w-20 pointer-events-auto transition-all duration-300 hover:scale-110 active:scale-95"
+            className="text-white hover:bg-black/20 w-16 h-16 rounded-full"
           >
-            <Play size={24} className="sm:hidden" fill="white" />
-            <Play size={32} className="hidden sm:block" fill="white" />
+            {isPlaying ? <Pause size={32} /> : <Play size={32} />}
           </Button>
         )}
       </div>
-      
-      {/* Bottom controls - Enhanced for mobile */}
-      <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
-        {/* Progress bar - Enhanced touch target */}
-        <div className="relative">
-          <div className="flex items-center gap-2 sm:gap-3 text-white text-xs sm:text-sm mb-2">
-            <span className="min-w-[35px] sm:min-w-[40px] text-xs sm:text-sm">{formatTime(currentTime)}</span>
-            <div className="flex-1 relative py-2">
-              <div className="h-1 bg-white/30 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-150"
-                  style={{ width: `${progressPercentage}%` }}
-                />
-              </div>
-              <input
-                type="range"
-                min="0"
-                max={duration || 0}
-                value={currentTime}
-                onChange={onSeek}
-                disabled={loading}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                style={{ 
-                  WebkitAppearance: 'none',
-                  height: '20px',
-                  marginTop: '-10px'
-                }}
-              />
-            </div>
-            <span className="min-w-[35px] sm:min-w-[40px] text-right text-xs sm:text-sm">{formatTime(duration)}</span>
-          </div>
+
+      {/* Bottom Controls */}
+      <div className="p-4 space-y-2">
+        {/* Progress Bar */}
+        <div className="w-full">
+          <input
+            type="range"
+            min="0"
+            max={duration || 0}
+            value={currentTime}
+            onChange={onSeek}
+            className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+            style={{
+              background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${progress}%, #4b5563 ${progress}%, #4b5563 100%)`
+            }}
+          />
         </div>
-        
-        {/* Control buttons - Mobile optimized */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-1 sm:space-x-2">
-            {/* Skip back */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => handleSkip(-10)}
-              disabled={loading}
-              className="text-white hover:bg-white/20 transition-all duration-200 h-8 w-8 sm:h-10 sm:w-10 active:scale-95 disabled:opacity-50"
-            >
-              <SkipBack size={16} className="sm:hidden" />
-              <SkipBack size={20} className="hidden sm:block" />
-            </Button>
 
-            {/* Play/Pause */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
+        {/* Time and Controls */}
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={onTogglePlay}
-              disabled={loading}
-              className="text-white hover:bg-white/20 transition-all duration-200 mx-1 sm:mx-2 h-10 w-10 sm:h-12 sm:w-12 active:scale-95 disabled:opacity-50"
+              className="text-white hover:bg-black/20"
+              disabled={loading || !!videoError}
             >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : isPlaying ? (
-                <>
-                  <Pause size={20} className="sm:hidden" />
-                  <Pause size={24} className="hidden sm:block" />
-                </>
-              ) : (
-                <>
-                  <Play size={20} className="sm:hidden" />
-                  <Play size={24} className="hidden sm:block" />
-                </>
-              )}
+              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
             </Button>
-
-            {/* Skip forward */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => handleSkip(10)}
-              disabled={loading}
-              className="text-white hover:bg-white/20 transition-all duration-200 h-8 w-8 sm:h-10 sm:w-10 active:scale-95 disabled:opacity-50"
-            >
-              <SkipForward size={16} className="sm:hidden" />
-              <SkipForward size={20} className="hidden sm:block" />
-            </Button>
-
-            {/* Volume - Hidden on very small screens */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={onToggleMute}
-              disabled={loading}
-              className="text-white hover:bg-white/20 transition-all duration-200 ml-2 sm:ml-4 h-8 w-8 sm:h-10 sm:w-10 hidden xs:flex active:scale-95 disabled:opacity-50"
-            >
-              {isMuted ? (
-                <>
-                  <VolumeX size={16} className="sm:hidden" />
-                  <VolumeX size={20} className="hidden sm:block" />
-                </>
-              ) : (
-                <>
-                  <Volume2 size={16} className="sm:hidden" />
-                  <Volume2 size={20} className="hidden sm:block" />
-                </>
-              )}
-            </Button>
-          </div>
-
-          {/* Right side controls */}
-          <div className="flex items-center space-x-1 sm:space-x-2">
-            {/* Volume for very small screens */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={onToggleMute}
-              disabled={loading}
-              className="text-white hover:bg-white/20 transition-all duration-200 h-8 w-8 xs:hidden active:scale-95 disabled:opacity-50"
+              className="text-white hover:bg-black/20"
             >
               {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
             </Button>
-            
-            {/* Fullscreen toggle */}
-            {onToggleFullscreen && (
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={onToggleFullscreen}
-                disabled={loading}
-                className="text-white hover:bg-white/20 transition-all duration-200 h-8 w-8 sm:h-10 sm:w-10 active:scale-95 disabled:opacity-50"
-              >
-                {isFullscreen ? (
-                  <>
-                    <Minimize size={16} className="sm:hidden" />
-                    <Minimize size={20} className="hidden sm:block" />
-                  </>
-                ) : (
-                  <>
-                    <Maximize size={16} className="sm:hidden" />
-                    <Maximize size={20} className="hidden sm:block" />
-                  </>
-                )}
-              </Button>
-            )}
+          </div>
+
+          <div className="text-white text-sm">
+            {formatTime(currentTime)} / {formatTime(duration)}
           </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default VideoControls;
+}
