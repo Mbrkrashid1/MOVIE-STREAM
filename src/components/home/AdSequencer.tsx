@@ -1,97 +1,103 @@
 
-import { ReactNode } from "react";
-import VideoAdBanner from "@/components/ui/VideoAdBanner";
-
-interface AdItem {
-  id: string;
-  isAd: boolean;
-  isPremium?: boolean;
-  adData?: any;
-}
-
-interface ContentItem {
-  id: string;
-  type: string;
-  [key: string]: any;
-}
+import { useState, useEffect } from "react";
+import YouTubeStyleVideoAd from "@/components/home/YouTubeStyleVideoAd";
+import BannerAdSpace from "@/components/home/BannerAdSpace";
 
 interface AdSequencerProps {
-  videosList: ContentItem[];
-  videoAds: any[];
-  renderItem: (item: ContentItem, index: number) => ReactNode;
+  videoAds: Array<{
+    id: string;
+    title: string;
+    description?: string;
+    video_url: string;
+    thumbnail_url?: string;
+    cta_text?: string;
+    cta_url?: string;
+    duration?: number;
+  }>;
+  bannerAds: Array<{
+    id: string;
+    title: string;
+    description?: string;
+    image_url: string;
+    cta_text?: string;
+    cta_url?: string;
+    background_color?: string;
+  }>;
+  onAdComplete?: (adId: string) => void;
 }
 
-const AdSequencer = ({ videosList, videoAds, renderItem }: AdSequencerProps) => {
-  // Insert ads in specific positions in the content
-  const insertAdsInContent = () => {
-    if (!videosList) return [];
-    if (!videoAds || videoAds.length === 0) return videosList;
+const AdSequencer = ({ videoAds, bannerAds, onAdComplete }: AdSequencerProps) => {
+  const [currentSequence, setCurrentSequence] = useState<'video' | 'banner'>('video');
+  const [sequenceTimer, setSequenceTimer] = useState<NodeJS.Timeout | null>(null);
 
-    // Group videos into segments of 4 for regular pattern
-    const result = [];
-    let adIndex = 0;
-
-    // First premium ad position (after featured slider)
-    if (videoAds.length > 0) {
-      const premiumAd = videoAds[0];
-      result.push({
-        id: `premium-ad-${premiumAd.id}`,
-        isAd: true,
-        isPremium: true,
-        adData: premiumAd
-      });
-    }
-
-    // First batch of videos (4 videos)
-    const firstBatch = videosList.slice(0, 4);
-    firstBatch.forEach(video => result.push(video));
-
-    // Mid-section standard ad
-    if (videoAds.length > 1) {
-      const midAd = videoAds[1];
-      result.push({
-        id: `mid-ad-${midAd.id}`,
-        isAd: true,
-        isPremium: false,
-        adData: midAd
-      });
-    }
-
-    // Remaining videos with ads every 6 videos
-    for (let i = 4; i < videosList.length; i++) {
-      result.push(videosList[i]);
+  // Switch between video and banner ads every 30 seconds
+  useEffect(() => {
+    if (videoAds.length > 0 && bannerAds.length > 0) {
+      const timer = setInterval(() => {
+        setCurrentSequence(prev => prev === 'video' ? 'banner' : 'video');
+      }, 30000);
       
-      // Insert standard ad every 6 videos after the first section
-      if ((i - 3) % 6 === 0 && adIndex + 2 < videoAds.length) {
-        adIndex = (adIndex + 1) % (videoAds.length - 2);
-        const ad = videoAds[adIndex + 2]; // Skip the first 2 premium ads
-        result.push({
-          id: `ad-${ad.id}`,
-          isAd: true,
-          isPremium: false,
-          adData: ad
-        });
-      }
+      setSequenceTimer(timer);
+      
+      return () => {
+        if (timer) clearInterval(timer);
+      };
     }
+  }, [videoAds.length, bannerAds.length]);
 
-    return result;
-  };
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (sequenceTimer) clearInterval(sequenceTimer);
+    };
+  }, [sequenceTimer]);
 
-  const contentWithAds = insertAdsInContent();
-  
+  // If we only have one type of ad, show that type
+  if (videoAds.length === 0 && bannerAds.length > 0) {
+    return (
+      <div className="px-4 mb-6">
+        <BannerAdSpace 
+          ads={bannerAds}
+          autoSlideInterval={8000}
+          showNavigation={true}
+        />
+      </div>
+    );
+  }
+
+  if (bannerAds.length === 0 && videoAds.length > 0) {
+    return (
+      <div className="px-4 mb-6">
+        <YouTubeStyleVideoAd 
+          ads={videoAds}
+          onAdComplete={onAdComplete}
+        />
+      </div>
+    );
+  }
+
+  // Show both types in sequence
   return (
-    <>
-      {contentWithAds.map((item, index) => 
-        item.isAd ? (
-          <VideoAdBanner 
-            key={`ad-${index}`}
-            ad={item.adData}
+    <div className="px-4 mb-6">
+      {currentSequence === 'video' && videoAds.length > 0 && (
+        <div className="transition-all duration-500">
+          <YouTubeStyleVideoAd 
+            ads={videoAds}
+            onAdComplete={onAdComplete}
           />
-        ) : (
-          renderItem(item, index)
-        )
+        </div>
       )}
-    </>
+      
+      {currentSequence === 'banner' && bannerAds.length > 0 && (
+        <div className="transition-all duration-500">
+          <BannerAdSpace 
+            ads={bannerAds}
+            autoSlideInterval={8000}
+            showNavigation={true}
+          />
+        </div>
+      )}
+    </div>
   );
 };
 
