@@ -22,23 +22,38 @@ export function useChat() {
     if (!user) return;
 
     const fetchChatRooms = async () => {
-      const { data, error } = await supabase
-        .from('chat_rooms')
-        .select(`
-          *,
-          chat_participants!inner(user_id)
-        `)
-        .eq('chat_participants.user_id', user.id);
+      const { data: participantRooms, error } = await supabase
+        .from('chat_participants')
+        .select('chat_room_id')
+        .eq('user_id', user.id);
 
       if (error) {
-        console.error('Error fetching chat rooms:', error);
+        console.error('Error fetching chat participants:', error);
+        setLoading(false);
+        return;
+      }
+
+      if (!participantRooms || participantRooms.length === 0) {
+        setChatRooms([]);
+        setLoading(false);
+        return;
+      }
+
+      const roomIds = participantRooms.map(p => p.chat_room_id);
+      const { data: rooms, error: roomsError } = await supabase
+        .from('chat_rooms')
+        .select('*')
+        .in('id', roomIds);
+
+      if (roomsError) {
+        console.error('Error fetching chat rooms:', roomsError);
         toast({
           title: "Error",
           description: "Failed to load chat rooms",
           variant: "destructive"
         });
       } else {
-        setChatRooms(data || []);
+        setChatRooms(rooms || []);
       }
       setLoading(false);
     };
@@ -114,15 +129,25 @@ export function useChat() {
   const createDirectChat = async (friendId: string) => {
     if (!user) return null;
 
-    // Check if direct chat already exists
-    const { data: existingRoom } = await supabase
-      .from('chat_rooms')
-      .select('id')
-      .eq('type', 'direct')
-      .eq('created_by', user.id);
+    // Check if direct chat already exists between these users
+    const { data: existingParticipants } = await supabase
+      .from('chat_participants')
+      .select('chat_room_id')
+      .eq('user_id', user.id);
 
-    if (existingRoom && existingRoom.length > 0) {
-      return existingRoom[0].id;
+    if (existingParticipants) {
+      for (const participant of existingParticipants) {
+        const { data: otherParticipant } = await supabase
+          .from('chat_participants')
+          .select('*')
+          .eq('chat_room_id', participant.chat_room_id)
+          .eq('user_id', friendId)
+          .single();
+
+        if (otherParticipant) {
+          return participant.chat_room_id;
+        }
+      }
     }
 
     // Create new chat room

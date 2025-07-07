@@ -25,37 +25,61 @@ export function useFriends() {
     if (!user) return;
 
     const fetchFriendsAndRequests = async () => {
-      // Fetch accepted friendships
+      // Fetch accepted friendships with profile information
       const { data: acceptedFriends, error: friendsError } = await supabase
         .from('friendships')
-        .select(`
-          *,
-          friend_profile:profiles!friendships_friend_id_fkey(*),
-          user_profile:profiles!friendships_user_id_fkey(*)
-        `)
+        .select('*')
         .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`)
         .eq('status', 'accepted');
 
       if (friendsError) {
         console.error('Error fetching friends:', friendsError);
       } else {
-        setFriends(acceptedFriends || []);
+        // Fetch profile information for friends
+        const friendsWithProfiles = await Promise.all(
+          (acceptedFriends || []).map(async (friendship) => {
+            const friendId = friendship.user_id === user.id ? friendship.friend_id : friendship.user_id;
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', friendId)
+              .single();
+            
+            return {
+              ...friendship,
+              friend_profile: profile,
+            };
+          })
+        );
+        setFriends(friendsWithProfiles);
       }
 
-      // Fetch pending friend requests
+      // Fetch pending friend requests with sender profile information
       const { data: pendingRequests, error: requestsError } = await supabase
         .from('friendships')
-        .select(`
-          *,
-          user_profile:profiles!friendships_user_id_fkey(*)
-        `)
+        .select('*')
         .eq('friend_id', user.id)
         .eq('status', 'pending');
 
       if (requestsError) {
         console.error('Error fetching requests:', requestsError);
       } else {
-        setFriendRequests(pendingRequests || []);
+        // Fetch profile information for request senders
+        const requestsWithProfiles = await Promise.all(
+          (pendingRequests || []).map(async (request) => {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', request.user_id)
+              .single();
+            
+            return {
+              ...request,
+              user_profile: profile,
+            };
+          })
+        );
+        setFriendRequests(requestsWithProfiles);
       }
 
       setLoading(false);
