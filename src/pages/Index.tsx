@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useContentData } from "@/hooks/useContentData";
-import MobileHomeLayout from "@/components/home/MobileHomeLayout";
+import MovieBoxHomeLayout from "@/components/home/MovieBoxHomeLayout";
 import LoadingScreen from "@/components/home/LoadingScreen";
 
 const Index = () => {
@@ -21,7 +21,7 @@ const Index = () => {
     return <LoadingScreen />;
   }
 
-  return <MobileHomeLayout />;
+  return <MovieBoxHomeLayout />;
 };
 
 export default Index;
