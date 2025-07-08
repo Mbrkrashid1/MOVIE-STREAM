@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageSquare, Users, UserPlus, Check, X, ArrowLeft, Search, MoreVertical } from 'lucide-react';
+import { MessageSquare, Users, UserPlus, Check, X, ArrowLeft, Search, MoreVertical, Camera, Edit } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { WhatsAppChat } from '@/components/chat/WhatsAppChat';
@@ -64,238 +64,166 @@ export default function Chat() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-green-600 text-white p-4 flex items-center justify-between shadow-lg">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/')}
-            className="text-white hover:bg-green-700"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-xl font-semibold">HausaBox Chat</h1>
+      {/* WhatsApp-style Header */}
+      <div className="bg-green-500 text-white shadow-lg">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/')}
+              className="text-white hover:bg-green-600 rounded-full"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-xl font-medium">HausaBox</h1>
+          </div>
+          
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-green-600 rounded-full"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-green-600 rounded-full"
+            >
+              <MoreVertical className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
         
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-green-700"
-          >
-            <Search className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-green-700"
-          >
-            <MoreVertical className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={signOut}
-            className="text-white hover:bg-green-700 text-sm"
-          >
-            Sign Out
-          </Button>
+        {/* WhatsApp-style Tabs */}
+        <div className="px-4 pb-2">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="bg-transparent w-full justify-start gap-8 border-none">
+              <TabsTrigger 
+                value="chats" 
+                className="text-white/70 data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white rounded-none px-0 font-medium"
+              >
+                CHATS
+              </TabsTrigger>
+              <TabsTrigger 
+                value="status" 
+                className="text-white/70 data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white rounded-none px-0 font-medium"
+              >
+                STATUS
+              </TabsTrigger>
+              <TabsTrigger 
+                value="calls" 
+                className="text-white/70 data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-white rounded-none px-0 font-medium"
+              >
+                CALLS
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
       </div>
 
-      <div className="flex h-[calc(100vh-80px)]">
-        {/* Sidebar */}
-        <div className="w-80 bg-white border-r border-gray-200">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
-            <TabsList className="grid w-full grid-cols-3 rounded-none bg-gray-100">
-              <TabsTrigger value="chats" className="text-green-600 data-[state=active]:bg-white">
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Chats
-              </TabsTrigger>
-              <TabsTrigger value="friends" className="text-green-600 data-[state=active]:bg-white">
-                <Users className="h-4 w-4 mr-2" />
-                Friends
-              </TabsTrigger>
-              <TabsTrigger value="add" className="text-green-600 data-[state=active]:bg-white">
-                <UserPlus className="h-4 w-4 mr-2" />
-                Add
-              </TabsTrigger>
-            </TabsList>
-
+      <div className="flex h-[calc(100vh-140px)]">
+        {/* WhatsApp-style Chat List */}
+        <div className="w-full bg-white">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsContent value="chats" className="h-full mt-0">
               <ScrollArea className="h-full">
-                <div className="p-4 space-y-1">
+                <div className="space-y-0">
                   {chatRooms.map((room) => (
-                    <Card
+                    <div
                       key={room.id}
-                      className={`cursor-pointer transition-colors border-0 shadow-none hover:bg-gray-50 ${
-                        currentChatRoom === room.id ? 'bg-green-50' : ''
+                      className={`flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors ${
+                        currentChatRoom === room.id ? 'bg-gray-50' : ''
                       }`}
                       onClick={() => handleChatSelect(room)}
                     >
-                      <CardContent className="p-3">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-12 w-12">
-                            <AvatarFallback className="bg-green-100 text-green-700 text-lg font-semibold">
-                              {room.name ? room.name[0] : room.type === 'movie_discussion' ? 'M' : 'C'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between">
-                              <h3 className="font-medium truncate text-gray-900">
-                                {room.name || 'Direct Chat'}
-                              </h3>
-                              <span className="text-xs text-gray-500">
-                                {formatLastMessageTime(room.updated_at)}
-                              </span>
-                            </div>
-                            <p className="text-sm text-gray-500 truncate">
-                              {room.type === 'movie_discussion' ? 'Movie Discussion' : 'Tap to start chatting'}
-                            </p>
-                          </div>
+                      <Avatar className="h-12 w-12 flex-shrink-0">
+                        <AvatarFallback className="bg-gray-300 text-gray-700 text-lg font-medium">
+                          {room.name ? room.name[0].toUpperCase() : room.type === 'movie_discussion' ? 'M' : 'C'}
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className="font-medium text-gray-900 truncate">
+                            {room.name || 'Direct Chat'}
+                          </h3>
+                          <span className="text-xs text-gray-500 flex-shrink-0">
+                            {formatLastMessageTime(room.updated_at)}
+                          </span>
                         </div>
-                      </CardContent>
-                    </Card>
+                        
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-gray-500 truncate">
+                            {room.type === 'movie_discussion' ? 'Movie Discussion' : 'Tap to start chatting'}
+                          </p>
+                          {Math.random() > 0.7 && (
+                            <div className="bg-green-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center flex-shrink-0 ml-2">
+                              {Math.floor(Math.random() * 9) + 1}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </ScrollArea>
             </TabsContent>
 
-            <TabsContent value="friends" className="h-full mt-0">
+            <TabsContent value="status" className="h-full mt-0">
               <ScrollArea className="h-full">
                 <div className="p-4">
-                  {friendRequests.length > 0 && (
-                    <div className="mb-6">
-                      <h3 className="font-semibold mb-3 text-gray-800">Friend Requests</h3>
-                      <div className="space-y-2">
-                        {friendRequests.map((request) => (
-                          <Card key={request.id} className="border border-green-200">
-                            <CardContent className="p-3">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <Avatar className="h-10 w-10">
-                                    <AvatarFallback className="bg-blue-100 text-blue-700">
-                                      {request.user_profile?.display_name?.[0] || 'U'}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <span className="font-medium text-gray-900">
-                                      {request.user_profile?.display_name}
-                                    </span>
-                                    <p className="text-sm text-gray-500">wants to connect</p>
-                                  </div>
-                                </div>
-                                <div className="flex gap-2">
-                                  <Button
-                                    size="sm"
-                                    className="bg-green-500 hover:bg-green-600 h-8 w-8 p-0"
-                                    onClick={() => acceptFriendRequest(request.id)}
-                                  >
-                                    <Check className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-8 w-8 p-0 border-red-200 text-red-600 hover:bg-red-50"
-                                    onClick={() => rejectFriendRequest(request.id)}
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
+                  {/* My Status */}
+                  <div className="flex items-center gap-3 p-2 mb-4">
+                    <div className="relative">
+                      <Avatar className="h-12 w-12">
+                        <AvatarFallback className="bg-gray-300 text-gray-700">
+                          {user?.email?.[0]?.toUpperCase() || 'M'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
+                        <Camera className="h-3 w-3 text-white" />
                       </div>
                     </div>
-                  )}
-
-                  <h3 className="font-semibold mb-3 text-gray-800">Friends</h3>
-                  <div className="space-y-2">
-                    {friends.map((friendship) => {
-                      const friend = friendship.user_id === user.id 
-                        ? friendship.friend_profile 
-                        : friendship.user_profile;
-                      
-                      return (
-                        <Card key={friendship.id} className="cursor-pointer hover:bg-gray-50 border-0 shadow-none">
-                          <CardContent className="p-3">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-12 w-12">
-                                <AvatarFallback className="bg-green-100 text-green-700">
-                                  {friend?.display_name?.[0] || 'F'}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1">
-                                <h4 className="font-medium text-gray-900">{friend?.display_name}</h4>
-                                <p className="text-sm text-gray-500">@{friend?.username}</p>
-                              </div>
-                              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900">My status</h3>
+                      <p className="text-sm text-gray-500">Tap to add status update</p>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <h4 className="text-sm text-gray-500 font-medium mb-2">Recent updates</h4>
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">No recent updates to show right now.</p>
+                    </div>
                   </div>
                 </div>
               </ScrollArea>
             </TabsContent>
 
-            <TabsContent value="add" className="h-full mt-0">
-              <div className="p-4">
-                <div className="mb-4">
-                  <Input
-                    placeholder="Search users..."
-                    value={searchQuery}
-                    onChange={(e) => handleSearch(e.target.value)}
-                    className="border-green-200 focus:border-green-500"
-                  />
-                </div>
-                <ScrollArea className="h-[calc(100%-80px)]">
-                  <div className="space-y-2">
-                    {users.map((user) => (
-                      <Card key={user.id} className="border-0 shadow-none hover:bg-gray-50">
-                        <CardContent className="p-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-12 w-12">
-                                <AvatarFallback className="bg-blue-100 text-blue-700">
-                                  {user.display_name?.[0] || 'U'}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <h4 className="font-medium text-gray-900">{user.display_name}</h4>
-                                <p className="text-sm text-gray-500">@{user.username}</p>
-                              </div>
-                            </div>
-                            <Button
-                              size="sm"
-                              className="bg-green-500 hover:bg-green-600"
-                              onClick={() => sendFriendRequest(user.id)}
-                            >
-                              Add Friend
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+            <TabsContent value="calls" className="h-full mt-0">
+              <ScrollArea className="h-full">
+                <div className="p-4">
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No recent calls to show right now.</p>
                   </div>
-                </ScrollArea>
-              </div>
+                </div>
+              </ScrollArea>
             </TabsContent>
           </Tabs>
         </div>
+      </div>
 
-        {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col bg-gradient-to-b from-green-50 to-white">
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center text-gray-500">
-              <MessageSquare className="h-24 w-24 mx-auto mb-4 opacity-30" />
-              <h3 className="text-xl font-medium mb-2">Welcome to HausaBox Chat</h3>
-              <p>Select a chat to start messaging with WhatsApp-style interface</p>
-            </div>
-          </div>
-        </div>
+      {/* WhatsApp-style Floating Action Button */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <Button
+          size="icon"
+          className="bg-green-500 hover:bg-green-600 text-white rounded-full h-14 w-14 shadow-lg"
+        >
+          <Edit className="h-6 w-6" />
+        </Button>
       </div>
     </div>
   );

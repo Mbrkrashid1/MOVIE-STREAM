@@ -83,133 +83,133 @@ export function WhatsAppChat({ chatRoomId, chatName, onBack }: WhatsAppChatProps
   const emojis = ['😀', '😂', '😍', '🤔', '👍', '👎', '❤️', '🔥', '💯', '🎉'];
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
-      {/* Header */}
-      <div className="bg-green-600 text-white p-4 flex items-center justify-between shadow-lg">
-        <div className="flex items-center gap-3">
+    <div className="flex flex-col h-screen bg-white">
+      {/* WhatsApp-style Header */}
+      <div className="bg-green-500 text-white p-3 flex items-center justify-between shadow-md">
+        <div className="flex items-center gap-3 flex-1">
           <Button
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="text-white hover:bg-green-700"
+            className="text-white hover:bg-green-600 rounded-full h-10 w-10"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-green-100 text-green-700">
+          
+          <Avatar className="h-10 w-10 border-2 border-white/20">
+            <AvatarFallback className="bg-white/20 text-white font-medium">
               {chatName[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div>
-            <h3 className="font-semibold">{chatName}</h3>
+          
+          <div className="flex-1 min-w-0">
+            <h3 className="font-medium text-white truncate">{chatName}</h3>
             <p className="text-xs text-green-100">
-              {isTyping ? 'typing...' : 'online'}
+              {isTyping ? 'typing...' : 'last seen recently'}
             </p>
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-green-700"
+            className="text-white hover:bg-green-600 rounded-full h-10 w-10"
           >
             <Video className="h-5 w-5" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-green-700"
+            className="text-white hover:bg-green-600 rounded-full h-10 w-10"
           >
             <Phone className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-green-700"
-          >
-            <Search className="h-5 w-5" />
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-green-700"
+                className="text-white hover:bg-green-600 rounded-full h-10 w-10"
               >
                 <MoreVertical className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem>View contact</DropdownMenuItem>
               <DropdownMenuItem>Media, links, and docs</DropdownMenuItem>
               <DropdownMenuItem>Search</DropdownMenuItem>
               <DropdownMenuItem>Mute notifications</DropdownMenuItem>
+              <DropdownMenuItem>Wallpaper</DropdownMenuItem>
               <DropdownMenuItem className="text-red-600">Block</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
 
-      {/* Messages */}
-      <ScrollArea className="flex-1 p-4 bg-gradient-to-b from-green-50 to-white">
-        <div className="space-y-4">
-          {messages.map((message, index) => {
-            const isOwnMessage = message.sender_id === user?.id;
-            const showTime = index === 0 || 
-              new Date(messages[index - 1].created_at).getTime() - new Date(message.created_at).getTime() > 60000;
+      {/* WhatsApp Chat Background Pattern */}
+      <div className="flex-1 relative" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23e5ddd5' fill-opacity='0.1' fill-rule='evenodd'%3E%3Cpath d='m0 40l40-40h-40v40zm40 0v-40h-40l40 40z'/%3E%3C/g%3E%3C/svg%3E")`,
+        backgroundColor: '#e5ddd5'
+      }}>
+        {/* Messages Container */}
+        <ScrollArea className="h-full p-4">
+          <div className="space-y-3 pb-4">
+            {messages.map((message, index) => {
+              const isOwnMessage = message.sender_id === user?.id;
+              const showTime = index === 0 || 
+                new Date(messages[index - 1].created_at).getTime() - new Date(message.created_at).getTime() > 60000;
 
-            return (
-              <div key={message.id}>
-                {showTime && (
-                  <div className="text-center my-4">
-                    <span className="bg-white px-3 py-1 rounded-full text-xs text-gray-500 shadow-sm">
-                      {formatMessageTime(message.created_at)}
-                    </span>
-                  </div>
-                )}
-                
-                <div className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                  <div
-                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg shadow-md relative ${
-                      isOwnMessage
-                        ? 'bg-green-500 text-white rounded-br-sm'
-                        : 'bg-white text-gray-800 rounded-bl-sm'
-                    }`}
-                  >
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                    <div className={`flex items-center justify-end gap-1 mt-1 ${
-                      isOwnMessage ? 'text-green-100' : 'text-gray-500'
-                    }`}>
-                      <span className="text-xs">
-                        {format(new Date(message.created_at), 'HH:mm')}
+              return (
+                <div key={message.id}>
+                  {showTime && (
+                    <div className="text-center my-3">
+                      <span className="bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs text-gray-600 shadow-sm">
+                        {formatLastMessageTime(message.created_at)}
                       </span>
-                      {isOwnMessage && (
-                        <div className="flex">
-                          <CheckCheck className="h-3 w-3" />
-                        </div>
-                      )}
                     </div>
-                    
-                    {/* Message tail */}
-                    <div className={`absolute bottom-0 w-0 h-0 ${
-                      isOwnMessage 
-                        ? 'right-0 border-l-8 border-l-green-500 border-b-8 border-b-transparent'
-                        : 'left-0 border-r-8 border-r-white border-b-8 border-b-transparent'
-                    }`} />
+                  )}
+                  
+                  <div className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                    <div
+                      className={`max-w-xs lg:max-w-md px-3 py-2 rounded-lg shadow-sm relative ${
+                        isOwnMessage
+                          ? 'bg-green-500 text-white rounded-br-none'
+                          : 'bg-white text-gray-800 rounded-bl-none'
+                      }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+                      <div className={`flex items-end justify-end gap-1 mt-1 ${
+                        isOwnMessage ? 'text-green-100' : 'text-gray-500'
+                      }`}>
+                        <span className="text-xs leading-none">
+                          {format(new Date(message.created_at), 'HH:mm')}
+                        </span>
+                        {isOwnMessage && (
+                          <CheckCheck className="h-3 w-3 text-blue-200" />
+                        )}
+                      </div>
+                      
+                      {/* WhatsApp-style Message Tail */}
+                      <div className={`absolute bottom-0 ${
+                        isOwnMessage 
+                          ? 'right-0 w-0 h-0 border-l-8 border-l-green-500 border-b-8 border-b-transparent'
+                          : 'left-0 w-0 h-0 border-r-8 border-r-white border-b-8 border-b-transparent'
+                      }`} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-        <div ref={messagesEndRef} />
-      </ScrollArea>
+              );
+            })}
+            <div ref={messagesEndRef} />
+          </div>
+        </ScrollArea>
+      </div>
 
-      {/* Input Area */}
-      <div className="bg-white border-t border-gray-200 p-4">
+      {/* WhatsApp-style Input Area */}
+      <div className="bg-gray-100 p-3 border-t border-gray-200">
         {showEmojiPicker && (
-          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+          <div className="mb-3 p-3 bg-white rounded-lg shadow-lg border">
             <div className="flex flex-wrap gap-2">
               {emojis.map((emoji, index) => (
                 <button
@@ -218,7 +218,7 @@ export function WhatsAppChat({ chatRoomId, chatName, onBack }: WhatsAppChatProps
                     setNewMessage(prev => prev + emoji);
                     setShowEmojiPicker(false);
                   }}
-                  className="text-2xl hover:bg-gray-200 p-2 rounded-lg transition-colors"
+                  className="text-2xl hover:bg-gray-100 p-2 rounded-lg transition-colors"
                 >
                   {emoji}
                 </button>
@@ -228,12 +228,13 @@ export function WhatsAppChat({ chatRoomId, chatName, onBack }: WhatsAppChatProps
         )}
         
         <div className="flex items-end gap-2">
-          <div className="flex-1 flex items-end bg-gray-100 rounded-3xl px-4 py-2">
+          {/* Input Container */}
+          <div className="flex-1 flex items-end bg-white rounded-3xl px-4 py-2 shadow-sm border border-gray-200">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="text-gray-500 hover:text-gray-700 h-8 w-8"
+              className="text-gray-500 hover:text-gray-700 h-8 w-8 flex-shrink-0"
             >
               <Smile className="h-5 w-5" />
             </Button>
@@ -242,17 +243,16 @@ export function WhatsAppChat({ chatRoomId, chatName, onBack }: WhatsAppChatProps
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="Type a message..."
-              className="flex-1 bg-transparent border-none outline-none resize-none max-h-20 py-2 px-2 text-sm"
+              placeholder="Type a message"
+              className="flex-1 bg-transparent border-none outline-none resize-none max-h-20 py-2 px-2 text-sm placeholder-gray-500"
               rows={1}
-              style={{ minHeight: '20px' }}
             />
             
             <Button
               variant="ghost"
               size="icon"
               onClick={handleFileUpload}
-              className="text-gray-500 hover:text-gray-700 h-8 w-8"
+              className="text-gray-500 hover:text-gray-700 h-8 w-8 flex-shrink-0"
             >
               <Paperclip className="h-5 w-5" />
             </Button>
@@ -260,24 +260,25 @@ export function WhatsAppChat({ chatRoomId, chatName, onBack }: WhatsAppChatProps
             <Button
               variant="ghost"
               size="icon"
-              className="text-gray-500 hover:text-gray-700 h-8 w-8"
+              className="text-gray-500 hover:text-gray-700 h-8 w-8 flex-shrink-0"
             >
               <Camera className="h-5 w-5" />
             </Button>
           </div>
           
+          {/* Send/Mic Button */}
           {newMessage.trim() ? (
             <Button
               onClick={handleSendMessage}
               size="icon"
-              className="bg-green-500 hover:bg-green-600 text-white rounded-full h-12 w-12 shadow-lg"
+              className="bg-green-500 hover:bg-green-600 text-white rounded-full h-12 w-12 shadow-lg flex-shrink-0"
             >
               <Send className="h-5 w-5" />
             </Button>
           ) : (
             <Button
               size="icon"
-              className="bg-green-500 hover:bg-green-600 text-white rounded-full h-12 w-12 shadow-lg"
+              className="bg-green-500 hover:bg-green-600 text-white rounded-full h-12 w-12 shadow-lg flex-shrink-0"
             >
               <Mic className="h-5 w-5" />
             </Button>
@@ -288,9 +289,8 @@ export function WhatsAppChat({ chatRoomId, chatName, onBack }: WhatsAppChatProps
           type="file"
           ref={fileInputRef}
           className="hidden"
-          accept="image/*,video/*,audio/*"
+          accept="image/*,video/*,audio/*,application/*"
           onChange={(e) => {
-            // Handle file upload logic here
             console.log('File selected:', e.target.files?.[0]);
           }}
         />
