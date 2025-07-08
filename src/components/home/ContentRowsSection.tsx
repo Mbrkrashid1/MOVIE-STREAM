@@ -1,101 +1,98 @@
 
 import MovieBoxRow from "@/components/ui/MovieBoxRow";
-import AdBannerSequencer from "./AdBannerSequencer";
-import { useContentData } from "@/hooks/useContentData";
+import { ContentItem } from "@/hooks/useContentData";
+import { transformToMovieBoxCard } from "@/utils/contentTransformers";
 
 interface ContentRowsSectionProps {
-  movieContent: any[];
-  seriesContent: any[];
+  movieContent: ContentItem[];
+  seriesContent: ContentItem[];
+  videosList: ContentItem[] | undefined;
 }
 
-const ContentRowsSection = ({ movieContent, seriesContent }: ContentRowsSectionProps) => {
-  const { videoAds } = useContentData();
-
-  // Combine all content for the sequencer
-  const allContent = [
-    ...movieContent.slice(0, 8).map(item => ({ ...item, rowType: 'movie' })),
-    ...seriesContent.slice(0, 8).map(item => ({ ...item, rowType: 'series' })),
-    ...movieContent.slice(8).map(item => ({ ...item, rowType: 'movie' })),
-    ...seriesContent.slice(8).map(item => ({ ...item, rowType: 'series' }))
-  ];
-
-  const renderContentItem = (item: any, index: number) => {
-    if (item.rowType === 'movie') {
-      return (
-        <div key={`movie-${item.id}-${index}`} className="mb-8">
-          <MovieBoxRow 
-            title="Featured Movies" 
-            movies={movieContent.slice(index * 4, (index * 4) + 4)} 
-          />
-        </div>
-      );
-    } else if (item.rowType === 'series') {
-      return (
-        <div key={`series-${item.id}-${index}`} className="mb-8">
-          <MovieBoxRow 
-            title="Popular Series" 
-            movies={seriesContent.slice(index * 4, (index * 4) + 4)} 
-          />
-        </div>
-      );
-    }
-    return null;
-  };
-
-  // Create simplified content array for proper sequencing
-  const simplifiedContent = [
-    { id: 'movies-1', type: 'movie-row', rowType: 'movie' },
-    { id: 'series-1', type: 'series-row', rowType: 'series' },
-    { id: 'movies-2', type: 'movie-row', rowType: 'movie' },
-    { id: 'series-2', type: 'series-row', rowType: 'series' },
-    { id: 'movies-3', type: 'movie-row', rowType: 'movie' },
-    { id: 'series-3', type: 'series-row', rowType: 'series' },
-  ];
-
-  const renderSimplifiedItem = (item: any, index: number) => {
-    if (item.rowType === 'movie' && movieContent.length > 0) {
-      const startIndex = Math.floor(index / 2) * 6;
-      const rowMovies = movieContent.slice(startIndex, startIndex + 6);
-      if (rowMovies.length > 0) {
-        return (
-          <div key={`movie-row-${index}`} className="mb-8">
-            <MovieBoxRow 
-              title={`Featured Movies ${Math.floor(index / 2) + 1}`} 
-              movies={rowMovies} 
-            />
-          </div>
-        );
-      }
-    } else if (item.rowType === 'series' && seriesContent.length > 0) {
-      const startIndex = Math.floor(index / 2) * 6;
-      const rowSeries = seriesContent.slice(startIndex, startIndex + 6);
-      if (rowSeries.length > 0) {
-        return (
-          <div key={`series-row-${index}`} className="mb-8">
-            <MovieBoxRow 
-              title={`Popular Series ${Math.floor(index / 2) + 1}`} 
-              movies={rowSeries} 
-            />
-          </div>
-        );
-      }
-    }
-    return null;
-  };
-
-  const videoAdsList = videoAds?.filter(ad => ad.thumbnail_url) || [];
-
+const ContentRowsSection = ({ movieContent, seriesContent, videosList }: ContentRowsSectionProps) => {
   return (
-    <div className="space-y-8 px-4">
-      <AdBannerSequencer
-        content={simplifiedContent}
-        ads={videoAdsList}
-        renderItem={renderSimplifiedItem}
-        adPlacement={{
-          positions: [2, 5], // Place ad banners after 2nd and 5th content rows
-          adsPerBanner: 4
-        }}
-      />
+    <div className="space-y-12 pb-32">
+      {/* Trending Now - Premium Showcase */}
+      {movieContent.length > 0 && (
+        <MovieBoxRow
+          title="🔥 Trending Now"
+          movies={transformToMovieBoxCard(movieContent.slice(0, 15))}
+          viewAllLink="/movies"
+          priority={true}
+        />
+      )}
+
+      {/* New & Popular - Fresh Content */}
+      {seriesContent.length > 0 && (
+        <MovieBoxRow
+          title="🆕 New & Popular"
+          movies={transformToMovieBoxCard(seriesContent.slice(0, 15))}
+          viewAllLink="/series"
+        />
+      )}
+
+      {/* Continue Watching - Personalized */}
+      {videosList && videosList.length > 6 && (
+        <MovieBoxRow
+          title="▶️ Continue Watching"
+          movies={transformToMovieBoxCard(videosList.slice(0, 12))}
+          viewAllLink="/continue"
+        />
+      )}
+
+      {/* Premium Originals */}
+      {movieContent.length > 12 && (
+        <MovieBoxRow
+          title="⭐ HausaBox Originals"
+          movies={transformToMovieBoxCard(movieContent.slice(12, 27))}
+          viewAllLink="/originals"
+        />
+      )}
+
+      {/* Kannywood Classics */}
+      {movieContent.length > 18 && (
+        <MovieBoxRow
+          title="🎭 Kannywood Classics"
+          movies={transformToMovieBoxCard(movieContent.slice(18, 33))}
+          viewAllLink="/classics"
+        />
+      )}
+
+      {/* Action & Adventure */}
+      {movieContent.length > 24 && (
+        <MovieBoxRow
+          title="💥 Action & Adventure"
+          movies={transformToMovieBoxCard(movieContent.slice(24, 39))}
+          viewAllLink="/action"
+        />
+      )}
+
+      {/* Romance & Drama */}
+      {seriesContent.length > 12 && (
+        <MovieBoxRow
+          title="💝 Romance & Drama"
+          movies={transformToMovieBoxCard(seriesContent.slice(12, 27))}
+          viewAllLink="/romance"
+        />
+      )}
+
+      {/* Comedy Central */}
+      {videosList && videosList.length > 18 && (
+        <MovieBoxRow
+          title="😂 Comedy Central"
+          movies={transformToMovieBoxCard(videosList.slice(18, 33))}
+          viewAllLink="/comedy"
+        />
+      )}
+
+      {/* Family Entertainment */}
+      {movieContent.length > 30 && (
+        <MovieBoxRow
+          title="👨‍👩‍👧‍👦 Family Entertainment"
+          movies={transformToMovieBoxCard(movieContent.slice(30, 45))}
+          viewAllLink="/family"
+        />
+      )}
     </div>
   );
 };
