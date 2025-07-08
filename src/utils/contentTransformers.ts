@@ -15,7 +15,7 @@ export const transformToMovieBoxCard = (content: ContentItem[]) => {
     duration: item.duration || "2h 15m",
     genre: ["Action", "Drama", "Comedy", "Thriller", "Romance"][Math.floor(Math.random() * 5)],
     isNew: Math.random() > 0.6,
-    video_url: item.video_url // Ensure video URL is available
+    video_url: item.video_url || "sample-video-url"
   }));
 };
 
@@ -26,14 +26,14 @@ export const transformFeaturedForHero = (featuredItems: FeaturedItem[] | undefin
   return featuredItems?.map(item => ({
     id: item.id,
     title: item.title,
-    description: "Experience the finest Hausa cinema with stunning visuals, compelling storytelling, and unforgettable performances that capture the essence of our rich cultural heritage.",
+    description: item.description || "Experience the finest Hausa cinema with stunning visuals, compelling storytelling, and unforgettable performances that capture the essence of our rich cultural heritage.",
     backgroundImage: item.backgroundImage,
     type: item.type,
     rating: 4.5,
     year: 2024,
     duration: "2h 30m",
     genre: "Drama",
-    video_url: "sample-video-url"
+    video_url: item.video_url || "sample-video-url"
   })) || [];
 };
 

@@ -21,7 +21,11 @@ const Index = () => {
     return <LoadingScreen />;
   }
 
-  return <MovieBoxHomeLayout />;
+  return (
+    <div className="w-full min-h-screen">
+      <MovieBoxHomeLayout />
+    </div>
+  );
 };
 
 export default Index;

@@ -4,10 +4,12 @@ import { useContentData } from "@/hooks/useContentData";
 import { useToast } from "@/hooks/use-toast";
 import BannerAdSpace from "@/components/home/BannerAdSpace";
 import YouTubeStyleVideoAd from "@/components/home/YouTubeStyleVideoAd";
+import AutoPlayAdSequencer from "@/components/home/AutoPlayAdSequencer";
 import MovieBoxNavbar from "@/components/layout/MovieBoxNavbar";
 import BottomNavigation from "@/components/layout/BottomNavigation";
 import LoadingScreen from "@/components/home/LoadingScreen";
 import HeroSection from "@/components/home/HeroSection";
+import { transformFeaturedForHero, filterVideoAds, filterBannerAds } from "@/utils/contentTransformers";
 import { Link } from "react-router-dom";
 import { Play, Eye } from "lucide-react";
 
@@ -36,22 +38,12 @@ const MobileHomeLayout = () => {
     return <LoadingScreen />;
   }
 
-  // Separate video ads and banner ads properly  
-  const videoAdsWithVideo = videoAds?.filter(ad => 
-    ad.video_url && ad.video_url !== 'placeholder' && ad.video_url.trim() !== ''
-  ) || [];
+  // Transform featured items for hero section
+  const heroItems = transformFeaturedForHero(featuredItems);
 
-  const bannerAdsOnly = videoAds?.filter(ad => 
-    ad.thumbnail_url && (!ad.video_url || ad.video_url === 'placeholder' || ad.video_url.trim() === '')
-  ).map(ad => ({
-    id: ad.id,
-    title: ad.title,
-    description: ad.description,
-    image_url: ad.thumbnail_url || '',
-    cta_text: ad.cta_text || "Learn More",
-    cta_url: ad.cta_url || "#",
-    background_color: 'from-purple-900/20 to-blue-900/20'
-  })) || [];
+  // Filter video and banner ads
+  const videoAdsWithVideo = filterVideoAds(videoAds);
+  const bannerAdsOnly = filterBannerAds(videoAds);
 
   // Filter content for Hausa categories only
   const hausaMovies = movieContent.filter(item => 
@@ -87,18 +79,31 @@ const MobileHomeLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white pb-20">
+    <div className="min-h-screen bg-black text-white pb-20 w-full">
       <MovieBoxNavbar />
       
-      <div className="pt-16">
+      <div className="pt-16 w-full">
+        {/* Auto-Playing Video Ad Sequencer for Mobile */}
+        {videoAdsWithVideo.length > 0 && (
+          <AutoPlayAdSequencer 
+            ads={videoAdsWithVideo}
+            autoPlayDuration={10}
+            onAdComplete={(adId) => {
+              console.log('Mobile auto-play ad completed:', adId);
+            }}
+          />
+        )}
+
         {/* Hero Section with Backdrop Images */}
-        {featuredItems && featuredItems.length > 0 && (
-          <HeroSection featuredItems={featuredItems} />
+        {heroItems.length > 0 && (
+          <div className="w-full">
+            <HeroSection heroItems={heroItems} />
+          </div>
         )}
 
         {/* Search Bar */}
-        <div className="px-4 py-3">
-          <div className="bg-gray-800 rounded-full px-4 py-3 flex items-center">
+        <div className="px-4 py-3 w-full">
+          <div className="bg-gray-800 rounded-full px-4 py-3 flex items-center w-full">
             <svg className="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -107,7 +112,7 @@ const MobileHomeLayout = () => {
         </div>
 
         {/* Hausa Category Tabs */}
-        <div className="flex px-4 space-x-6 mb-6 overflow-x-auto">
+        <div className="flex px-4 space-x-6 mb-6 overflow-x-auto w-full">
           <button className="text-white font-medium border-b-2 border-primary pb-2 whitespace-nowrap">Trending</button>
           <button className="text-gray-400 font-medium pb-2 whitespace-nowrap">Kannywood</button>
           <button className="text-gray-400 font-medium pb-2 whitespace-nowrap">Hausa Movies</button>
@@ -117,12 +122,12 @@ const MobileHomeLayout = () => {
 
         {/* Organized Video Ads Section */}
         {videoAdsWithVideo.length > 0 && (
-          <div className="px-4 mb-8">
+          <div className="px-4 mb-8 w-full">
             <div className="mb-3">
               <h3 className="text-lg font-semibold text-white mb-1">🎬 Featured Videos</h3>
               <p className="text-sm text-gray-400">Sponsored content</p>
             </div>
-            <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-800">
+            <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-800 w-full">
               <YouTubeStyleVideoAd 
                 ads={videoAdsWithVideo.slice(0, 3)}
                 onAdComplete={(adId) => {
@@ -133,23 +138,23 @@ const MobileHomeLayout = () => {
           </div>
         )}
 
-        {/* Banner Ad Space */}
+        {/* Banner Ad Space with Auto-Scroll */}
         {bannerAdsOnly.length > 0 && (
-          <div className="px-4 mb-8">
+          <div className="px-4 mb-8 w-full">
             <div className="mb-3">
               <h3 className="text-sm font-medium text-gray-400 mb-2">Sponsored</h3>
             </div>
             <BannerAdSpace 
               ads={bannerAdsOnly}
-              autoSlideInterval={8000}
+              autoSlideInterval={4000}
               showNavigation={true}
-              className="mb-4"
+              className="mb-4 w-full"
             />
           </div>
         )}
 
         {/* Hausa Content Categories */}
-        <div className="px-4 mb-6">
+        <div className="px-4 mb-6 w-full">
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="bg-gray-800 rounded-lg p-4 text-center">
               <h3 className="text-white font-semibold mb-1">Kannywood Movies</h3>
@@ -169,7 +174,7 @@ const MobileHomeLayout = () => {
         </div>
 
         {/* Kannywood Movies Section */}
-        <div className="px-4 mb-6">
+        <div className="px-4 mb-6 w-full">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-white text-lg font-semibold">Kannywood Movies</h2>
             <button className="text-gray-400 text-sm flex items-center">
@@ -180,7 +185,7 @@ const MobileHomeLayout = () => {
             </button>
           </div>
           
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-3 w-full">
             {(hausaMovies.length > 0 ? hausaMovies : movieContent).slice(0, 6).map((item) => (
               <Link 
                 to={`/${item.type}/${item.id}`} 
@@ -216,10 +221,10 @@ const MobileHomeLayout = () => {
         </div>
 
         {/* Hausa Music Videos Section */}
-        <div className="px-4 mb-6">
+        <div className="px-4 mb-6 w-full">
           <h2 className="text-white text-lg font-semibold mb-4">Hausa Music Videos</h2>
           
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 w-full">
             {(hausaSeries.length > 0 ? hausaSeries : seriesContent).slice(0, 4).map((item) => (
               <Link 
                 to={`/${item.type}/${item.id}`} 
@@ -255,10 +260,10 @@ const MobileHomeLayout = () => {
         </div>
 
         {/* Trending Hausa Movies Section */}
-        <div className="px-4 mb-6">
+        <div className="px-4 mb-6 w-full">
           <h2 className="text-white text-lg font-semibold mb-4">📈 Trending Hausa Movies</h2>
           
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-3 w-full">
             {trendingContent.slice(0, 6).map((item) => (
               <Link 
                 to={`/${item.type}/${item.id}`} 

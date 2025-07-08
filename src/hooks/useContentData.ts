@@ -12,6 +12,7 @@ export interface ContentItem {
   timeAgo: string;
   duration: string;
   type: "movie" | "series";
+  video_url?: string;
 }
 
 export interface FeaturedItem {
@@ -19,10 +20,10 @@ export interface FeaturedItem {
   title: string;
   backgroundImage: string;
   type: string;
-  description?: string;
-  backdrop_url?: string;
-  thumbnail_url?: string;
-  video_url?: string;
+  description: string;
+  backdrop_url: string;
+  thumbnail_url: string;
+  video_url: string;
 }
 
 export const useContentData = () => {
@@ -43,10 +44,10 @@ export const useContentData = () => {
         title: item.title,
         backgroundImage: item.backdrop_url || item.thumbnail_url || "https://images.unsplash.com/photo-1605810230434-7631ac76ec81",
         type: item.type,
-        description: item.description,
-        backdrop_url: item.backdrop_url,
-        thumbnail_url: item.thumbnail_url,
-        video_url: item.video_url
+        description: item.description || "Experience the finest Hausa cinema with stunning visuals and compelling storytelling.",
+        backdrop_url: item.backdrop_url || item.thumbnail_url || "",
+        thumbnail_url: item.thumbnail_url || "",
+        video_url: item.video_url || ""
       })) || [];
     }
   });

@@ -63,10 +63,10 @@ export default function Chat() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 w-full">
       {/* WhatsApp-style Header */}
-      <div className="bg-green-500 text-white shadow-lg">
-        <div className="flex items-center justify-between p-4">
+      <div className="bg-green-500 text-white shadow-lg w-full">
+        <div className="flex items-center justify-between p-4 w-full">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -98,7 +98,7 @@ export default function Chat() {
         </div>
         
         {/* WhatsApp-style Tabs */}
-        <div className="px-4 pb-2">
+        <div className="px-4 pb-2 w-full">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="bg-transparent w-full justify-start gap-8 border-none">
               <TabsTrigger 
@@ -124,17 +124,17 @@ export default function Chat() {
         </div>
       </div>
 
-      <div className="flex h-[calc(100vh-140px)]">
+      <div className="flex h-[calc(100vh-140px)] w-full">
         {/* WhatsApp-style Chat List */}
         <div className="w-full bg-white">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsContent value="chats" className="h-full mt-0">
-              <ScrollArea className="h-full">
-                <div className="space-y-0">
+              <ScrollArea className="h-full w-full">
+                <div className="space-y-0 w-full">
                   {chatRooms.map((room) => (
                     <div
                       key={room.id}
-                      className={`flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors ${
+                      className={`flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors w-full ${
                         currentChatRoom === room.id ? 'bg-gray-50' : ''
                       }`}
                       onClick={() => handleChatSelect(room)}
@@ -173,10 +173,10 @@ export default function Chat() {
             </TabsContent>
 
             <TabsContent value="status" className="h-full mt-0">
-              <ScrollArea className="h-full">
-                <div className="p-4">
+              <ScrollArea className="h-full w-full">
+                <div className="p-4 w-full">
                   {/* My Status */}
-                  <div className="flex items-center gap-3 p-2 mb-4">
+                  <div className="flex items-center gap-3 p-2 mb-4 w-full">
                     <div className="relative">
                       <Avatar className="h-12 w-12">
                         <AvatarFallback className="bg-gray-300 text-gray-700">
@@ -193,7 +193,7 @@ export default function Chat() {
                     </div>
                   </div>
                   
-                  <div className="mb-4">
+                  <div className="mb-4 w-full">
                     <h4 className="text-sm text-gray-500 font-medium mb-2">Recent updates</h4>
                     <div className="text-center py-8">
                       <p className="text-gray-500">No recent updates to show right now.</p>
@@ -204,8 +204,8 @@ export default function Chat() {
             </TabsContent>
 
             <TabsContent value="calls" className="h-full mt-0">
-              <ScrollArea className="h-full">
-                <div className="p-4">
+              <ScrollArea className="h-full w-full">
+                <div className="p-4 w-full">
                   <div className="text-center py-8">
                     <p className="text-gray-500">No recent calls to show right now.</p>
                   </div>

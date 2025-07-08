@@ -11,87 +11,105 @@ interface ContentRowsSectionProps {
 
 const ContentRowsSection = ({ movieContent, seriesContent, videosList }: ContentRowsSectionProps) => {
   return (
-    <div className="space-y-12 pb-32">
+    <div className="w-full max-w-none space-y-12 pb-32">
       {/* Trending Now - Premium Showcase */}
       {movieContent.length > 0 && (
-        <MovieBoxRow
-          title="🔥 Trending Now"
-          movies={transformToMovieBoxCard(movieContent.slice(0, 15))}
-          viewAllLink="/movies"
-          priority={true}
-        />
+        <div className="w-full">
+          <MovieBoxRow
+            title="🔥 Trending Now"
+            movies={transformToMovieBoxCard(movieContent.slice(0, 15))}
+            viewAllLink="/movies"
+            priority={true}
+          />
+        </div>
       )}
 
       {/* New & Popular - Fresh Content */}
       {seriesContent.length > 0 && (
-        <MovieBoxRow
-          title="🆕 New & Popular"
-          movies={transformToMovieBoxCard(seriesContent.slice(0, 15))}
-          viewAllLink="/series"
-        />
+        <div className="w-full">
+          <MovieBoxRow
+            title="🆕 New & Popular"
+            movies={transformToMovieBoxCard(seriesContent.slice(0, 15))}
+            viewAllLink="/series"
+          />
+        </div>
       )}
 
       {/* Continue Watching - Personalized */}
       {videosList && videosList.length > 6 && (
-        <MovieBoxRow
-          title="▶️ Continue Watching"
-          movies={transformToMovieBoxCard(videosList.slice(0, 12))}
-          viewAllLink="/continue"
-        />
+        <div className="w-full">
+          <MovieBoxRow
+            title="▶️ Continue Watching"
+            movies={transformToMovieBoxCard(videosList.slice(0, 12))}
+            viewAllLink="/continue"
+          />
+        </div>
       )}
 
       {/* Premium Originals */}
       {movieContent.length > 12 && (
-        <MovieBoxRow
-          title="⭐ HausaBox Originals"
-          movies={transformToMovieBoxCard(movieContent.slice(12, 27))}
-          viewAllLink="/originals"
-        />
+        <div className="w-full">
+          <MovieBoxRow
+            title="⭐ HausaBox Originals"
+            movies={transformToMovieBoxCard(movieContent.slice(12, 27))}
+            viewAllLink="/originals"
+          />
+        </div>
       )}
 
       {/* Kannywood Classics */}
       {movieContent.length > 18 && (
-        <MovieBoxRow
-          title="🎭 Kannywood Classics"
-          movies={transformToMovieBoxCard(movieContent.slice(18, 33))}
-          viewAllLink="/classics"
-        />
+        <div className="w-full">
+          <MovieBoxRow
+            title="🎭 Kannywood Classics"
+            movies={transformToMovieBoxCard(movieContent.slice(18, 33))}
+            viewAllLink="/classics"
+          />
+        </div>
       )}
 
       {/* Action & Adventure */}
       {movieContent.length > 24 && (
-        <MovieBoxRow
-          title="💥 Action & Adventure"
-          movies={transformToMovieBoxCard(movieContent.slice(24, 39))}
-          viewAllLink="/action"
-        />
+        <div className="w-full">
+          <MovieBoxRow
+            title="💥 Action & Adventure"
+            movies={transformToMovieBoxCard(movieContent.slice(24, 39))}
+            viewAllLink="/action"
+          />
+        </div>
       )}
 
       {/* Romance & Drama */}
       {seriesContent.length > 12 && (
-        <MovieBoxRow
-          title="💝 Romance & Drama"
-          movies={transformToMovieBoxCard(seriesContent.slice(12, 27))}
-          viewAllLink="/romance"
-        />
+        <div className="w-full">
+          <MovieBoxRow
+            title="💝 Romance & Drama"
+            movies={transformToMovieBoxCard(seriesContent.slice(12, 27))}
+            viewAllLink="/romance"
+          />
+        </div>
       )}
 
       {/* Comedy Central */}
       {videosList && videosList.length > 18 && (
-        <MovieBoxRow
-          title="😂 Comedy Central"
-          movies={transformToMovieBoxCard(videosList.slice(18, 33))}
-          viewAllLink="/comedy"
-        />
+        <div className="w-full">
+          <MovieBoxRow
+            title="😂 Comedy Central"
+            movies={transformToMovieBoxCard(videosList.slice(18, 33))}
+            viewAllLink="/comedy"
+          />
+        </div>
       )}
 
       {/* Family Entertainment */}
       {movieContent.length > 30 && (
-        <MovieBoxRow
-          title="👨‍👩‍👧‍👦 Family Entertainment"
-          movies={transformToMovieBoxCard(movieContent.slice(30, 45))}
-          viewAllLink="/family"
-        />
+        <div className="w-full">
+          <MovieBoxRow
+            title="👨‍👩‍👧‍👦 Family Entertainment"
+            movies={transformToMovieBoxCard(movieContent.slice(30, 45))}
+            viewAllLink="/family"
+          />
+        </div>
       )}
     </div>
   );
