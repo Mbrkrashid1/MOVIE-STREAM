@@ -1,9 +1,6 @@
 
 import { Play, Pause, Volume2, VolumeX, X, Maximize, Minimize } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { useOrientation } from "./useOrientation";
-import { OrientationToggle } from "./OrientationToggle";
 
 interface VideoControlsProps {
   isPlaying: boolean;
@@ -36,8 +33,6 @@ export default function VideoControls({
   isFullscreen = false,
   onToggleFullscreen
 }: VideoControlsProps) {
-  const { userPreference, toggleOrientation } = useOrientation();
-
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
@@ -45,10 +40,7 @@ export default function VideoControls({
       {/* Top Controls */}
       <div className="flex justify-between items-center p-4">
         <div className="flex items-center space-x-2">
-          <OrientationToggle 
-            userPreference={userPreference}
-            onToggle={toggleOrientation}
-          />
+          {/* Removed orientation toggle */}
         </div>
         <div className="flex items-center space-x-2">
           {onToggleFullscreen && (
@@ -56,7 +48,7 @@ export default function VideoControls({
               variant="ghost"
               size="sm"
               onClick={onToggleFullscreen}
-              className="text-white hover:bg-black/20"
+              className="text-white hover:bg-black/20 backdrop-blur-sm"
             >
               {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
             </Button>
@@ -66,7 +58,7 @@ export default function VideoControls({
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="text-white hover:bg-black/20"
+              className="text-white hover:bg-black/20 backdrop-blur-sm"
             >
               <X size={16} />
             </Button>
@@ -81,7 +73,7 @@ export default function VideoControls({
             variant="ghost"
             size="lg"
             onClick={onTogglePlay}
-            className="text-white hover:bg-black/20 w-16 h-16 rounded-full"
+            className="text-white hover:bg-black/20 w-16 h-16 rounded-full backdrop-blur-sm"
           >
             {isPlaying ? <Pause size={32} /> : <Play size={32} />}
           </Button>
@@ -89,7 +81,7 @@ export default function VideoControls({
       </div>
 
       {/* Bottom Controls */}
-      <div className="p-4 space-y-2">
+      <div className="p-4 space-y-2 backdrop-blur-sm">
         {/* Progress Bar */}
         <div className="w-full">
           <input
@@ -100,7 +92,7 @@ export default function VideoControls({
             onChange={onSeek}
             className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
             style={{
-              background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${progress}%, #4b5563 ${progress}%, #4b5563 100%)`
+              background: `linear-gradient(to right, #ef4444 0%, #ef4444 ${progress}%, #4b5563 ${progress}%, #4b5563 100%)`
             }}
           />
         </div>
@@ -127,7 +119,7 @@ export default function VideoControls({
             </Button>
           </div>
 
-          <div className="text-white text-sm">
+          <div className="text-white text-sm font-medium">
             {formatTime(currentTime)} / {formatTime(duration)}
           </div>
         </div>

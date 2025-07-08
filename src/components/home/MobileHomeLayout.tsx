@@ -1,10 +1,8 @@
-
 import { useEffect } from "react";
 import { useContentData } from "@/hooks/useContentData";
 import { useToast } from "@/hooks/use-toast";
-import AutoPlayAdSequencer from "@/components/home/AutoPlayAdSequencer";
 import BannerAdSpace from "@/components/home/BannerAdSpace";
-import ContinuousVideoAd from "@/components/home/ContinuousVideoAd";
+import YouTubeStyleVideoAd from "@/components/home/YouTubeStyleVideoAd";
 import MovieBoxNavbar from "@/components/layout/MovieBoxNavbar";
 import BottomNavigation from "@/components/layout/BottomNavigation";
 import LoadingScreen from "@/components/home/LoadingScreen";
@@ -37,23 +35,22 @@ const MobileHomeLayout = () => {
     return <LoadingScreen />;
   }
 
-  // Separate banner ads and video ads more intelligently
-  const bannerAds = videoAds?.filter(ad => {
-    return ad.thumbnail_url && (!ad.duration || ad.duration === 0);
-  }).map(ad => ({
+  // Separate video ads and banner ads properly  
+  const videoAdsWithVideo = videoAds?.filter(ad => 
+    ad.video_url && ad.video_url !== 'placeholder' && ad.video_url.trim() !== ''
+  ) || [];
+
+  const bannerAdsOnly = videoAds?.filter(ad => 
+    ad.thumbnail_url && (!ad.video_url || ad.video_url === 'placeholder' || ad.video_url.trim() === '')
+  ).map(ad => ({
     id: ad.id,
     title: ad.title,
     description: ad.description,
     image_url: ad.thumbnail_url || '',
-    cta_text: ad.cta_text || undefined,
-    cta_url: ad.cta_url || undefined,
+    cta_text: ad.cta_text || "Learn More",
+    cta_url: ad.cta_url || "#",
     background_color: 'from-purple-900/20 to-blue-900/20'
   })) || [];
-
-  // Video ads are those with actual video content and duration > 0
-  const actualVideoAds = videoAds?.filter(ad => {
-    return ad.video_url && ad.duration && ad.duration > 0;
-  }) || [];
 
   // Filter content for Hausa categories only
   const hausaMovies = movieContent.filter(item => 
@@ -117,28 +114,36 @@ const MobileHomeLayout = () => {
           <button className="text-gray-400 font-medium pb-2 whitespace-nowrap">Music Videos</button>
         </div>
 
-        {/* Dedicated Banner Ad Space */}
-        {bannerAds.length > 0 && (
+        {/* Organized Video Ads Section */}
+        {videoAdsWithVideo.length > 0 && (
           <div className="px-4 mb-8">
-            <div className="mb-2">
-              <h3 className="text-sm font-medium text-gray-400 mb-3">Sponsored Content</h3>
+            <div className="mb-3">
+              <h3 className="text-lg font-semibold text-white mb-1">🎬 Featured Videos</h3>
+              <p className="text-sm text-gray-400">Sponsored content</p>
+            </div>
+            <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-800">
+              <YouTubeStyleVideoAd 
+                ads={videoAdsWithVideo.slice(0, 3)}
+                onAdComplete={(adId) => {
+                  console.log('Mobile video ad completed:', adId);
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Banner Ad Space */}
+        {bannerAdsOnly.length > 0 && (
+          <div className="px-4 mb-8">
+            <div className="mb-3">
+              <h3 className="text-sm font-medium text-gray-400 mb-2">Sponsored</h3>
             </div>
             <BannerAdSpace 
-              ads={bannerAds}
+              ads={bannerAdsOnly}
               autoSlideInterval={8000}
               showNavigation={true}
               className="mb-4"
             />
-          </div>
-        )}
-
-        {/* Video Ad Space - Continuous Auto-Play */}
-        {actualVideoAds.length > 0 && (
-          <div className="px-4 mb-8">
-            <div className="mb-2">
-              <h3 className="text-sm font-medium text-gray-400 mb-3">Featured Videos</h3>
-            </div>
-            <ContinuousVideoAd ads={actualVideoAds.slice(0, 5)} />
           </div>
         )}
 
@@ -183,7 +188,7 @@ const MobileHomeLayout = () => {
               >
                 <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-gray-800">
                   <img 
-                    src={item.thumbnail || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
+                    src={item.thumbnail_url || item.thumbnail || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     onError={(e) => {
@@ -285,17 +290,6 @@ const MobileHomeLayout = () => {
           </div>
         </div>
       </div>
-
-      {/* Floating Auto-Play Ad Sequencer */}
-      {actualVideoAds.length > 0 && (
-        <AutoPlayAdSequencer 
-          ads={actualVideoAds.slice(0, 3)}
-          autoPlayDuration={5}
-          onAdComplete={(adId) => {
-            console.log('Ad completed:', adId);
-          }}
-        />
-      )}
       
       <BottomNavigation />
     </div>

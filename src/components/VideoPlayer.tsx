@@ -37,6 +37,7 @@ export function VideoPlayer({
 }: VideoPlayerProps) {
   const { toast } = useToast();
   const { videoError, setVideoError, retryCount, setRetryCount, loading, setLoading } = useVideoPlayerState(videoUrl);
+  const { isLandscape, userPreference } = useOrientation();
 
   const {
     isPlaying,
@@ -66,8 +67,28 @@ export function VideoPlayer({
   } = useAdHandling(contentId, onClose);
 
   const { isFullscreen, toggleFullscreen } = useFullscreen();
-  const { isLandscape } = useOrientation();
   const { hasTrackedView, currentViews, trackView } = useViewTracking(contentId, views);
+
+  // YouTube-style responsive container
+  const getContainerClasses = () => {
+    if (isFullscreen) {
+      return "fixed inset-0 z-50 bg-black";
+    }
+    if (isLandscape || userPreference === 'landscape') {
+      return "fixed inset-0 z-40 bg-black flex items-center justify-center";
+    }
+    return "relative w-full aspect-video bg-black";
+  };
+
+  const getVideoClasses = () => {
+    if (isFullscreen) {
+      return "w-full h-full object-contain";
+    }
+    if (isLandscape || userPreference === 'landscape') {
+      return "w-full h-full max-w-screen-xl max-h-screen object-contain";
+    }
+    return "w-full h-full object-contain";
+  };
 
   // Fetch ads when component mounts
   useEffect(() => {
@@ -203,38 +224,37 @@ export function VideoPlayer({
     return backdrop || thumbnail;
   };
 
-  const getVideoClasses = () => {
-    if (isFullscreen || isLandscape) {
-      return "w-full h-full object-contain";
-    }
-    return "w-full h-full object-contain sm:object-cover md:object-contain";
-  };
-
   const showBackdrop = (!isPlaying || loading) && !adPlaying && !videoError;
 
   // Show error if video URL is invalid
   if (videoError && (!videoUrl || videoUrl === 'placeholder' || videoUrl.trim() === '')) {
     return (
-      <VideoPlayerContainer
-        isFullscreen={isFullscreen}
-        isLandscape={isLandscape}
-        backdropImage={getBackdropImage()}
-        showBackdrop={false}
-      >
+      <div className={getContainerClasses()}>
         <VideoErrorDisplay error="No video available for this content" onRetry={onClose || (() => {})} />
-      </VideoPlayerContainer>
+      </div>
     );
   }
 
   return (
-    <VideoPlayerContainer
-      isFullscreen={isFullscreen}
-      isLandscape={isLandscape}
-      backdropImage={getBackdropImage()}
-      showBackdrop={showBackdrop}
-    >
+    <div className={getContainerClasses()}>
+      {/* Enhanced HD backdrop with optimized loading */}
+      {getBackdropImage() && (
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-500"
+          style={{ 
+            backgroundImage: `url(${getBackdropImage()})`,
+            opacity: showBackdrop ? 1 : 0,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        >
+          {/* Enhanced gradient overlay for better readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/90" />
+        </div>
+      )}
+
       {/* Video Container with responsive sizing */}
-      <div className="relative flex-1 w-full h-full">
+      <div className="relative w-full h-full flex items-center justify-center">
         {/* Video Error Display */}
         {videoError && (
           <VideoErrorDisplay error={videoError} onRetry={handleRetry} />
@@ -310,16 +330,18 @@ export function VideoPlayer({
       </div>
 
       {/* Video Info Bar (MovieBox Style) - Hide in fullscreen/landscape */}
-      <VideoInfoBar
-        title={title}
-        description={description}
-        views={currentViews}
-        duration={duration}
-        hasTrackedView={hasTrackedView}
-        formatTime={formatTime}
-        isVisible={!adPlaying && !videoError && !isFullscreen && !isLandscape}
-      />
-    </VideoPlayerContainer>
+      {!isFullscreen && !isLandscape && userPreference !== 'landscape' && (
+        <VideoInfoBar
+          title={title}
+          description={description}
+          views={currentViews}
+          duration={duration}
+          hasTrackedView={hasTrackedView}
+          formatTime={formatTime}
+          isVisible={!adPlaying && !videoError}
+        />
+      )}
+    </div>
   );
 }
 

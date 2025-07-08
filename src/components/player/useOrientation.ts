@@ -7,10 +7,12 @@ export function useOrientation() {
 
   useEffect(() => {
     const handleOrientationChange = () => {
+      const windowLandscape = window.innerWidth > window.innerHeight;
+      const deviceOrientation = window.screen?.orientation?.angle || 0;
+      const isDeviceLandscape = deviceOrientation === 90 || deviceOrientation === -90 || deviceOrientation === 270;
+      
       if (userPreference === 'auto') {
-        const orientation = window.screen?.orientation?.angle || 0;
-        const isDeviceLandscape = orientation === 90 || orientation === -90 || orientation === 270;
-        const windowLandscape = window.innerWidth > window.innerHeight;
+        // YouTube-style: automatically go landscape when device is rotated or window is wider
         setIsLandscape(isDeviceLandscape || windowLandscape);
       } else if (userPreference === 'landscape') {
         setIsLandscape(true);
