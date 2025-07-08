@@ -12,7 +12,7 @@ const Index = () => {
   useEffect(() => {
     toast({
       title: "Welcome to HausaBox! 🎬",
-      description: "Your premium streaming destination.",
+      description: "Your premium streaming destination for quality content.",
       duration: 3000,
     });
   }, []);
@@ -22,7 +22,7 @@ const Index = () => {
   }
 
   return (
-    <div className="w-full min-h-screen">
+    <div className="w-full min-h-screen bg-gradient-to-br from-background to-muted/10">
       <MovieBoxHomeLayout />
     </div>
   );

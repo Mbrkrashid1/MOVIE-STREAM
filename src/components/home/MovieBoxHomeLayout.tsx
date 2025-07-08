@@ -43,24 +43,39 @@ const MovieBoxHomeLayout = () => {
   const bannerAdsOnly = filterBannerAds(videoAds);
 
   return (
-    <div className="min-h-screen bg-black text-white relative overflow-hidden w-full">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90 text-foreground relative overflow-hidden w-full">
+      {/* Professional Header */}
       <MovieBoxNavbar />
       
+      {/* Main Content Area */}
       <div className="relative z-10 w-full">
-        {/* Hero Section with 3D Background */}
-        <HeroSection heroItems={heroItems} />
+        {/* Hero Section with Premium Design */}
+        <div className="relative">
+          <HeroSection heroItems={heroItems} />
+          
+          {/* Subtle overlay for better content separation */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/5 to-background/20 pointer-events-none" />
+        </div>
 
-        {/* Video and Banner Ads Sections */}
-        <AdsSection videoAds={videoAdsWithVideo} bannerAds={bannerAdsOnly} />
+        {/* Content Sections with Professional Spacing */}
+        <div className="relative z-20 space-y-12 pb-24">
+          {/* Video and Banner Ads with Enhanced Design */}
+          <div className="px-6 lg:px-8">
+            <AdsSection videoAds={videoAdsWithVideo} bannerAds={bannerAdsOnly} />
+          </div>
 
-        {/* Content Library with Movie and Series Rows */}
-        <ContentRowsSection 
-          movieContent={movieContent} 
-          seriesContent={seriesContent} 
-          videosList={videosList} 
-        />
+          {/* Content Library with Professional Layout */}
+          <div className="px-6 lg:px-8">
+            <ContentRowsSection 
+              movieContent={movieContent} 
+              seriesContent={seriesContent} 
+              videosList={videosList} 
+            />
+          </div>
+        </div>
       </div>
       
+      {/* Bottom Navigation */}
       <BottomNavigation />
     </div>
   );
