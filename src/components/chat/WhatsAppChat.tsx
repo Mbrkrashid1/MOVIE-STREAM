@@ -165,7 +165,7 @@ export function WhatsAppChat({ chatRoomId, chatName, onBack }: WhatsAppChatProps
                   {showTime && (
                     <div className="text-center my-3">
                       <span className="bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs text-gray-600 shadow-sm">
-                        {formatLastMessageTime(message.created_at)}
+                        {formatMessageTime(message.created_at)}
                       </span>
                     </div>
                   )}
