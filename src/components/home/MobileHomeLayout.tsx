@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useContentData } from "@/hooks/useContentData";
 import { useToast } from "@/hooks/use-toast";
@@ -188,7 +189,7 @@ const MobileHomeLayout = () => {
               >
                 <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-gray-800">
                   <img 
-                    src={item.thumbnail_url || item.thumbnail || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
+                    src={item.thumbnail || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     onError={(e) => {

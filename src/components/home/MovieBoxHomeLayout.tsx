@@ -52,18 +52,18 @@ const MovieBoxHomeLayout = () => {
     }));
   };
 
-  // Transform featured items for hero section
+  // Transform featured items for hero section with proper data structure
   const heroItems = featuredItems?.map(item => ({
     id: item.id,
     title: item.title,
-    description: item.description || "Experience the finest Hausa cinema with stunning visuals, compelling storytelling, and unforgettable performances that capture the essence of our rich cultural heritage.",
-    backgroundImage: item.backdrop_url || item.thumbnail_url,
+    description: "Experience the finest Hausa cinema with stunning visuals, compelling storytelling, and unforgettable performances that capture the essence of our rich cultural heritage.",
+    backgroundImage: item.backgroundImage,
     type: item.type,
     rating: 4.5,
     year: 2024,
     duration: "2h 30m",
     genre: "Drama",
-    video_url: item.video_url
+    video_url: "sample-video-url"
   })) || [];
 
   // Separate video ads and banner ads properly

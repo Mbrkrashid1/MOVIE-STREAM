@@ -19,6 +19,10 @@ export interface FeaturedItem {
   title: string;
   backgroundImage: string;
   type: string;
+  description?: string;
+  backdrop_url?: string;
+  thumbnail_url?: string;
+  video_url?: string;
 }
 
 export const useContentData = () => {
@@ -37,8 +41,12 @@ export const useContentData = () => {
       return data?.map(item => ({
         id: item.id,
         title: item.title,
-        backgroundImage: item.thumbnail_url || "https://images.unsplash.com/photo-1605810230434-7631ac76ec81",
+        backgroundImage: item.backdrop_url || item.thumbnail_url || "https://images.unsplash.com/photo-1605810230434-7631ac76ec81",
         type: item.type,
+        description: item.description,
+        backdrop_url: item.backdrop_url,
+        thumbnail_url: item.thumbnail_url,
+        video_url: item.video_url
       })) || [];
     }
   });
@@ -63,6 +71,7 @@ export const useContentData = () => {
         timeAgo: formatTimeAgo(item.created_at),
         duration: formatDuration(item.duration || 120),
         type: (item.type === "movie" || item.type === "series") ? item.type as "movie" | "series" : "movie",
+        video_url: item.video_url
       })) || [];
     }
   });
