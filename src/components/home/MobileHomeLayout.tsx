@@ -276,7 +276,7 @@ const MobileHomeLayout = () => {
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     onError={(e) => {
-                      const target = e.target as HTMLImageElement;
+                      const target = e.target as HTMLImageImage;
                       target.src = "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5";
                     }}
                   />

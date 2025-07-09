@@ -2,12 +2,15 @@
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useContentData } from "@/hooks/useContentData";
+import { useIsMobile } from "@/hooks/use-mobile";
 import MovieBoxHomeLayout from "@/components/home/MovieBoxHomeLayout";
+import MobileHomeLayout from "@/components/home/MobileHomeLayout";
 import LoadingScreen from "@/components/home/LoadingScreen";
 
 const Index = () => {
   const { toast } = useToast();
   const { isLoading } = useContentData();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     toast({
@@ -23,7 +26,7 @@ const Index = () => {
 
   return (
     <div className="w-full min-h-screen bg-black overflow-x-hidden">
-      <MovieBoxHomeLayout />
+      {isMobile ? <MobileHomeLayout /> : <MovieBoxHomeLayout />}
     </div>
   );
 };
