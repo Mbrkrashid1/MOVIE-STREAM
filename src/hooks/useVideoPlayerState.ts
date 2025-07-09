@@ -22,21 +22,6 @@ export function useVideoPlayerState(videoUrl: string) {
       return;
     }
 
-    // Validate URL format for non-blob URLs
-    if (!videoUrl.startsWith('blob:')) {
-      try {
-        const url = new URL(videoUrl);
-        if (!url.protocol.startsWith('http')) {
-          throw new Error('Invalid protocol');
-        }
-      } catch (error) {
-        console.error('Invalid video URL format:', videoUrl);
-        setVideoError("Invalid video URL format");
-        setLoading(false);
-        return;
-      }
-    }
-
     // For blob URLs, don't test accessibility
     if (videoUrl.startsWith('blob:')) {
       console.log('Blob URL detected, skipping validation');
@@ -45,7 +30,20 @@ export function useVideoPlayerState(videoUrl: string) {
       return;
     }
 
-    // Test video accessibility with improved error handling
+    // Validate URL format for non-blob URLs
+    try {
+      const url = new URL(videoUrl);
+      if (!url.protocol.startsWith('http')) {
+        throw new Error('Invalid protocol');
+      }
+    } catch (error) {
+      console.error('Invalid video URL format:', videoUrl);
+      setVideoError("Invalid video URL format");
+      setLoading(false);
+      return;
+    }
+
+    // Test video accessibility with timeout
     const testVideo = document.createElement('video');
     testVideo.preload = 'metadata';
     testVideo.muted = true;
@@ -72,7 +70,7 @@ export function useVideoPlayerState(videoUrl: string) {
     
     const handleTestError = (e: Event) => {
       console.error('Video URL validation failed:', videoUrl, e);
-      setVideoError("Video source is not accessible or format not supported");
+      setVideoError("Video source is not accessible - trying alternative playback");
       setLoading(false);
       cleanup();
     };
@@ -83,11 +81,11 @@ export function useVideoPlayerState(videoUrl: string) {
     
     // Set source with timeout
     const timeoutId = setTimeout(() => {
-      console.warn('Video validation timeout');
-      setVideoError("Video loading timeout - please try again");
+      console.warn('Video validation timeout - proceeding with playback attempt');
+      setVideoError(null);
       setLoading(false);
       cleanup();
-    }, 8000);
+    }, 5000);
     
     testVideo.src = videoUrl;
     

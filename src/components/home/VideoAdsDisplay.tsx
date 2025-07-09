@@ -1,7 +1,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Download, X, Volume2, VolumeX } from "lucide-react";
+import { Play, Download, X, Volume2, VolumeX, SkipForward } from "lucide-react";
 
 interface VideoAd {
   id: string;
@@ -22,7 +22,11 @@ const VideoAdsDisplay = ({ ads }: VideoAdsDisplayProps) => {
   const [isVisible, setIsVisible] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(10);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   if (!ads.length || !isVisible) return null;
 
@@ -30,7 +34,7 @@ const VideoAdsDisplay = ({ ads }: VideoAdsDisplayProps) => {
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || !currentAd?.video_url) return;
 
     const handleCanPlay = () => {
       // Auto-play when video is ready
@@ -40,6 +44,7 @@ const VideoAdsDisplay = ({ ads }: VideoAdsDisplayProps) => {
         playPromise
           .then(() => {
             setIsPlaying(true);
+            startAutoAdvance();
           })
           .catch((error) => {
             console.log('Autoplay prevented:', error);
@@ -49,32 +54,81 @@ const VideoAdsDisplay = ({ ads }: VideoAdsDisplayProps) => {
     };
 
     const handleEnded = () => {
-      // Move to next ad or loop back to first
-      const nextIndex = (currentAdIndex + 1) % ads.length;
-      setCurrentAdIndex(nextIndex);
+      handleNextAd();
     };
 
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
+    const handlePlay = () => {
+      setIsPlaying(true);
+      startAutoAdvance();
+    };
+    
+    const handlePause = () => {
+      setIsPlaying(false);
+      stopAutoAdvance();
+    };
+
+    const handleError = () => {
+      console.error('Video ad error, skipping to next');
+      handleNextAd();
+    };
 
     video.addEventListener('canplay', handleCanPlay);
     video.addEventListener('ended', handleEnded);
     video.addEventListener('play', handlePlay);
     video.addEventListener('pause', handlePause);
+    video.addEventListener('error', handleError);
 
     return () => {
       video.removeEventListener('canplay', handleCanPlay);
       video.removeEventListener('ended', handleEnded);
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
+      video.removeEventListener('error', handleError);
+      stopAutoAdvance();
     };
-  }, [currentAdIndex, ads.length]);
+  }, [currentAdIndex, currentAd?.video_url]);
+
+  const startAutoAdvance = () => {
+    stopAutoAdvance();
+    setTimeLeft(10);
+    setProgress(0);
+
+    // Progress and countdown timer
+    progressIntervalRef.current = setInterval(() => {
+      setProgress(prev => {
+        const newProgress = prev + 1;
+        setTimeLeft(10 - newProgress);
+        
+        if (newProgress >= 10) {
+          handleNextAd();
+          return 0;
+        }
+        return newProgress;
+      });
+    }, 1000);
+  };
+
+  const stopAutoAdvance = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+  };
 
   const handleNextAd = () => {
-    setCurrentAdIndex((prev) => (prev + 1) % ads.length);
+    stopAutoAdvance();
+    setProgress(0);
+    setTimeLeft(10);
+    const nextIndex = (currentAdIndex + 1) % ads.length;
+    setCurrentAdIndex(nextIndex);
   };
 
   const handleClose = () => {
+    stopAutoAdvance();
     setIsVisible(false);
   };
 
@@ -97,6 +151,8 @@ const VideoAdsDisplay = ({ ads }: VideoAdsDisplayProps) => {
     }
   };
 
+  const progressPercentage = (progress / 10) * 100;
+
   return (
     <div className="relative mb-6 w-full max-w-6xl mx-auto">
       {/* Main Featured Ad */}
@@ -110,12 +166,36 @@ const VideoAdsDisplay = ({ ads }: VideoAdsDisplayProps) => {
             muted={isMuted}
             playsInline
             autoPlay
-            loop={false}
             onClick={togglePlay}
           />
           
           {/* Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          
+          {/* Auto-advance Progress Bar */}
+          {isPlaying && (
+            <div className="absolute top-4 left-4 right-4 z-20">
+              <div className="bg-black/50 rounded-full p-2 backdrop-blur-sm">
+                <div className="flex items-center justify-between text-white text-sm mb-2">
+                  <span>Next ad in {timeLeft}s</span>
+                  <Button
+                    onClick={handleNextAd}
+                    variant="ghost"
+                    size="sm"
+                    className="text-white hover:bg-white/20 p-1 h-auto"
+                  >
+                    <SkipForward size={16} />
+                  </Button>
+                </div>
+                <div className="w-full bg-gray-600 rounded-full h-1">
+                  <div 
+                    className="bg-primary h-1 rounded-full transition-all duration-1000 ease-linear"
+                    style={{ width: `${progressPercentage}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* Play/Pause Overlay */}
           {!isPlaying && (
@@ -141,9 +221,7 @@ const VideoAdsDisplay = ({ ads }: VideoAdsDisplayProps) => {
                     SPONSORED
                   </span>
                   <span>|</span>
-                  <span>2025</span>
-                  <span>|</span>
-                  <span>Action</span>
+                  <span>Ad {currentAdIndex + 1} of {ads.length}</span>
                 </div>
                 
                 <div className="flex items-center gap-3 flex-wrap">
@@ -186,11 +264,13 @@ const VideoAdsDisplay = ({ ads }: VideoAdsDisplayProps) => {
       {/* Additional Ads Preview */}
       {ads.length > 1 && (
         <div className="flex gap-3 mt-4 overflow-x-auto scrollbar-none pb-2">
-          {ads.slice(1, 4).map((ad, index) => (
+          {ads.map((ad, index) => (
             <div
               key={ad.id}
-              className="min-w-[200px] w-[200px] relative rounded-lg overflow-hidden bg-gray-900/30 cursor-pointer hover:scale-105 transition-transform duration-300"
-              onClick={() => setCurrentAdIndex(index + 1)}
+              className={`min-w-[200px] w-[200px] relative rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300 ${
+                index === currentAdIndex ? 'ring-2 ring-primary bg-primary/10' : 'bg-gray-900/30'
+              }`}
+              onClick={() => setCurrentAdIndex(index)}
             >
               <div className="aspect-[16/10]">
                 <img
