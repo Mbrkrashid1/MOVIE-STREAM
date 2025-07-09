@@ -52,7 +52,7 @@ const ContentRowsSection = ({ movieContent, seriesContent, videosList }: Content
           <CardContent className="pt-0">
             <MovieBoxRow
               title=""
-              items={transformedVideos.slice(0, 10)}
+              movies={transformedVideos.slice(0, 10)}
               priority={true}
             />
           </CardContent>
@@ -79,7 +79,7 @@ const ContentRowsSection = ({ movieContent, seriesContent, videosList }: Content
           <CardContent className="pt-0">
             <MovieBoxRow
               title=""
-              items={transformedMovies}
+              movies={transformedMovies}
               priority={false}
             />
           </CardContent>
@@ -106,7 +106,7 @@ const ContentRowsSection = ({ movieContent, seriesContent, videosList }: Content
           <CardContent className="pt-0">
             <MovieBoxRow
               title=""
-              items={transformedSeries}
+              movies={transformedSeries}
               priority={false}
             />
           </CardContent>
@@ -133,7 +133,7 @@ const ContentRowsSection = ({ movieContent, seriesContent, videosList }: Content
           <CardContent className="pt-0">
             <MovieBoxRow
               title=""
-              items={transformedVideos.slice(0, 8)}
+              movies={transformedVideos.slice(0, 8)}
               priority={false}
             />
           </CardContent>
