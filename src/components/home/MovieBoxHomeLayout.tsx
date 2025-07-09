@@ -6,8 +6,10 @@ import MovieBoxNavbar from "@/components/layout/MovieBoxNavbar";
 import BottomNavigation from "@/components/layout/BottomNavigation";
 import LoadingScreen from "@/components/home/LoadingScreen";
 import HeroSection from "@/components/home/HeroSection";
-import AdsSection from "@/components/home/AdsSection";
-import ContentRowsSection from "@/components/home/ContentRowsSection";
+import CategoryTabs from "@/components/home/CategoryTabs";
+import TrendingSection from "@/components/home/TrendingSection";
+import ContentCategories from "@/components/home/ContentCategories";
+import VideoAdsDisplay from "@/components/home/VideoAdsDisplay";
 import { transformFeaturedForHero, filterVideoAds, filterBannerAds } from "@/utils/contentTransformers";
 
 const MovieBoxHomeLayout = () => {
@@ -35,47 +37,53 @@ const MovieBoxHomeLayout = () => {
     return <LoadingScreen />;
   }
 
-  // Transform featured items for hero section
   const heroItems = transformFeaturedForHero(featuredItems);
-
-  // Filter video and banner ads
   const videoAdsWithVideo = filterVideoAds(videoAds);
   const bannerAdsOnly = filterBannerAds(videoAds);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90 text-foreground relative overflow-hidden w-full">
-      {/* Professional Header */}
+    <div className="min-h-screen bg-black text-white relative overflow-hidden w-full">
       <MovieBoxNavbar />
       
-      {/* Main Content Area */}
-      <div className="relative z-10 w-full">
-        {/* Hero Section with Premium Design */}
-        <div className="relative">
-          <HeroSection heroItems={heroItems} />
-          
-          {/* Subtle overlay for better content separation */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/5 to-background/20 pointer-events-none" />
-        </div>
-
-        {/* Content Sections with Professional Spacing */}
-        <div className="relative z-20 space-y-12 pb-24">
-          {/* Video and Banner Ads with Enhanced Design */}
-          <div className="px-6 lg:px-8">
-            <AdsSection videoAds={videoAdsWithVideo} bannerAds={bannerAdsOnly} />
-          </div>
-
-          {/* Content Library with Professional Layout */}
-          <div className="px-6 lg:px-8">
-            <ContentRowsSection 
-              movieContent={movieContent} 
-              seriesContent={seriesContent} 
-              videosList={videosList} 
-            />
+      <div className="relative z-10 w-full pt-16">
+        {/* Search Bar */}
+        <div className="px-4 py-3 w-full">
+          <div className="bg-gray-800/50 backdrop-blur-sm rounded-full px-4 py-3 flex items-center w-full border border-gray-700/30">
+            <svg className="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span className="text-gray-400">Search movies, series...</span>
           </div>
         </div>
+
+        {/* Category Navigation */}
+        <CategoryTabs />
+
+        {/* Hero Featured Content */}
+        {heroItems.length > 0 && (
+          <div className="px-4 mb-6">
+            <HeroSection heroItems={heroItems} />
+          </div>
+        )}
+
+        {/* Video Ads Display */}
+        {videoAdsWithVideo.length > 0 && (
+          <div className="px-4 mb-6">
+            <VideoAdsDisplay ads={videoAdsWithVideo} />
+          </div>
+        )}
+
+        {/* Content Categories */}
+        <ContentCategories />
+
+        {/* Trending Section */}
+        <TrendingSection 
+          videosList={videosList} 
+          movieContent={movieContent} 
+          seriesContent={seriesContent} 
+        />
       </div>
       
-      {/* Bottom Navigation */}
       <BottomNavigation />
     </div>
   );

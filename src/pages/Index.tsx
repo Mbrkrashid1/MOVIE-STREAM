@@ -22,7 +22,7 @@ const Index = () => {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-background to-muted/10">
+    <div className="w-full min-h-screen bg-black">
       <MovieBoxHomeLayout />
     </div>
   );
