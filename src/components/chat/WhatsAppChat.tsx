@@ -20,7 +20,9 @@ import {
   CheckCheck,
   Image,
   ThumbsUp,
-  Heart
+  Heart,
+  Play,
+  Pause
 } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import {
@@ -30,6 +32,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { VoiceMessageRecorder } from '@/components/chat/VoiceMessageRecorder';
 
 interface WhatsAppChatProps {
   chatRoomId: string;
@@ -39,10 +42,11 @@ interface WhatsAppChatProps {
 
 export function WhatsAppChat({ chatRoomId, chatName, onBack }: WhatsAppChatProps) {
   const { user } = useAuth();
-  const { messages, sendMessage } = useChat();
+  const { messages, sendMessage, uploadAudio } = useChat();
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -59,6 +63,13 @@ export function WhatsAppChat({ chatRoomId, chatName, onBack }: WhatsAppChatProps
     
     await sendMessage(newMessage);
     setNewMessage('');
+  };
+
+  const handleSendVoiceMessage = async (audioBlob: Blob) => {
+    const audioUrl = await uploadAudio(audioBlob);
+    if (audioUrl) {
+      await sendMessage('Voice message', 'voice', audioUrl);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -83,11 +94,22 @@ export function WhatsAppChat({ chatRoomId, chatName, onBack }: WhatsAppChatProps
     fileInputRef.current?.click();
   };
 
+  const toggleAudioPlayback = (messageId: string, audioUrl: string) => {
+    if (playingAudio === messageId) {
+      setPlayingAudio(null);
+    } else {
+      setPlayingAudio(messageId);
+      const audio = new Audio(audioUrl);
+      audio.play();
+      audio.onended = () => setPlayingAudio(null);
+    }
+  };
+
   const emojis = ['😀', '😂', '😍', '🤔', '👍', '❤️', '🔥', '💯', '🎉', '🎬'];
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Facebook Messenger Style Header */}
+      {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-4 flex-1">
@@ -189,9 +211,30 @@ export function WhatsAppChat({ chatRoomId, chatName, onBack }: WhatsAppChatProps
                             : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-bl-md border border-gray-200 dark:border-gray-600'
                         }`}
                       >
-                        <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
-                          {message.content}
-                        </p>
+                        {message.message_type === 'voice' && message.audio_url ? (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              onClick={() => toggleAudioPlayback(message.id, message.audio_url!)}
+                              size="sm"
+                              variant="ghost"
+                              className="p-1"
+                            >
+                              {playingAudio === message.id ? (
+                                <Pause className="h-4 w-4" />
+                              ) : (
+                                <Play className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <div className="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                              <div className="bg-blue-500 h-2 rounded-full w-1/3"></div>
+                            </div>
+                            <span className="text-xs">0:15</span>
+                          </div>
+                        ) : (
+                          <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+                            {message.content}
+                          </p>
+                        )}
                         <div className={`flex items-center justify-end gap-1 mt-1 ${
                           isOwnMessage ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'
                         }`}>
@@ -291,13 +334,10 @@ export function WhatsAppChat({ chatRoomId, chatName, onBack }: WhatsAppChatProps
               className="flex-1 bg-transparent border-none outline-none py-3 px-2 text-sm placeholder:text-gray-500 focus:ring-0 focus:border-0"
             />
             
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full h-10 w-10 mr-2"
-            >
-              <ThumbsUp className="h-5 w-5 text-blue-600" />
-            </Button>
+            <VoiceMessageRecorder
+              onSendVoiceMessage={handleSendVoiceMessage}
+              disabled={false}
+            />
           </div>
           
           {newMessage.trim() ? (

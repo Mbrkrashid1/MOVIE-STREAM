@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -15,38 +14,18 @@ export function useChat() {
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentChatRoom, setCurrentChatRoom] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  // Fetch user's chat rooms
+  // Fetch user's chat rooms - remove login requirement
   useEffect(() => {
-    if (!user) return;
-
     const fetchChatRooms = async () => {
-      const { data: participantRooms, error } = await supabase
-        .from('chat_participants')
-        .select('chat_room_id')
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.error('Error fetching chat participants:', error);
-        setLoading(false);
-        return;
-      }
-
-      if (!participantRooms || participantRooms.length === 0) {
-        setChatRooms([]);
-        setLoading(false);
-        return;
-      }
-
-      const roomIds = participantRooms.map(p => p.chat_room_id);
-      const { data: rooms, error: roomsError } = await supabase
+      const { data: rooms, error } = await supabase
         .from('chat_rooms')
         .select('*')
-        .in('id', roomIds);
+        .order('updated_at', { ascending: false });
 
-      if (roomsError) {
-        console.error('Error fetching chat rooms:', roomsError);
+      if (error) {
+        console.error('Error fetching chat rooms:', error);
         toast({
           title: "Error",
           description: "Failed to load chat rooms",
@@ -59,7 +38,7 @@ export function useChat() {
     };
 
     fetchChatRooms();
-  }, [user, toast]);
+  }, [toast]);
 
   // Fetch messages for current chat room
   useEffect(() => {
@@ -93,7 +72,13 @@ export function useChat() {
           filter: `chat_room_id=eq.${currentChatRoom}`
         },
         (payload) => {
-          setMessages(prev => [...prev, payload.new as Message]);
+          const newMessage = payload.new as Message;
+          setMessages(prev => [...prev, newMessage]);
+          
+          // Show notification for new messages
+          if (user && newMessage.sender_id !== user.id) {
+            showNotification(newMessage);
+          }
         }
       )
       .subscribe();
@@ -101,20 +86,43 @@ export function useChat() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentChatRoom]);
+  }, [currentChatRoom, user]);
 
-  const sendMessage = async (content: string, messageType: string = 'text', movieReferenceId?: string) => {
-    if (!user || !currentChatRoom || !content.trim()) return;
+  const showNotification = (message: Message) => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('New Message', {
+        body: message.content,
+        icon: '/favicon.ico'
+      });
+    }
+  };
+
+  const requestNotificationPermission = async () => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        toast({
+          title: "Notifications enabled",
+          description: "You'll receive notifications for new messages"
+        });
+      }
+    }
+  };
+
+  const sendMessage = async (content: string, messageType: string = 'text', audioUrl?: string) => {
+    if (!currentChatRoom || !content.trim()) return;
+
+    const messageData = {
+      chat_room_id: currentChatRoom,
+      sender_id: user?.id || 'anonymous',
+      content: content.trim(),
+      message_type: messageType,
+      audio_url: audioUrl
+    };
 
     const { error } = await supabase
       .from('messages')
-      .insert({
-        chat_room_id: currentChatRoom,
-        sender_id: user.id,
-        content: content.trim(),
-        message_type: messageType,
-        movie_reference_id: movieReferenceId
-      });
+      .insert(messageData);
 
     if (error) {
       console.error('Error sending message:', error);
@@ -123,6 +131,31 @@ export function useChat() {
         description: "Failed to send message",
         variant: "destructive"
       });
+    }
+  };
+
+  const uploadAudio = async (audioBlob: Blob): Promise<string | null> => {
+    try {
+      const fileName = `voice_${Date.now()}.webm`;
+      const { data, error } = await supabase.storage
+        .from('content')
+        .upload(`voice-messages/${fileName}`, audioBlob);
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('content')
+        .getPublicUrl(data.path);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading audio:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload voice message",
+        variant: "destructive"
+      });
+      return null;
     }
   };
 
@@ -155,7 +188,7 @@ export function useChat() {
       .from('chat_rooms')
       .insert({
         type: 'direct',
-        created_by: user.id
+        created_by: user?.id || 'anonymous'
       })
       .select()
       .single();
@@ -182,15 +215,13 @@ export function useChat() {
   };
 
   const createMovieDiscussion = async (movieId: string, movieTitle: string) => {
-    if (!user) return null;
-
     const { data: newRoom, error: roomError } = await supabase
       .from('chat_rooms')
       .insert({
         type: 'movie_discussion',
         name: `${movieTitle} Discussion`,
         movie_id: movieId,
-        created_by: user.id
+        created_by: user?.id || 'anonymous'
       })
       .select()
       .single();
@@ -222,8 +253,10 @@ export function useChat() {
     currentChatRoom,
     setCurrentChatRoom,
     sendMessage,
+    uploadAudio,
     createDirectChat,
     createMovieDiscussion,
+    requestNotificationPermission,
     loading
   };
 }

@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useChat } from '@/hooks/useChat';
 import { Button } from '@/components/ui/button';
@@ -16,25 +16,30 @@ import {
   Edit3,
   Phone,
   Video,
-  Settings,
   Users,
-  Plus
+  Plus,
+  Bell,
+  BellOff
 } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { WhatsAppChat } from '@/components/chat/WhatsAppChat';
+import { ProfilePictureUpload } from '@/components/chat/ProfilePictureUpload';
 
 export default function Chat() {
   const { user } = useAuth();
-  const { chatRooms, currentChatRoom, setCurrentChatRoom } = useChat();
+  const { chatRooms, currentChatRoom, setCurrentChatRoom, requestNotificationPermission } = useChat();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedChat, setSelectedChat] = useState<{id: string, name: string} | null>(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const navigate = useNavigate();
 
-  if (!user) {
-    navigate('/auth');
-    return null;
-  }
+  useEffect(() => {
+    // Check if notifications are already enabled
+    if ('Notification' in window) {
+      setNotificationsEnabled(Notification.permission === 'granted');
+    }
+  }, []);
 
   const handleChatSelect = (chatRoom: any) => {
     setCurrentChatRoom(chatRoom.id);
@@ -42,6 +47,15 @@ export default function Chat() {
       id: chatRoom.id,
       name: chatRoom.name || 'Direct Chat'
     });
+  };
+
+  const handleNotificationToggle = async () => {
+    if (notificationsEnabled) {
+      setNotificationsEnabled(false);
+    } else {
+      await requestNotificationPermission();
+      setNotificationsEnabled(Notification.permission === 'granted');
+    }
   };
 
   const formatLastMessageTime = (timestamp: string) => {
@@ -67,7 +81,7 @@ export default function Chat() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 w-full">
-      {/* Facebook Messenger Style Header */}
+      {/* Header with Profile Picture Upload */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm sticky top-0 z-10">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-4">
@@ -79,20 +93,30 @@ export default function Chat() {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                <MessageSquare className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Chats</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {chatRooms.length} conversations
-                </p>
-              </div>
+            
+            {user && <ProfilePictureUpload />}
+            
+            <div>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Chats</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {chatRooms.length} conversations
+              </p>
             </div>
           </div>
           
           <div className="flex items-center gap-2">
+            <Button
+              onClick={handleNotificationToggle}
+              variant="ghost"
+              size="icon"
+              className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full h-10 w-10"
+            >
+              {notificationsEnabled ? (
+                <Bell className="h-5 w-5 text-green-600" />
+              ) : (
+                <BellOff className="h-5 w-5" />
+              )}
+            </Button>
             <Button
               variant="ghost"
               size="icon"
