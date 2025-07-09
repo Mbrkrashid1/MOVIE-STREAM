@@ -12,17 +12,15 @@ import {
   Send, 
   Paperclip, 
   Smile, 
-  Mic, 
   Camera, 
   MoreVertical,
   Phone,
   Video,
-  Search,
   ArrowLeft,
-  Check,
   CheckCheck,
   Image,
-  File
+  ThumbsUp,
+  Heart
 } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import {
@@ -85,36 +83,40 @@ export function WhatsAppChat({ chatRoomId, chatName, onBack }: WhatsAppChatProps
     fileInputRef.current?.click();
   };
 
-  const emojis = ['😀', '😂', '😍', '🤔', '👍', '👎', '❤️', '🔥', '💯', '🎉', '🎬', '📱', '⭐', '🌟', '💪', '🙌'];
+  const emojis = ['😀', '😂', '😍', '🤔', '👍', '❤️', '🔥', '💯', '🎉', '🎬'];
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-background to-muted/20">
-      {/* Professional Header */}
-      <div className="bg-card/95 backdrop-blur-sm border-b border-border/50 shadow-sm">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      {/* Facebook Messenger Style Header */}
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-4 flex-1">
             <Button
               variant="ghost"
               size="icon"
               onClick={onBack}
-              className="hover:bg-muted/50 rounded-full h-10 w-10"
+              className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full h-10 w-10"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             
-            <Avatar className="h-10 w-10 border-2 border-border/50">
-              <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary/20 text-foreground font-semibold">
-                {chatName[0]?.toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-foreground truncate">{chatName}</h3>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <p className="text-xs text-muted-foreground">
-                  {isTyping ? 'typing...' : 'online'}
-                </p>
+            <div className="flex items-center gap-3 flex-1">
+              <div className="relative">
+                <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                    {chatName[0]?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-gray-900 dark:text-white truncate">{chatName}</h3>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-green-600 dark:text-green-400 font-medium">
+                    {isTyping ? 'typing...' : 'Active now'}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -123,44 +125,44 @@ export function WhatsAppChat({ chatRoomId, chatName, onBack }: WhatsAppChatProps
             <Button
               variant="ghost"
               size="icon"
-              className="hover:bg-muted/50 rounded-full h-10 w-10"
+              className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full h-10 w-10 text-blue-600"
             >
-              <Video className="h-5 w-5" />
+              <Phone className="h-5 w-5" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="hover:bg-muted/50 rounded-full h-10 w-10"
+              className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full h-10 w-10 text-blue-600"
             >
-              <Phone className="h-5 w-5" />
+              <Video className="h-5 w-5" />
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="hover:bg-muted/50 rounded-full h-10 w-10"
+                  className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full h-10 w-10"
                 >
                   <MoreVertical className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem>View contact</DropdownMenuItem>
+                <DropdownMenuItem>View profile</DropdownMenuItem>
                 <DropdownMenuItem>Media & files</DropdownMenuItem>
-                <DropdownMenuItem>Search</DropdownMenuItem>
+                <DropdownMenuItem>Search in conversation</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>Mute notifications</DropdownMenuItem>
-                <DropdownMenuItem>Clear chat</DropdownMenuItem>
+                <DropdownMenuItem>Something's wrong</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive">Block contact</DropdownMenuItem>
+                <DropdownMenuItem className="text-red-600">Block</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </div>
       </div>
 
-      {/* Chat Background */}
-      <div className="flex-1 relative bg-gradient-to-br from-muted/10 to-muted/5">
+      {/* Chat Messages */}
+      <div className="flex-1 relative">
         <ScrollArea className="h-full p-4">
           <div className="space-y-4 pb-4 max-w-4xl mx-auto">
             {messages.map((message, index) => {
@@ -172,36 +174,44 @@ export function WhatsAppChat({ chatRoomId, chatName, onBack }: WhatsAppChatProps
                 <div key={message.id}>
                   {showTime && (
                     <div className="text-center my-4">
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs bg-gray-200 dark:bg-gray-700">
                         {formatMessageTime(message.created_at)}
                       </Badge>
                     </div>
                   )}
                   
-                  <div className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                    <Card
-                      className={`max-w-xs lg:max-w-md shadow-sm border-border/50 ${
-                        isOwnMessage
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-card text-card-foreground'
-                      }`}
-                    >
-                      <CardContent className="p-3">
+                  <div className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} mb-2`}>
+                    <div className={`max-w-xs lg:max-w-md ${isOwnMessage ? 'order-2' : 'order-1'}`}>
+                      <div
+                        className={`rounded-2xl px-4 py-2 shadow-sm ${
+                          isOwnMessage
+                            ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-br-md'
+                            : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-bl-md border border-gray-200 dark:border-gray-600'
+                        }`}
+                      >
                         <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
                           {message.content}
                         </p>
-                        <div className={`flex items-center justify-end gap-2 mt-2 ${
-                          isOwnMessage ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                        <div className={`flex items-center justify-end gap-1 mt-1 ${
+                          isOwnMessage ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'
                         }`}>
                           <span className="text-xs">
                             {format(new Date(message.created_at), 'HH:mm')}
                           </span>
                           {isOwnMessage && (
-                            <CheckCheck className="h-3 w-3" />
+                            <CheckCheck className="h-3 w-3 text-blue-200" />
                           )}
                         </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
+                    
+                    {!isOwnMessage && (
+                      <Avatar className="h-6 w-6 ml-2 order-2">
+                        <AvatarFallback className="bg-gradient-to-br from-gray-400 to-gray-600 text-white text-xs">
+                          {chatName[0]?.toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
                   </div>
                 </div>
               );
@@ -211,85 +221,99 @@ export function WhatsAppChat({ chatRoomId, chatName, onBack }: WhatsAppChatProps
         </ScrollArea>
       </div>
 
-      {/* Professional Input Area */}
-      <div className="bg-card/95 backdrop-blur-sm border-t border-border/50 p-4">
-        {showEmojiPicker && (
-          <Card className="mb-4 border-border/50 bg-card/50 backdrop-blur-sm">
-            <CardContent className="p-4">
-              <div className="flex flex-wrap gap-2">
-                {emojis.map((emoji, index) => (
-                  <Button
-                    key={index}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setNewMessage(prev => prev + emoji);
-                      setShowEmojiPicker(false);
-                    }}
-                    className="text-lg hover:bg-muted/50 rounded-lg h-10 w-10"
-                  >
-                    {emoji}
-                  </Button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-        
+      {/* Emoji Picker */}
+      {showEmojiPicker && (
+        <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
+          <div className="flex flex-wrap gap-2 max-w-4xl mx-auto">
+            {emojis.map((emoji, index) => (
+              <Button
+                key={index}
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setNewMessage(prev => prev + emoji);
+                  setShowEmojiPicker(false);
+                }}
+                className="text-lg hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg h-10 w-10"
+              >
+                {emoji}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Input Area */}
+      <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
         <div className="flex items-end gap-3 max-w-4xl mx-auto">
-          <div className="flex-1 flex items-end bg-muted/50 backdrop-blur-sm rounded-2xl border border-border/50 focus-within:border-primary/50 transition-colors">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleFileUpload}
+              className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full h-10 w-10 text-blue-600"
+            >
+              <Paperclip className="h-5 w-5" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full h-10 w-10 text-blue-600"
+            >
+              <Camera className="h-5 w-5" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full h-10 w-10 text-blue-600"
+            >
+              <Image className="h-5 w-5" />
+            </Button>
+          </div>
+          
+          <div className="flex-1 flex items-end bg-gray-100 dark:bg-gray-700 rounded-full border border-gray-200 dark:border-gray-600 focus-within:border-blue-500 transition-colors">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="hover:bg-muted/50 rounded-full h-10 w-10 flex-shrink-0 ml-2"
+              className="hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full h-10 w-10 flex-shrink-0 ml-2"
             >
               <Smile className="h-5 w-5" />
             </Button>
             
-            <textarea
+            <Input
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="Type your message..."
-              className="flex-1 bg-transparent border-none outline-none resize-none max-h-32 py-3 px-2 text-sm placeholder:text-muted-foreground"
-              rows={1}
+              placeholder="Aa"
+              className="flex-1 bg-transparent border-none outline-none py-3 px-2 text-sm placeholder:text-gray-500 focus:ring-0 focus:border-0"
             />
             
-            <div className="flex items-center mr-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleFileUpload}
-                className="hover:bg-muted/50 rounded-full h-10 w-10"
-              >
-                <Paperclip className="h-5 w-5" />
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hover:bg-muted/50 rounded-full h-10 w-10"
-              >
-                <Camera className="h-5 w-5" />
-              </Button>
-            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full h-10 w-10 mr-2"
+            >
+              <ThumbsUp className="h-5 w-5 text-blue-600" />
+            </Button>
           </div>
           
           {newMessage.trim() ? (
             <Button
               onClick={handleSendMessage}
               size="icon"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full h-12 w-12 shadow-md hover:shadow-lg transition-all duration-200"
+              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-full h-12 w-12 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
             >
               <Send className="h-5 w-5" />
             </Button>
           ) : (
             <Button
               size="icon"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full h-12 w-12 shadow-md hover:shadow-lg transition-all duration-200"
+              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-full h-12 w-12 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
             >
-              <Mic className="h-5 w-5" />
+              <Heart className="h-5 w-5" />
             </Button>
           )}
         </div>
