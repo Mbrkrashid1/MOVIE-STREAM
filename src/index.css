@@ -82,6 +82,15 @@ html {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    
+    /* Ensure streaming colors work in dark mode */
+    --streaming-dark: 240 10% 8%;
+    --streaming-darker: 240 15% 4%;
+    --streaming-card: 240 10% 12%;
+    --streaming-border: 240 10% 20%;
+    --streaming-accent: 0 72% 51%;
+    --streaming-text: 0 0% 98%;
+    --streaming-muted: 240 5% 65%;
   }
 }
 
@@ -92,6 +101,11 @@ html {
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Force dark theme for streaming app */
+  html {
+    @apply dark;
   }
 }
 

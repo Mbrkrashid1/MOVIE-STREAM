@@ -112,7 +112,7 @@ const MovieBoxHomeLayout = () => {
     <div className="min-h-screen bg-streaming-darker text-streaming-text w-full">
       <MovieBoxNavbar />
       
-      <main className="w-full pt-20">
+      <main className="w-full pt-20 pb-20">
         {/* Category Navigation - Aligned with search bar */}
         <div className="bg-streaming-darker border-b border-streaming-border/20">
           <CategoryTabs />
@@ -158,7 +158,7 @@ const MovieBoxHomeLayout = () => {
           </section>
 
           {/* Trending Section */}
-          <section className="w-full pb-8">
+          <section className="w-full">
             <TrendingSection 
               videosList={videosList} 
               movieContent={movieContent} 
