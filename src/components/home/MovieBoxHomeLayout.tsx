@@ -109,63 +109,80 @@ const MovieBoxHomeLayout = () => {
   const bannerAdsOnly = filterBannerAds(videoAds);
 
   return (
-    <div className="min-h-screen bg-black text-white w-full overflow-x-hidden">
+    <div className="min-h-screen bg-streaming-darker text-streaming-text w-full overflow-x-hidden">
       <MovieBoxNavbar />
       
-      <div className="w-full pt-16 pb-20">
-        {/* Search Bar */}
-        <div className="px-4 py-3 w-full">
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-full px-4 py-3 flex items-center w-full border border-gray-700/30 max-w-md mx-auto lg:max-w-lg">
-            <svg className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <span className="text-gray-400 text-sm">Search movies, series...</span>
+      <main className="w-full pt-16 pb-20">
+        {/* Professional Header Section */}
+        <div className="bg-gradient-dark border-b border-streaming-border/30">
+          {/* Search Bar */}
+          <div className="container mx-auto px-4 py-6 max-w-7xl">
+            <div className="bg-streaming-card/60 backdrop-blur-sm rounded-2xl px-6 py-4 flex items-center border border-streaming-border/40 shadow-card hover:shadow-primary transition-all duration-300 max-w-2xl">
+              <svg className="w-5 h-5 text-streaming-muted mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input 
+                type="text" 
+                placeholder="Search movies, series, documentaries..." 
+                className="bg-transparent text-streaming-text placeholder-streaming-muted text-sm flex-1 outline-none"
+              />
+              <div className="ml-4 px-3 py-1.5 bg-gradient-primary text-white text-xs font-medium rounded-lg cursor-pointer hover:shadow-glow transition-all duration-200">
+                Search
+              </div>
+            </div>
+          </div>
+
+          {/* Category Navigation */}
+          <div className="container mx-auto px-4 max-w-7xl">
+            <CategoryTabs />
           </div>
         </div>
 
-        {/* Category Navigation */}
-        <div className="w-full">
-          <CategoryTabs />
+        {/* Content Sections */}
+        <div className="container mx-auto px-4 max-w-7xl space-y-8">
+          {/* Hero Featured Content */}
+          {heroItems.length > 0 && (
+            <section className="mt-8">
+              <HeroSection heroItems={heroItems} />
+            </section>
+          )}
+
+          {/* Auto-Scroll Banner */}
+          <section className="py-4">
+            <AutoScrollBanner banners={mockBanners} autoScrollInterval={5000} />
+          </section>
+
+          {/* Video Ads Display with Autoplay */}
+          {videoAdsWithVideo.length > 0 && (
+            <section className="py-4">
+              <VideoAdsDisplay ads={videoAdsWithVideo} />
+            </section>
+          )}
+
+          {/* Shorts Highlights */}
+          <section className="py-4">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gradient mb-2">Trending Shorts</h2>
+              <p className="text-streaming-muted text-sm">Quick highlights from your favorite content</p>
+            </div>
+            <ShortsHighlights shorts={mockShorts} />
+          </section>
+
+          {/* Content Categories */}
+          <section className="py-4">
+            <ContentCategories />
+          </section>
+
+          {/* Trending Section */}
+          <section className="py-4 mb-8">
+            <TrendingSection 
+              videosList={videosList} 
+              movieContent={movieContent} 
+              seriesContent={seriesContent} 
+            />
+          </section>
         </div>
-
-        {/* Hero Featured Content */}
-        {heroItems.length > 0 && (
-          <div className="px-4 mb-6 w-full">
-            <HeroSection heroItems={heroItems} />
-          </div>
-        )}
-
-        {/* Auto-Scroll Banner */}
-        <div className="px-4 mb-6 w-full">
-          <AutoScrollBanner banners={mockBanners} autoScrollInterval={5000} />
-        </div>
-
-        {/* Video Ads Display with Autoplay */}
-        {videoAdsWithVideo.length > 0 && (
-          <div className="px-4 mb-6 w-full">
-            <VideoAdsDisplay ads={videoAdsWithVideo} />
-          </div>
-        )}
-
-        {/* Shorts Highlights */}
-        <div className="px-4 mb-8 w-full">
-          <ShortsHighlights shorts={mockShorts} />
-        </div>
-
-        {/* Content Categories */}
-        <div className="w-full">
-          <ContentCategories />
-        </div>
-
-        {/* Trending Section */}
-        <div className="w-full">
-          <TrendingSection 
-            videosList={videosList} 
-            movieContent={movieContent} 
-            seriesContent={seriesContent} 
-          />
-        </div>
-      </div>
+      </main>
       
       <BottomNavigation />
     </div>

@@ -25,7 +25,7 @@ const Index = () => {
   }
 
   return (
-    <div className="w-full min-h-screen bg-black overflow-x-hidden">
+    <div className="w-full min-h-screen bg-streaming-darker overflow-x-hidden">
       {isMobile ? <MobileHomeLayout /> : <MovieBoxHomeLayout />}
     </div>
   );

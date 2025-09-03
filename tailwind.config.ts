@@ -28,6 +28,7 @@ const config: Config = {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          glow: "hsl(var(--primary-glow))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -53,12 +54,15 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // MovieBox specific colors
-        moviebox: {
-          red: "hsl(var(--moviebox-red))",
-          dark: "hsl(var(--moviebox-dark))",
-          card: "hsl(var(--moviebox-card))",
-          border: "hsl(var(--moviebox-border))",
+        // Streaming platform colors
+        streaming: {
+          dark: "hsl(var(--streaming-dark))",
+          darker: "hsl(var(--streaming-darker))",
+          card: "hsl(var(--streaming-card))",
+          border: "hsl(var(--streaming-border))",
+          accent: "hsl(var(--streaming-accent))",
+          text: "hsl(var(--streaming-text))",
+          muted: "hsl(var(--streaming-muted))",
         }
       },
       borderRadius: {
