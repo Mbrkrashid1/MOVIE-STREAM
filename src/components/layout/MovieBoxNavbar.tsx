@@ -7,25 +7,28 @@ const MovieBoxNavbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-      <div className="flex items-center justify-between px-6 py-3">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-streaming-darker/95 backdrop-blur-sm border-b border-streaming-border/30">
+      <div className="container mx-auto flex items-center justify-between px-4 py-3 max-w-7xl">
         {/* Logo */}
         <Link to="/" className="flex items-center">
-          <div className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+          <div className="text-2xl font-bold text-gradient">
             HausaBox
           </div>
         </Link>
 
         {/* Search Bar - Desktop */}
         {!isSearchOpen && (
-          <div className="hidden md:flex items-center flex-1 max-w-md mx-6">
+          <div className="hidden md:flex items-center flex-1 max-w-2xl mx-6">
             <div className="relative w-full">
               <input
                 type="text"
-                placeholder="Search Hausa movies, series..."
-                className="w-full bg-muted rounded-full py-2 px-4 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder="Search movies, series, documentaries..."
+                className="w-full bg-streaming-card/60 backdrop-blur-sm rounded-2xl py-3 px-4 pl-12 text-sm text-streaming-text placeholder-streaming-muted border border-streaming-border/40 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all duration-200"
               />
-              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+              <Search size={16} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-streaming-muted" />
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 px-2 py-1 bg-gradient-primary text-white text-xs font-medium rounded-lg cursor-pointer hover:shadow-glow transition-all duration-200">
+                Search
+              </div>
             </div>
           </div>
         )}
@@ -37,10 +40,10 @@ const MovieBoxNavbar = () => {
               <input
                 type="text"
                 placeholder="Search content..."
-                className="w-full bg-muted rounded-full py-2 px-4 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="w-full bg-streaming-card/60 rounded-2xl py-3 px-4 pl-12 text-sm text-streaming-text placeholder-streaming-muted border border-streaming-border/40 focus:outline-none focus:ring-2 focus:ring-primary/50"
                 autoFocus
               />
-              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+              <Search size={16} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-streaming-muted" />
             </div>
           </div>
         )}
@@ -49,24 +52,24 @@ const MovieBoxNavbar = () => {
         <div className="flex items-center space-x-4">
           {/* Mobile Search Toggle */}
           <button 
-            className="md:hidden"
+            className="md:hidden p-2 hover:bg-streaming-card/30 rounded-full transition-colors"
             onClick={() => setIsSearchOpen(!isSearchOpen)}
           >
-            <Search size={20} className="text-muted-foreground hover:text-primary transition-colors" />
+            <Search size={20} className="text-streaming-muted hover:text-primary transition-colors" />
           </button>
 
           {/* Notifications */}
-          <button className="relative">
-            <Bell size={20} className="text-muted-foreground hover:text-primary transition-colors" />
-            <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+          <button className="relative p-2 hover:bg-streaming-card/30 rounded-full transition-colors">
+            <Bell size={20} className="text-streaming-muted hover:text-primary transition-colors" />
+            <span className="absolute -top-1 -right-1 bg-gradient-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center shadow-glow">
               3
             </span>
           </button>
 
           {/* Menu */}
           <Link to="/profile">
-            <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center hover:bg-primary/30 transition-colors">
-              <Menu size={16} className="text-primary" />
+            <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center hover:shadow-glow transition-all duration-200">
+              <Menu size={16} className="text-white" />
             </div>
           </Link>
         </div>

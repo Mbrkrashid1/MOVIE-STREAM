@@ -25,7 +25,7 @@ const HeroSection = ({ heroItems }: HeroSectionProps) => {
 
   return (
     <div className="relative w-full">
-      <div className="relative aspect-[16/9] sm:aspect-[2/1] rounded-xl overflow-hidden">
+      <div className="relative aspect-[16/9] sm:aspect-[2.5/1] rounded-2xl overflow-hidden shadow-card">
         <img
           src={featuredItem.backgroundImage}
           alt={featuredItem.title}
@@ -33,37 +33,37 @@ const HeroSection = ({ heroItems }: HeroSectionProps) => {
         />
         
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-streaming-darker/95 via-streaming-darker/40 to-transparent" />
         
         {/* Content */}
-        <div className="absolute bottom-0 left-0 right-0 p-6">
-          <div className="max-w-md">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+        <div className="absolute bottom-0 left-0 right-0 p-8">
+          <div className="max-w-lg">
+            <h1 className="text-3xl sm:text-4xl font-bold text-streaming-text mb-3 leading-tight">
               {featuredItem.title}
             </h1>
             
-            <div className="flex items-center gap-2 text-sm text-gray-300 mb-3">
-              <span className="bg-red-600 text-white px-2 py-0.5 rounded text-xs">
+            <div className="flex items-center gap-3 text-sm text-streaming-muted mb-4">
+              <span className="bg-gradient-primary text-white px-3 py-1 rounded-full text-xs font-medium shadow-glow">
                 {featuredItem.type.toUpperCase()}
               </span>
-              <span>|</span>
+              <span>•</span>
               <span>{featuredItem.year}</span>
-              <span>|</span>
+              <span>•</span>
               <span>{featuredItem.genre}</span>
             </div>
             
-            <p className="text-gray-300 text-sm mb-4 line-clamp-2">
+            <p className="text-streaming-muted text-base mb-6 line-clamp-2 leading-relaxed">
               {featuredItem.description}
             </p>
             
-            <div className="flex items-center gap-3">
-              <Button className="bg-white text-black hover:bg-gray-200 px-6 py-2 rounded-lg font-semibold">
-                <Play size={16} className="mr-2" fill="black" />
-                Play
+            <div className="flex items-center gap-4">
+              <Button className="bg-gradient-primary hover:shadow-glow text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 hover:scale-105">
+                <Play size={18} className="mr-2" fill="white" />
+                Play Now
               </Button>
               
-              <Button variant="outline" className="bg-white/20 border-white/30 text-white hover:bg-white/30 px-4 py-2 rounded-lg backdrop-blur-sm">
-                <Plus size={16} className="mr-2" />
+              <Button variant="outline" className="bg-streaming-card/40 border-streaming-border/60 text-streaming-text hover:bg-streaming-card/60 px-6 py-3 rounded-xl backdrop-blur-sm transition-all duration-200">
+                <Plus size={18} className="mr-2" />
                 My List
               </Button>
             </div>

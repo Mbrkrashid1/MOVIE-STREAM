@@ -13,21 +13,26 @@ const CategoryTabs = () => {
   const [activeCategory, setActiveCategory] = useState('trending');
 
   return (
-    <div className="flex px-4 space-x-6 mb-6 overflow-x-auto scrollbar-none w-full">
-      {categories.map((category) => (
-        <button
-          key={category.id}
-          onClick={() => setActiveCategory(category.id)}
-          className={`font-medium pb-2 whitespace-nowrap transition-all duration-300 ${
-            activeCategory === category.id
-              ? 'text-white border-b-2 border-primary'
-              : 'text-gray-400 hover:text-gray-200'
-          }`}
-        >
-          {category.emoji && <span className="mr-1">{category.emoji}</span>}
-          {category.name}
-        </button>
-      ))}
+    <div className="container mx-auto px-4 max-w-7xl">
+      <div className="flex space-x-8 py-4 overflow-x-auto scrollbar-none border-b border-streaming-border/20">
+        {categories.map((category) => (
+          <button
+            key={category.id}
+            onClick={() => setActiveCategory(category.id)}
+            className={`font-medium pb-3 whitespace-nowrap transition-all duration-300 relative ${
+              activeCategory === category.id
+                ? 'text-streaming-text'
+                : 'text-streaming-muted hover:text-streaming-text'
+            }`}
+          >
+            {category.emoji && <span className="mr-2">{category.emoji}</span>}
+            {category.name}
+            {activeCategory === category.id && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-primary rounded-full" />
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };

@@ -109,72 +109,56 @@ const MovieBoxHomeLayout = () => {
   const bannerAdsOnly = filterBannerAds(videoAds);
 
   return (
-    <div className="min-h-screen bg-streaming-darker text-streaming-text w-full overflow-x-hidden">
+    <div className="min-h-screen bg-streaming-darker text-streaming-text w-full">
       <MovieBoxNavbar />
       
-      <main className="w-full pt-16 pb-20">
-        {/* Professional Header Section */}
-        <div className="bg-gradient-dark border-b border-streaming-border/30">
-          {/* Search Bar */}
-          <div className="container mx-auto px-4 py-6 max-w-7xl">
-            <div className="bg-streaming-card/60 backdrop-blur-sm rounded-2xl px-6 py-4 flex items-center border border-streaming-border/40 shadow-card hover:shadow-primary transition-all duration-300 max-w-2xl">
-              <svg className="w-5 h-5 text-streaming-muted mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input 
-                type="text" 
-                placeholder="Search movies, series, documentaries..." 
-                className="bg-transparent text-streaming-text placeholder-streaming-muted text-sm flex-1 outline-none"
-              />
-              <div className="ml-4 px-3 py-1.5 bg-gradient-primary text-white text-xs font-medium rounded-lg cursor-pointer hover:shadow-glow transition-all duration-200">
-                Search
-              </div>
-            </div>
-          </div>
-
-          {/* Category Navigation */}
-          <div className="container mx-auto px-4 max-w-7xl">
-            <CategoryTabs />
-          </div>
+      <main className="w-full pt-20">
+        {/* Category Navigation - Aligned with search bar */}
+        <div className="bg-streaming-darker border-b border-streaming-border/20">
+          <CategoryTabs />
         </div>
 
-        {/* Content Sections */}
-        <div className="container mx-auto px-4 max-w-7xl space-y-8">
+        {/* Content Sections with edge-to-edge layout */}
+        <div className="w-full space-y-6">
           {/* Hero Featured Content */}
           {heroItems.length > 0 && (
-            <section className="mt-8">
+            <section className="container mx-auto px-4 pt-6 max-w-7xl">
+              <div className="mb-4">
+                <h2 className="text-xl font-bold text-gradient mb-1">Featured Videos</h2>
+                <p className="text-streaming-muted text-sm">Premium content handpicked for you</p>
+              </div>
               <HeroSection heroItems={heroItems} />
             </section>
           )}
 
           {/* Auto-Scroll Banner */}
-          <section className="py-4">
+          <section className="container mx-auto px-4 max-w-7xl">
             <AutoScrollBanner banners={mockBanners} autoScrollInterval={5000} />
           </section>
 
           {/* Video Ads Display with Autoplay */}
           {videoAdsWithVideo.length > 0 && (
-            <section className="py-4">
+            <section className="container mx-auto px-4 max-w-7xl">
               <VideoAdsDisplay ads={videoAdsWithVideo} />
             </section>
           )}
 
           {/* Shorts Highlights */}
-          <section className="py-4">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gradient mb-2">Trending Shorts</h2>
+          <section className="container mx-auto px-4 max-w-7xl">
+            <div className="mb-4">
+              <h2 className="text-xl font-bold text-gradient mb-1">Trending Shorts</h2>
               <p className="text-streaming-muted text-sm">Quick highlights from your favorite content</p>
             </div>
             <ShortsHighlights shorts={mockShorts} />
           </section>
 
           {/* Content Categories */}
-          <section className="py-4">
+          <section className="w-full">
             <ContentCategories />
           </section>
 
           {/* Trending Section */}
-          <section className="py-4 mb-8">
+          <section className="w-full pb-8">
             <TrendingSection 
               videosList={videosList} 
               movieContent={movieContent} 
