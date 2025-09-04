@@ -8,6 +8,7 @@ import MovieDetail from "./pages/MovieDetail";
 import Chat from "./pages/Chat";
 import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/AdminDashboard";
+import CreatorStudio from "./pages/CreatorStudio";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Downloads from "./pages/Downloads";
@@ -44,6 +45,11 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       <Route path="/admin" element={<AdminDashboard />} />
+      <Route path="/creator" element={
+        <ProtectedRoute>
+          <CreatorStudio />
+        </ProtectedRoute>
+      } />
       <Route path="/profile" element={<Profile />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="/downloads" element={<Downloads />} />

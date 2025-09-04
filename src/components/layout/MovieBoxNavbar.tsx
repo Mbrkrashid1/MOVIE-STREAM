@@ -1,10 +1,14 @@
 
-import { Search, Bell, Menu } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Search, Bell, Menu, Video } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 const MovieBoxNavbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-streaming-darker/95 backdrop-blur-sm border-b border-streaming-border/30">
@@ -50,6 +54,17 @@ const MovieBoxNavbar = () => {
 
         {/* Right Icons */}
         <div className="flex items-center space-x-4">
+          {user && (
+            <Button
+              variant="ghost"
+              className="hidden md:flex items-center gap-2 text-streaming-text hover:bg-streaming-card"
+              onClick={() => navigate('/creator')}
+            >
+              <Video className="w-4 h-4" />
+              Creator Studio
+            </Button>
+          )}
+          
           {/* Mobile Search Toggle */}
           <button 
             className="md:hidden p-2 hover:bg-streaming-card/30 rounded-full transition-colors"
