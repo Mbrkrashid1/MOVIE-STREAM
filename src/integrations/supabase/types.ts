@@ -135,6 +135,47 @@ export type Database = {
         }
         Relationships: []
       }
+      advertiser_profiles: {
+        Row: {
+          business_type: string | null
+          company_name: string
+          created_at: string
+          id: string
+          total_spend: number | null
+          updated_at: string
+          user_id: string
+          verification_status: string
+        }
+        Insert: {
+          business_type?: string | null
+          company_name: string
+          created_at?: string
+          id?: string
+          total_spend?: number | null
+          updated_at?: string
+          user_id: string
+          verification_status?: string
+        }
+        Update: {
+          business_type?: string | null
+          company_name?: string
+          created_at?: string
+          id?: string
+          total_spend?: number | null
+          updated_at?: string
+          user_id?: string
+          verification_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "advertiser_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_participants: {
         Row: {
           chat_room_id: string
@@ -297,6 +338,110 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_earnings: {
+        Row: {
+          amount_naira: number
+          created_at: string
+          creator_id: string
+          date: string
+          description: string | null
+          earning_type: string
+          id: string
+          status: string | null
+          video_id: string | null
+        }
+        Insert: {
+          amount_naira: number
+          created_at?: string
+          creator_id: string
+          date?: string
+          description?: string | null
+          earning_type: string
+          id?: string
+          status?: string | null
+          video_id?: string | null
+        }
+        Update: {
+          amount_naira?: number
+          created_at?: string
+          creator_id?: string
+          date?: string
+          description?: string | null
+          earning_type?: string
+          id?: string
+          status?: string | null
+          video_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_earnings_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_earnings_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_profiles: {
+        Row: {
+          channel_description: string | null
+          channel_name: string | null
+          created_at: string
+          id: string
+          kyc_documents: Json | null
+          kyc_status: string
+          monetization_enabled: boolean | null
+          subscriber_count: number | null
+          total_views: number | null
+          total_watch_time_minutes: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel_description?: string | null
+          channel_name?: string | null
+          created_at?: string
+          id?: string
+          kyc_documents?: Json | null
+          kyc_status?: string
+          monetization_enabled?: boolean | null
+          subscriber_count?: number | null
+          total_views?: number | null
+          total_watch_time_minutes?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel_description?: string | null
+          channel_name?: string | null
+          created_at?: string
+          id?: string
+          kyc_documents?: Json | null
+          kyc_status?: string
+          monetization_enabled?: boolean | null
+          subscriber_count?: number | null
+          total_views?: number | null
+          total_watch_time_minutes?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       episodes: {
         Row: {
           created_at: string | null
@@ -425,6 +570,88 @@ export type Database = {
           },
         ]
       }
+      payout_requests: {
+        Row: {
+          admin_notes: string | null
+          amount_naira: number
+          creator_id: string
+          id: string
+          payment_details: Json
+          payment_method: string
+          processed_at: string | null
+          requested_at: string
+          status: string | null
+          transaction_reference: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount_naira: number
+          creator_id: string
+          id?: string
+          payment_details: Json
+          payment_method: string
+          processed_at?: string | null
+          requested_at?: string
+          status?: string | null
+          transaction_reference?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          amount_naira?: number
+          creator_id?: string
+          id?: string
+          payment_details?: Json
+          payment_method?: string
+          processed_at?: string | null
+          requested_at?: string
+          status?: string | null
+          transaction_reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payout_requests_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_settings: {
+        Row: {
+          description: string | null
+          id: string
+          setting_key: string
+          setting_value: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_value: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -435,6 +662,7 @@ export type Database = {
           is_online: boolean | null
           last_seen: string | null
           updated_at: string
+          user_role: Database["public"]["Enums"]["user_role"] | null
           username: string | null
         }
         Insert: {
@@ -446,6 +674,7 @@ export type Database = {
           is_online?: boolean | null
           last_seen?: string | null
           updated_at?: string
+          user_role?: Database["public"]["Enums"]["user_role"] | null
           username?: string | null
         }
         Update: {
@@ -457,9 +686,128 @@ export type Database = {
           is_online?: boolean | null
           last_seen?: string | null
           updated_at?: string
+          user_role?: Database["public"]["Enums"]["user_role"] | null
           username?: string | null
         }
         Relationships: []
+      }
+      video_analytics: {
+        Row: {
+          ad_revenue_naira: number | null
+          cpm_rate: number | null
+          created_at: string
+          date: string
+          id: string
+          impressions: number | null
+          video_id: string
+          views: number | null
+          watch_time_minutes: number | null
+        }
+        Insert: {
+          ad_revenue_naira?: number | null
+          cpm_rate?: number | null
+          created_at?: string
+          date: string
+          id?: string
+          impressions?: number | null
+          video_id: string
+          views?: number | null
+          watch_time_minutes?: number | null
+        }
+        Update: {
+          ad_revenue_naira?: number | null
+          cpm_rate?: number | null
+          created_at?: string
+          date?: string
+          id?: string
+          impressions?: number | null
+          video_id?: string
+          views?: number | null
+          watch_time_minutes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_analytics_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      videos: {
+        Row: {
+          category: string
+          comment_count: number | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          duration_seconds: number | null
+          id: string
+          language: string | null
+          like_count: number | null
+          monetization_enabled: boolean | null
+          status: string | null
+          tags: string[] | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          upload_date: string
+          video_url: string
+          view_count: number | null
+          watch_time_minutes: number | null
+        }
+        Insert: {
+          category: string
+          comment_count?: number | null
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          language?: string | null
+          like_count?: number | null
+          monetization_enabled?: boolean | null
+          status?: string | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          upload_date?: string
+          video_url: string
+          view_count?: number | null
+          watch_time_minutes?: number | null
+        }
+        Update: {
+          category?: string
+          comment_count?: number | null
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          language?: string | null
+          like_count?: number | null
+          monetization_enabled?: boolean | null
+          status?: string | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          upload_date?: string
+          video_url?: string
+          view_count?: number | null
+          watch_time_minutes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "videos_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -469,7 +817,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      user_role: "creator" | "viewer" | "advertiser" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -596,6 +944,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["creator", "viewer", "advertiser", "admin"],
+    },
   },
 } as const
