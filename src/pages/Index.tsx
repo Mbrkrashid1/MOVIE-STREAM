@@ -3,7 +3,8 @@ import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useContentData } from "@/hooks/useContentData";
 import { useIsMobile } from "@/hooks/use-mobile";
-import MovieBoxHomeLayout from "@/components/home/MovieBoxHomeLayout";
+import YouTubeLayout from "@/components/layout/YouTubeLayout";
+import YouTubeHomeLayout from "@/components/home/YouTubeHomeLayout";
 import MobileHomeLayout from "@/components/home/MobileHomeLayout";
 import LoadingScreen from "@/components/home/LoadingScreen";
 
@@ -24,10 +25,18 @@ const Index = () => {
     return <LoadingScreen />;
   }
 
+  if (isMobile) {
+    return (
+      <div className="w-full min-h-screen bg-streaming-darker overflow-x-hidden">
+        <MobileHomeLayout />
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full min-h-screen bg-streaming-darker overflow-x-hidden">
-      {isMobile ? <MobileHomeLayout /> : <MovieBoxHomeLayout />}
-    </div>
+    <YouTubeLayout>
+      <YouTubeHomeLayout />
+    </YouTubeLayout>
   );
 };
 

@@ -102,11 +102,6 @@ html {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-  
-  /* Force dark theme for streaming app */
-  html {
-    @apply dark;
-  }
 }
 
 @layer utilities {
