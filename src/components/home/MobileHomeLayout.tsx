@@ -1,299 +1,74 @@
 
-import { useEffect } from "react";
 import { useContentData } from "@/hooks/useContentData";
-import { useToast } from "@/hooks/use-toast";
-import BannerAdSpace from "@/components/home/BannerAdSpace";
-import YouTubeStyleVideoAd from "@/components/home/YouTubeStyleVideoAd";
-import AutoPlayAdSequencer from "@/components/home/AutoPlayAdSequencer";
 import MovieBoxNavbar from "@/components/layout/MovieBoxNavbar";
 import BottomNavigation from "@/components/layout/BottomNavigation";
-import LoadingScreen from "@/components/home/LoadingScreen";
-import HeroSection from "@/components/home/HeroSection";
-import { transformFeaturedForHero, filterVideoAds, filterBannerAds } from "@/utils/contentTransformers";
-import { Link } from "react-router-dom";
-import { Play, Eye } from "lucide-react";
+import { Eye, ThumbsUp, ChevronDown } from "lucide-react";
 
 const MobileHomeLayout = () => {
-  const { toast } = useToast();
-  const { 
-    featuredItems, 
-    videosList, 
-    videoAds, 
-    isLoading,
-    getMovieContent,
-    getSeriesContent 
-  } = useContentData();
+  const { featuredItems, videosList, videoAds } = useContentData();
 
-  useEffect(() => {
-    toast({
-      title: "Barka da zuwa HausaBox! 🎬",
-      description: "Gano kyawawan fina-finai da serials na Hausa.",
-    });
-  }, []);
-
-  const movieContent = getMovieContent();
-  const seriesContent = getSeriesContent();
-
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
-
-  // Transform featured items for hero section
-  const heroItems = transformFeaturedForHero(featuredItems);
-
-  // Filter video and banner ads
-  const videoAdsWithVideo = filterVideoAds(videoAds);
-  const bannerAdsOnly = filterBannerAds(videoAds);
-
-  // Filter content for Hausa categories only
-  const hausaMovies = movieContent.filter(item => 
-    item.title.toLowerCase().includes('hausa') || 
-    ['kannywood', 'hausa movie', 'arewa'].some(keyword => 
-      item.title.toLowerCase().includes(keyword)
-    )
-  );
-
-  const hausaSeries = seriesContent.filter(item => 
-    item.title.toLowerCase().includes('hausa') || 
-    ['hausa series', 'arewa series'].some(keyword => 
-      item.title.toLowerCase().includes(keyword)
-    )
-  );
-
-  // Trending Hausa content
-  const trendingContent = [...hausaMovies, ...hausaSeries]
-    .sort((a, b) => {
-      const aViews = typeof a.views === 'string' ? parseInt(a.views) || 0 : a.views || 0;
-      const bViews = typeof b.views === 'string' ? parseInt(b.views) || 0 : b.views || 0;
-      return bViews - aViews;
-    })
-    .slice(0, 6);
-
-  const formatViews = (views: string | number | null) => {
-    if (!views) return "0";
-    const numViews = typeof views === 'string' ? parseInt(views) || 0 : views;
-    if (numViews >= 1000) {
-      return `${(numViews / 1000).toFixed(1)}k`;
-    }
-    return numViews.toString();
-  };
+  // Mock content cards for the clean layout
+  const contentCards = Array.from({ length: 6 }, (_, i) => ({
+    id: i + 1,
+    placeholder: true
+  }));
 
   return (
-    <div className="min-h-screen bg-black text-white pb-20 w-full">
+    <div className="min-h-screen bg-gray-50 pt-20 pb-20 overflow-x-hidden">
       <MovieBoxNavbar />
       
-      <div className="pt-16 w-full">
-        {/* Auto-Playing Video Ad Sequencer for Mobile */}
-        {videoAdsWithVideo.length > 0 && (
-          <AutoPlayAdSequencer 
-            ads={videoAdsWithVideo}
-            autoPlayDuration={10}
-            onAdComplete={(adId) => {
-              console.log('Mobile auto-play ad completed:', adId);
-            }}
-          />
-        )}
-
-        {/* Hero Section with Backdrop Images */}
-        {heroItems.length > 0 && (
-          <div className="w-full">
-            <HeroSection heroItems={heroItems} />
-          </div>
-        )}
-
-        {/* Search Bar */}
-        <div className="px-4 py-3 w-full">
-          <div className="bg-gray-800 rounded-full px-4 py-3 flex items-center w-full">
-            <svg className="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <span className="text-gray-400">Nemo fina-finai da serials...</span>
-          </div>
-        </div>
-
-        {/* Hausa Category Tabs */}
-        <div className="flex px-4 space-x-6 mb-6 overflow-x-auto w-full">
-          <button className="text-white font-medium border-b-2 border-primary pb-2 whitespace-nowrap">Trending</button>
-          <button className="text-gray-400 font-medium pb-2 whitespace-nowrap">Kannywood</button>
-          <button className="text-gray-400 font-medium pb-2 whitespace-nowrap">Hausa Movies</button>
-          <button className="text-gray-400 font-medium pb-2 whitespace-nowrap">Hausa Series</button>
-          <button className="text-gray-400 font-medium pb-2 whitespace-nowrap">Music Videos</button>
-        </div>
-
-        {/* Organized Video Ads Section */}
-        {videoAdsWithVideo.length > 0 && (
-          <div className="px-4 mb-8 w-full">
-            <div className="mb-3">
-              <h3 className="text-lg font-semibold text-white mb-1">🎬 Featured Videos</h3>
-              <p className="text-sm text-gray-400">Sponsored content</p>
-            </div>
-            <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-800 w-full">
-              <YouTubeStyleVideoAd 
-                ads={videoAdsWithVideo.slice(0, 3)}
-                onAdComplete={(adId) => {
-                  console.log('Mobile video ad completed:', adId);
-                }}
+      {/* Content Section */}
+      <div className="px-4 py-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Content</h2>
+        
+        {/* Content Card */}
+        <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-100">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Content</h3>
+          
+          {/* Content Grid */}
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            {contentCards.map((item) => (
+              <div 
+                key={item.id} 
+                className="aspect-video bg-gray-200 rounded-lg"
               />
-            </div>
+            ))}
           </div>
-        )}
-
-        {/* Banner Ad Space with Auto-Scroll */}
-        {bannerAdsOnly.length > 0 && (
-          <div className="px-4 mb-8 w-full">
-            <div className="mb-3">
-              <h3 className="text-sm font-medium text-gray-400 mb-2">Sponsored</h3>
+          
+          {/* Stats */}
+          <div className="flex items-center gap-6 text-gray-600">
+            <div className="flex items-center gap-2">
+              <Eye className="w-4 h-4" />
+              <span className="text-sm">Views</span>
             </div>
-            <BannerAdSpace 
-              ads={bannerAdsOnly}
-              autoSlideInterval={4000}
-              showNavigation={true}
-              className="mb-4 w-full"
-            />
-          </div>
-        )}
-
-        {/* Hausa Content Categories */}
-        <div className="px-4 mb-6 w-full">
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-gray-800 rounded-lg p-4 text-center">
-              <h3 className="text-white font-semibold mb-1">Kannywood Movies</h3>
-              <p className="text-gray-400 text-sm">Latest releases</p>
-              <div className="mt-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center mx-auto">
-                <span className="text-white text-lg">🎬</span>
-              </div>
-            </div>
-            <div className="bg-gray-800 rounded-lg p-4 text-center">
-              <h3 className="text-white font-semibold mb-1">Hausa Series</h3>
-              <p className="text-gray-400 text-sm">Popular shows</p>
-              <div className="mt-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center mx-auto">
-                <span className="text-white text-lg">📺</span>
-              </div>
+            <div className="flex items-center gap-2">
+              <ThumbsUp className="w-4 h-4" />
+              <span className="text-sm">Likes</span>
             </div>
           </div>
         </div>
 
-        {/* Kannywood Movies Section */}
-        <div className="px-4 mb-6 w-full">
+        {/* Sponsored Ad Section */}
+        <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white text-lg font-semibold">Kannywood Movies</h2>
-            <button className="text-gray-400 text-sm flex items-center">
-              More
-              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+            <h3 className="text-xl font-bold text-gray-900">Sponsored ad</h3>
+            <div className="flex items-center gap-2 text-gray-500">
+              <span className="text-sm">Scroll</span>
+              <ChevronDown className="w-4 h-4" />
+            </div>
           </div>
           
-          <div className="grid grid-cols-3 gap-3 w-full">
-            {(hausaMovies.length > 0 ? hausaMovies : movieContent).slice(0, 6).map((item) => (
-              <Link 
-                to={`/${item.type}/${item.id}`} 
-                key={item.id}
-                className="relative group"
-              >
-                <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-gray-800">
-                  <img 
-                    src={item.thumbnail || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5";
-                    }}
-                  />
-                  
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <div className="bg-primary rounded-full p-3">
-                      <Play size={16} fill="white" className="text-white ml-0.5" />
-                    </div>
-                  </div>
-                  
-                  <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                    👁 {formatViews(item.views)}
-                  </div>
-                </div>
-                
-                <h3 className="text-white text-sm font-medium mt-2 line-clamp-1">{item.title}</h3>
-              </Link>
-            ))}
+          <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-center h-32 bg-gray-100 rounded-lg">
+              <span className="text-4xl font-bold text-gray-400">ADS</span>
+            </div>
           </div>
         </div>
 
-        {/* Hausa Music Videos Section */}
-        <div className="px-4 mb-6 w-full">
-          <h2 className="text-white text-lg font-semibold mb-4">Hausa Music Videos</h2>
-          
-          <div className="grid grid-cols-2 gap-3 w-full">
-            {(hausaSeries.length > 0 ? hausaSeries : seriesContent).slice(0, 4).map((item) => (
-              <Link 
-                to={`/${item.type}/${item.id}`} 
-                key={item.id}
-                className="relative group"
-              >
-                <div className="relative aspect-[16/9] rounded-lg overflow-hidden bg-gray-800">
-                  <img 
-                    src={item.thumbnail || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5";
-                    }}
-                  />
-                  
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <div className="bg-primary rounded-full p-2">
-                      <Play size={16} fill="white" className="text-white ml-0.5" />
-                    </div>
-                  </div>
-                  
-                  <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                    {item.duration}
-                  </div>
-                </div>
-                
-                <h3 className="text-white text-sm font-medium mt-2 line-clamp-2">{item.title}</h3>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Trending Hausa Movies Section */}
-        <div className="px-4 mb-6 w-full">
-          <h2 className="text-white text-lg font-semibold mb-4">📈 Trending Hausa Movies</h2>
-          
-          <div className="grid grid-cols-3 gap-3 w-full">
-            {trendingContent.slice(0, 6).map((item) => (
-              <Link 
-                to={`/${item.type}/${item.id}`} 
-                key={item.id}
-                className="relative group"
-              >
-                <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-gray-800">
-                  <img 
-                    src={item.thumbnail || "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5"} 
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5";
-                    }}
-                  />
-                  
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80"></div>
-                  
-                  <div className="absolute bottom-2 left-2 right-2">
-                    <h3 className="text-white text-xs font-medium line-clamp-2">{item.title}</h3>
-                    <div className="flex items-center mt-1">
-                      <Eye size={10} className="text-gray-300 mr-1" />
-                      <span className="text-gray-300 text-xs">{formatViews(item.views)}</span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+        {/* More Content Section */}
+        <h3 className="text-xl font-bold text-gray-900 mb-4">Content</h3>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="aspect-video bg-gray-200 rounded-lg"></div>
         </div>
       </div>
       

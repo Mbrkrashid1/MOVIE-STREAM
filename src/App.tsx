@@ -14,6 +14,8 @@ import Settings from "./pages/Settings";
 import Downloads from "./pages/Downloads";
 import Library from "./pages/Library";
 import Shorts from "./pages/Shorts";
+import Search from "./pages/Search";
+import Community from "./pages/Community";
 import NotFound from "./pages/NotFound";
 import "./App.css";
 
@@ -55,6 +57,8 @@ function AppRoutes() {
       <Route path="/downloads" element={<Downloads />} />
       <Route path="/library" element={<Library />} />
       <Route path="/shorts" element={<Shorts />} />
+      <Route path="/search" element={<Search />} />
+      <Route path="/community" element={<Community />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
